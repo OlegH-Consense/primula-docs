@@ -1,0 +1,19 @@
+---
+doc: {title: "Рахунок на оплату", language: uk-UA, created: 2026-10-26}
+params:
+  постачальник: "ТОВ «Приклад»"
+  рахунок: "ua21 3223 1300 0002 6007 2335 6600 1"
+  сума: 12500.00
+---
+|% Example 11: a document of a project that uses the shared library ua-iban.
+|% lib is a symbolic link to ../shared/ua-iban (decision 136): the build gives
+|% warning P2639 once — the library is outside the project, keep it together
+|% with the project. iban.check() stops the build if the IBAN is wrong.
+|import("lib/iban")
+|<(number=False) Рахунок на оплату
+
+Постачальник: |(постачальник).
+
+IBAN: |(iban.grouped(рахунок)) (код банку |(iban.bank_code(рахунок))).
+
+До сплати: |(money_full(сума, "UAH")).

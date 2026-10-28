@@ -1,0 +1,55 @@
+{
+ "kind": "project",
+ "order": 20,
+ "title": {
+  "en": "Project with batch build from data",
+  "uk": "Проєкт із пакетним збиранням з даних",
+  "ru": "Проект с пакетной сборкой из данных"
+ },
+ "description": {
+  "en": "Project parameters, data/acts.csv and one act per CSV row built by the code section (build() under batch_mode()).",
+  "uk": "Параметри проєкту, data/acts.csv і окремий акт на кожен рядок CSV, що збирає секція коду (build() під batch_mode()).",
+  "ru": "Параметры проекта, data/acts.csv и отдельный акт на каждую строку CSV, собираемый секцией кода (build() под batch_mode())."
+ },
+ "files": [
+  {
+   "from": "project.p.prml",
+   "to": "project.p.prml"
+  },
+  {
+   "from": "act.prml",
+   "to": "act.prml",
+   "open": true
+  },
+  {
+   "from": "acts.csv",
+   "to": "data/acts.csv"
+  }
+ ],
+ "strings": {
+  "en": {
+   "company": "Contractor LLC",
+   "comment": "The code section: one act per row of data/acts.csv in a batch build.",
+   "act": "Acceptance act",
+   "customer1": "Customer One",
+   "customer2": "Customer Two",
+   "text": "Services rendered to"
+  },
+  "uk": {
+   "company": "ТОВ «Виконавець»",
+   "comment": "Секція коду: окремий акт на кожен рядок data/acts.csv під час пакетного збирання.",
+   "act": "Акт приймання-передавання",
+   "customer1": "Замовник Один",
+   "customer2": "Замовник Два",
+   "text": "Послуги надано замовникові"
+  },
+  "ru": {
+   "company": "ООО «Исполнитель»",
+   "comment": "Секция кода: отдельный акт на каждую строку data/acts.csv при пакетной сборке.",
+   "act": "Акт приёма-передачи",
+   "customer1": "Заказчик Один",
+   "customer2": "Заказчик Два",
+   "text": "Услуги оказаны заказчику"
+  }
+ }
+}

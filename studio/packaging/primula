@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Installed launcher of the Primula translator (runtime package, stage 14.11).
+# The installer copies it to PREFIX/bin; the translator package lies in
+# PREFIX/share/primula-docs/lib/python, its Python environment in
+# PREFIX/share/primula-python (created with --system-site-packages, so the
+# system PyYAML is enough). PRIMULA_PYTHON overrides the interpreter.
+set -euo pipefail
+prefix="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+python="${prefix}/share/primula-python/bin/python3"
+if [[ ! -x "$python" ]]; then python="${PRIMULA_PYTHON:-python3}"; fi
+export PYTHONPATH="${prefix}/share/primula-docs/lib/python${PYTHONPATH:+:${PYTHONPATH}}"
+exec "$python" -m primula "$@"

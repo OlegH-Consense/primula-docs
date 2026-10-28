@@ -1,0 +1,32 @@
+{
+ "kind": "module",
+ "order": 10,
+ "title": {
+  "en": "Module of definitions",
+  "uk": "Модуль визначень",
+  "ru": "Модуль определений"
+ },
+ "description": {
+  "en": "A macro and a value for |import: |module.sign(…), module.vat_rate.",
+  "uk": "Макрос і значення для |import: |модуль.sign(…), модуль.vat_rate.",
+  "ru": "Макрос и значение для |import: |модуль.sign(…), модуль.vat_rate."
+ },
+ "files": [
+  {
+   "from": "mod.m.prml",
+   "to": "{{name}}.m.prml",
+   "open": true
+  }
+ ],
+ "strings": {
+  "en": {
+   "comment": "Definitions shared by documents: |import(\"…\")."
+  },
+  "uk": {
+   "comment": "Спільні визначення документів: |import(\"…\")."
+  },
+  "ru": {
+   "comment": "Общие определения документов: |import(\"…\")."
+  }
+ }
+}

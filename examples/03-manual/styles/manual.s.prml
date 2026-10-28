@@ -1,0 +1,18 @@
+---
+kind: styles
+defaults: {font: Liberation Sans, size: 10.5pt, language: uk-UA}
+paragraphs:
+  Warning: {parent: Body, bold: true, color: "#A00000", space_before: 2mm, space_after: 2mm}
+---
+# Style module of the manual: report profile (ДСТУ 3008), page styles,
+# headers and footers, paragraph variants generated in a loop.
+structure_profile("report")
+# A unit missing from the library dictionary (library 6).
+unit("GHz", "uk", symbol="ГГц", quantity="frequency", factor=1000000000)
+page_style("Landscape", parent="Portrait", orientation="landscape")
+header("Portrait", markup("|.Header: Модуль X300 — настанова з експлуатації"))
+footer("Portrait", markup("|.Footer: Сторінка |field.page"))
+spacing = {"0": 0*mm, "s": 1*mm, "m": 2*mm, "l": 4*mm, "xl": 6*mm}
+indent_step = 5*mm
+for b in ["0", "l"]:
+    paragraph_style(f"Body-b{b}", parent="Body", space_before=spacing[b])

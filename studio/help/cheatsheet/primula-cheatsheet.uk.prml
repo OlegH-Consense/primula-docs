@@ -1,0 +1,635 @@
+---
+doc:
+  title: "Primula v1.1-draft — шпаргалка"
+  subject: "Короткі й повні форми команд, аргументи"
+  language: uk-UA
+params:
+  edition: "27.10.2026"
+  decisions: 140
+styles: [std/styles/default, cheatsheet.s.prml]
+---
+|% The Primula cheat sheet in Ukrainian: a translation of primula-cheatsheet.ru.prml (the Russian source).
+|% Build: primula build primula-cheatsheet.uk.prml --no-project -o ../primula-cheatsheet.uk.odt --pdf
+|% Keep the markup, the code and the examples byte for byte; translate the text only.
+|def topbar(note):
+|table(style="CsBar", cols=["*", "*"], header=0):
+|:(border_bottom="1.2pt solid #0b5563", paragraph="CsTopTitle") Primula v1.1-draft · шпаргалка |&(paragraph="CsTopNote") |(note)
+|end table
+|enddef
+|footer("Portrait"):
+|table(style="CsBar", cols=["*", "18%"], header=0):
+|:(border_top="0.4pt solid #c3cbd1", paragraph="CsFoot") Короткі й повні форми команд, аргументи · за специфікацією v1.1-draft (рішення до |(decisions)) |&(paragraph="CsFootRight") редакція |(edition) · |field.page/|field.pages
+|end table
+|end footer
+|topbar("Синтаксис, форми команд, текст")
+
+|section(cols=2, gap="6mm", balance=False):
+|.CsH2: Файли та YAML-заголовок
+
+|table(cols=["16%", "16%", "36%", "32%"], header=1):
+|: kind |& суфікс |& підключення |& після заголовка
+|: |`{document} |& — |& збирається в ODT |& розмітка
+|: |`{fragment} |& .f |& |`{||include} |& розмітка
+|: |`{module} |& .m |& |`{||import} |& лише означення
+|: |`{styles} |& .s |& |`{styles:} проєкту/документа |& код (Python)
+|: |`{project} |& .p |& |`{project.p.prml} |& код (Python)
+|end table
+
+Вид: kind → суфікс → документ. UTF-8, LF, NFC. Заголовок — YAML, без виразів.
+
+|.CsPre:
+|verbatim(end="~~~"):
+---
+kind: document
+primula: {version: "1.1", stdlib: "1.1"}
+doc: {title: "Договір", language: uk-UA}
+params: {vat: true}       # |(vat)
+references: [contract]    # документи проєкту для |@
+---
+~~~
+|end.CsPre
+
+Ключі: |`{kind primula doc params structure styles references}; у |`{doc}: |`{title subject description creator organization language identifier revision status created modified keywords}.
+
+Ім'я секції = ім'я в тексті й коді: |`{doc:} → |`{||(doc.title)}. У проєкті — |`{doc_defaults}, |`{ref_documents}; колишні |`{document}/|`{documents} — помилка P1120.
+
+|.CsH2: Що йде після ||
+
+|table(cols=["34%", "66%"], header=0):
+|: |`{||||} |& літерал |`{||}
+|: |`{(} |& вираз |`{||(…)}
+|: літера |& довга команда |`{||ім'я} (крапка — модуль)
+|: пунктуація, символ |& коротка форма (праворуч)
+|: пробіл, кінець рядка, цифра |& помилка; також |`{||$ ||[ ||]}, |`{||–} (U+2013) замість |`{||—}
+|end table
+
+|.CsH2: Довга форма команди
+
+|.CsPre:
+|verbatim(end="~~~"):
+|ім'я(арг, k=v){тіло}     у рядку
+|ім'я(арг, k=v): текст    рядкова (першою в рядку)
+|ім'я(арг):               оточення
+  …
+|end ім'я
+~~~
+|end.CsPre
+
+|- пробілів між ім'ям, |`{(} і |`{|{} немає; аргументи — вирази ядра, можна в кілька рядків
+|- після команди йде літера → роздільник: |`{||seller||;ом}; буквальне |`{:} — |`{||seller||;:}
+|- тіло |`{|{…|}} рахується за балансом дужок; одиночна дужка — |`{|||{} |`{|||}}
+|- тіло макросу — параметр |`{body} (|`{||(body)}); динамічний виклик: |`{||(fn(x))}, |`{||call(fn, x)|{…|}}
+
+|.CsH2: Закриття оточень
+
+|table(cols=["40%", "60%"], header=0):
+|: |`{||end} |& найближче оточення (не if/for/def), без перевірки
+|: |`{||end>} |`{||end>>} |`{||end.Ім'я} |`{||end!} |& пункт рівня · стиль · блок |`{||!}, з перевіркою
+|: |`{||end ім'я} |& будь-яке іменоване: |`{||end table}, |`{||end clause}, |`{||end style}, |`{||end admonition}
+|: |`{||endif} |`{||endfor} |`{||enddef} |& керувальні конструкції
+|end table
+
+|.CsH2: Коротка ↔ повна форма (результат однаковий)
+
+|table(cols=["38%", "62%"], header=1):
+|: коротка |& повна
+|: |`{||*|{x|} ||/|{x|} ||_|{x|}} |& |`{||.Strong|{x|} ||.Emphasis|{x|} ||.Underline|{x|}}
+|: |`{||^|{x|} ||,|{x|} ||—|{x|}} |& |`{||.Superscript|{x|} ||.Subscript|{x|} ||.StrikeText|{x|}}
+|: |`{||`|{x|} ||?|{x|}} |& |`{||.Code|{x|} ||.Placeholder|{x|}}; |`{||end>} = |`{||end clause}
+|: |`{||<<< Назва} |& |`{||<(level=3) Назва}
+|: |`{||> текст} |& |`{||>: текст ||end>} — явна область
+|: |`{||!("note") текст} |& |`{||!("note"): … ||end!}
+|: |`{||: a ||& b} |& |`{||row: ||cell: a ||end cell … ||end row}
+|: |`{||if(c)|{…|} ||for(x in xs)|{…|}} |& |`{||if(c):…||endif  ||for(…):…||endfor}
+|end table
+
+|newcolumn
+
+|.CsH2: Короткі форми — повний перелік
+
+|table(cols=["34%", "66%"], header=0):
+|: |`{|||| |||{ |||} ||;} |& літерали |`{|| |{ |}} · порожній роздільник (межа команди)
+|: |`{||%} |& коментар до кінця рядка
+|: |`{||(вир)} |& значення виразу (як текст, не розмітка)
+|: |`{||\ ||~} |& розрив рядка · нерозривний пробіл
+|: |`{||*|{|} ||/|{|} ||_|{|}} |& жирний · курсив · підкреслений = |`{||.Strong|{|}} |`{||.Emphasis|{|}} |`{||.Underline|{|}}
+|: |`{||^|{|} ||,|{|} ||—|{|}} |& верхній · нижній індекс · закреслений
+|: |`{||`|{|} ||"|{|} ||?|{|}} |& моноширинний (|`{Code}) · лапки за мовою: uk, ru «…» „…“, en “…” ‘…’ · заповнювач чернетки (|`{--strict} — помилка; |`{placeholders("final")} — звичайний текст)
+|: |`{||.Ім'я|{…|} ||.(вир)|{…|}} |& символьний стиль
+|: |`{||.Ім'я: ||.(вир):} |& абзацний стиль, рядок або оточення; закриття |`{||end.Ім'я} |`{||end style}
+|: |`{||@("id")} |& перехресне посилання, режим — другим аргументом
+|: |`{||link("url")|{текст|}} |& зовнішнє гіперпосилання; без тіла текст = адреса; стиль |`{structure_styles(link=)}
+|: |`{||< … ||<<<<<< ||<(level=N)} |& заголовок рівня 1–6; |`{style="Ім'я"} — абзацний стиль заголовка
+|: |`{||> ||>> …} |& пункт, рівень = кількість |`{>}; закриття |`{||end>} |`{||end clause}; |`{style=} — стиль пункту
+|: |`{||- ||# ||-- ||#-} |& елемент списку: довжина — рівень, останній знак — тип (|`{-} маркер, |`{#} номер)
+|: |`{||!("вид")} |& попередження/примітка; закриття |`{||end!} |`{||end admonition}
+|: |`{||: ||& ||=(вир)} |& рядок = |`{||row} · клітинка = |`{||cell} · відкладена формула клітинки; |`{||: ||& Б} (з пробілом) — порожня перша клітинка
+|end table
+
+Будь-яка коротка форма приймає |`{(аргументи)}; у |`{||> ||- ||#} параметра |`{level} немає. Структурні (|`{||< ||> ||- ||# ||! ||:}) — лише на початку рядка.
+
+|.CsH2: Код, коментарі, буквальний текст
+
+|table(cols=["40%", "60%"], header=0):
+|: |`{||% текст} |& коментар рядка
+|: |`{||comment: … ||end} |& блоковий коментар (перевіряється лише баланс)
+|: |`{||verbatim: … ||end} |& буквальний текст
+|: |`{||verbatim(end="EOF"): … EOF} |& власний маркер кінця; порівнюється буквально
+|: |`{||code: … ||end} |& підмножина Python; у |`{.s}/|`{.p} — без обгортки, коментарі |`{#}
+|end table
+
+Відступ рядка, що відкриває блок, знімається з усього блоку; інший відступ — помилка.
+
+|.CsH2: Абзаци й текст
+
+|- порожній рядок — новий абзац; перехід рядка всередині абзацу — пробіл
+|- рядкова форма (пункт, елемент списку, рядок таблиці, заголовок) закінчується в кінці рядка; кілька абзаців — оточенням
+|- у |`{||(…)} не можна |`{None bool list record} (потрібен |`{str()}, |`{join_list}); розмітка з рядка — лише |`{markup(…)}
+|- дробові числа й дати — через |`{num}, |`{fmt_date}, інакше попередження
+
+|.CsH2: Умови, цикли, макроси, змінні
+
+|table(cols=["64%", "36%"], header=0):
+|: |`{||if(n > 3)|{…|}||elif(c)|{…|}||else|{…|}} |& у рядку
+|: |`{||for(x in xs)|{||(x) |}} |& у рядку
+|: |`{||if(c): … ||elif(c): … ||else: … ||endif} |&
+|: |`{||for(it in items): … ||endfor} |&
+|: |`{||def sign(name, role="директор"): …||(body)… ||enddef} |& макрос
+|: |`{||let(rate=20, export=True, override=False)} |& |`{||export(months=12)}, |`{||export("sign")}, |`{@export} над |`{def}
+|: |`{||>(when=has("wifi")) …} |& |`{when=} — на будь-якій блоковій команді та рядку таблиці
+|end table
+
+|`{has("x")} за |`{features: [x]}. |`{--review} вмикає всі варіанти з позначками. |`{||let} / |`{||code:} усередині |`{||if} верхнього рівня — помилка.
+
+|end section
+
+|newpage
+
+|topbar("Структура, посилання, таблиці, підключення")
+
+|section(cols=2, gap="6mm", balance=False):
+|.CsH2: Заголовки й пункти
+
+|table(cols=["30%", "70%"], header=1):
+|: форма |& аргументи
+|: |`{||< … ||<<<<<<} |& |`{id number level toc toc_title toc_level style when}; |`{||<(number=False)} — без номера; |`{level=} або кількість |`{<}, не обидва
+|: |`{||> ||>>} |& |`{id continues block style toc toc_title toc_level when}; |`{||>(continues="id")} — продовжити нумерацію
+|: |`{||>(…): … ||end>} |& пункт із кількох абзаців (явна область)
+|end table
+
+Неявна область пункту закінчується: абзацом, наступним |`{||>} того самого/вищого рівня, |`{||<}, |`{||page section appendix scope document toc list_of header footer}. Списки, таблиці, |`{||!}, рисунки, порожні рядки — усередині пункту.
+
+|.CsH2: Списки
+
+|.CsPre:
+|verbatim(end="~~~"):
+|- маркер            |# номер
+|-- 2-й рівень       |#- маркер під номером
+|#(id="st", start=3) іменований; |#(continues="st")
+|list("Стиль")       стиль найближчого списку
+|list("Стиль"): … |end list   (порожні рядки всередині)
+~~~
+|end.CsPre
+
+Не можна змішувати |`{-} і |`{#} на одному рівні й пропускати рівень.
+
+|.CsH2: Стилі, типові значення, блоки
+
+|table(cols=["46%", "54%"], header=0):
+|: |`{||.Ім'я|{…|} ||.Ім'я: …} |& символьний / абзацний; |`{||.(вир)} — ім'я обчислюється
+|: |`{||.Body(before="l", after="s", indent=2)} |& параметри на місці: ступінь шкали spacing або довжина
+|: |`{||.(Indented("Clause",2)):} |& похідний стиль (|`{derive})
+|: |`{||set(paragraph=, list=, table=, heading=, clause=, …)} |& стилі конструкцій до кінця оточення; |`{list=None} — скидання
+|: |`{||block("Ім'я"): … ||end block} |& стиль групи; або |`{block=} у |`{||> ||! ||table ||figure ||appendix}
+|: |`{||fmt(color="#C00000", bold=True)|{…|}} |& пряме форматування (попередження)
+|end table
+
+|.CsH2: Посилання ||@
+
+|table(cols=["42%", "58%"], header=1):
+|: запис |& результат
+|: |`{||@("id")} |& номер «1.2»
+|: |`{||@("id","label")} |& «п. 1.2», «розд. 2», «рис. 3», «табл. 1», «дод. А»
+|: |`{||@("id","title")} |& назва / текст першого абзацу пункту
+|: |`{||@("id","page")} |& номер сторінки (поле Writer)
+|: |`{||@("id","label",case="loc")} |& «розділі 2»; відмінки |`{nom gen dat acc ins loc}
+|end table
+
+|`{id=} (допустимі |`{-} |`{.}; унікальний) — у заголовка, пункту, рисунка, таблиці, додатка, виноски, розділу, |`{||!}; у зведеному документі |`{act1:items}.
+
+|*{Інший документ проєкту:} документ із |`{references: [contract]} шукає ID, якого в ньому немає, у документах |`{ref_documents} проєкту (текст — з реєстру |`{*.refs.json}); посилання — текст без гіперпосилання, |`{page} — помилка.
+
+|.CsH2: Додатки й області нумерації
+
+|.CsPre:
+|verbatim(end="~~~"):
+|appendix(id="a1", title="Специфікація",
+  subtitle="до Договору", number=3 | letter="Б",
+  page="Landscape", block="…"): … |end appendix
+|scope("name", prefix="А"): … |end scope
+~~~
+|end.CsPre
+
+Нова сторінка; «Додаток 1» (business) / «ДОДАТОК А» (report); власні лічильники: «Таблиця А.1». Ім'я |`{document} зарезервоване. Налаштування — |`{appendices(designation=, letters=, title_format="|{designation|} |{title|}", toc=)}; додаток — заголовок структури (навігатор Writer, закладки PDF).
+
+|.CsH2: Підключення файлів
+
+|table(cols=["46%", "54%"], header=0):
+|: |`{||include("f.f.prml", part=, ns=, rename=|{|}, level_shift=n, k=v)} |& фрагмент; |`{path part key} відомі під час побудови; |`{level_shift} 0–5 — зсув заголовків униз; |`{ns}/|`{rename} — проти конфліктів
+|: |`{||include(key="k")} |& |`{||part("x"):…||end part}
+|: |`{||import("lib/b")} |& модуль: |`{b.sign()} · без префікса |`{||import("lib/b","a","b")} · псевдонім |`{alias="x"}; |`{_ім'я} не експортується
+|: |`{||document("c.prml", scope=, params=|{|}, page=, level_shift=)} |& частина зведеного ODT; посилання |`{||@("c:id")}
+|end table
+
+Шлях — від файлу, не вище кореня проєкту; |`{.prml} можна пропустити. Ключі карти — |`{файл#частина} лише для |`{||include}.
+
+|newcolumn
+
+|.CsH2: Таблиця ||table(…): … ||end table
+
+|table(cols=["42%", "58%"], header=1):
+|: параметр |& значення · типово
+|: |`{cols} |& список стовпців; типово рівні (або |`{cols} стилю таблиці)
+|: |`{style width align} |& стиль · |`{"100%"} · |`{left center right}
+|: |`{header footer} |& рядків шапки (1) · підсумків (0)
+|: |`{repeat_header keep_rows may_break} |& усі |`{True}
+|: |`{frame rules} |& рамка · |`{all rows cols none}
+|: |`{caption id} |& підпис із номером · ціль посилання
+|: |`{block when live} |& стиль блоку · умова · |`{live=True} — формули Writer
+|: |`{data fields titles} |& таблиця зі списку записів: |`{||table(data=items, fields=[…], titles=[…])}
+|end table
+
+Усередині допустимі лише рядки, |`{||caption:}, |`{||for||if}, |`{||code:}, |`{||include}, коментарі. Підпис із розміткою: |`{||caption: … ||end caption}. Відступи до/після таблиці — |`{space_before}/|`{space_after} стилю (у |`{AdmonitionTable} 3 мм).
+
+|.CsH2: Стовпці cols=[…]
+
+|table(cols=["52%", "48%"], header=0):
+|: |`{"40mm" "30%"} |& фіксована · частка таблиці
+|: |`{"*" "2*"} |& залишок, пропорційно вазі
+|: |`{"auto"} |& за вмістом
+|: |`{"20mm..60mm" "20mm.." "..60mm"} |& у межах / лише нижня / верхня межа
+|: |`{col(ширина, id=, align=, valign=, type=, currency=, digits=, paragraph=, min=, max=)} |& |`{type="decimal||money||datetime"}; |`{currency="UAH"} → «грн»
+|end table
+
+|.CsH2: Рядки й клітинки
+
+|.CsPre:
+|verbatim(end="~~~"):
+|: Назва |& К-сть |&(span=2, align="right") Разом
+|:(keep=True, when=has("wifi")) Умовний рядок |& 1
+|:|&(span=3) Разом       аргументи 1-ї клітинки
+|: |& Б                  порожня перша клітинка
+|row:   |cell(rows=2, valign="top"): абзаци, списки,
+  вкладені таблиці |end cell |end row     розгорнуто
+~~~
+|end.CsPre
+
+|table(cols=["14%", "86%"], header=0):
+|: клітинка |& |`{span=N} гориз. · |`{rows=N} верт. · |`{align valign padding background paragraph border border_top border_bottom border_left border_right}
+|: рядок |& |`{height min_height keep when} + властивості клітинки
+|end table
+
+Каскад: таблиця → стовпець → рядок → клітинка. Клітинок у рядку = стовпців (з урахуванням об'єднань); порожня — |`{||&}. Рамка: |`{"0.5pt solid #000000"} (|`{solid dashed dotted double none}).
+
+|.CsH2: Формули клітинок ||=(…)
+
+|table(cols=["42%", "58%"], header=0):
+|: |`{this_row(c) cell(r,c)} |& значення в поточному рядку · клітинка (з 1; стовпець — номер або id)
+|: |`{column(c, rows=…) body_rows()} |& значення стовпця · рядки між шапкою й підсумками
+|: |`{sum min max avg count} |& агрегати; |`{None} пропускається
+|end table
+
+|.CsPre:
+|verbatim(end="~~~"):
+|:|&(span=2, align="right") Разом
+  |& |=(sum(column("sum", rows=body_rows())))
+~~~
+|end.CsPre
+
+|.CsH2: Підписи, зміст, виноски, терміни
+
+|.CsPre:
+|verbatim(end="~~~"):
+|toc(max_level=3, title="ЗМІСТ", page_break=True)
+|list_of("figure"|"table"|"abbr"|"index", title="…")
+|footnote(id="fn"){текст}  |endnote{текст}  |@("fn")
+|abbr("ПЗ","розшифрування"[, show=False][, text=])
+|abbr("ПЗ")      |index("напруга", sub="живлення")
+|toc_entry("Текст", level=1)   рядок змісту не із заголовка
+~~~
+|end.CsPre
+
+До змісту не входять пункти |`{||>}; |`{toc=True} вмикає пункт або глибший заголовок; |`{toc=False}, |`{toc_title=}, |`{toc_level=} — у |`{||<}, |`{||>}, |`{||appendix}.
+
+|.CsH2: Попередження ||!
+
+|.CsPre:
+|verbatim(end="~~~"):
+|!("warning") Один рядок.
+|!("danger", hazard="Висока напруга", consequence="…",
+   symbol="assets/w012.svg", id=, block=, when=):
+  …абзаци, списки…
+|end!
+~~~
+|end.CsPre
+
+Види: |`{danger} НЕБЕЗПЕКА · |`{warning} ПОПЕРЕДЖЕННЯ · |`{caution} ОБЕРЕЖНО · |`{notice} УВАГА · |`{note} Примітка · |`{tip} Порада. |`{hazard} потрібен у |`{danger} / |`{warning}.
+
+|end section
+
+|newpage
+
+|topbar("Сторінки, графіка, проєкт, стилі, ядро, бібліотека, CLI")
+
+|section(cols=2, gap="6mm", balance=False):
+|.CsH2: Сторінки, розриви, колонтитули
+
+|.CsPre:
+|verbatim(end="~~~"):
+|page("Appendix", restart=1, number_format="i")
+|page("Landscape"): … |end page
+|newpage      |newcolumn
+|section(cols=2, gap="6mm", rule="0.5pt solid",
+  balance=True, widths=["60%","40%"], id=):
+  … |end section
+|header("Portrait", which="all|first|left|right"):
+  …розмітка… |end header    (|footer — так само)
+~~~
+|end.CsPre
+
+Поля: |`{||field.page ||field.pages ||field.chapter(level=1) ||field.title}. |`{page_style(…)}: |`{parent size} (|`{A3 A4 A5 Letter} або |`{(w,h)}) |`{orientation margin} (верх, право, низ, ліво) |`{cols col_gap col_rule header_gap header_min_height footer_gap footer_min_height number_format restart next background watermark mirror}.
+
+|.CsH2: Паралельні потоки (§7.7)
+
+|.CsPre:
+|verbatim(end="~~~"):
+|parallel(langs=["uk","en"], gap="8mm", rule="0.3pt solid",
+  parity="structure|translation|none"):
+|segment(id="s") |track("uk"){…} |track("en"){…}
+|segment(id="t"):  |track("uk"): …  |track("en", rev=, status=): …
+  |end segment     |segment(span="all"): … |end segment
+|end parallel      track("note", width="30%", numbered=False,
+  optional=True, primary=False, title="…", lang="en")
+~~~
+|end.CsPre
+
+ID — |`{uk.id}; |`{||toc(track="en")}; |`{primula parallel F --stub||--stamp --track en [--segment s --status reviewed]||--check-status reviewed}.
+
+|.CsH2: Графіка
+
+|.CsPre:
+|verbatim(end="~~~"):
+|img("logo.png", height="8mm")   |img(key="logo")
+|img(svg=bar(30))   |figure(chart(d)): …   # SVG з коду
+|img(svg=load_text("img/знак.svg"))         # SVG з файлу
+|figure("scheme.svg", width="120mm", id="fig-1"):
+  Підпис рисунка |end figure
+|frame(rel="page", x="120mm", y="25mm", width="70mm",
+  wrap="through", layer="front"): … |end frame
+|watermark("ПРОЄКТ", pages=["Portrait"], angle=45,
+  color="#C8C8C8", size=None, opacity=50, font=None)
+~~~
+|end.CsPre
+
+|table(cols=["17%", "83%"], header=0):
+|: place |& |`{inline left center right inside outside}; |`{valign top middle bottom}; |`{x y}
+|: rel anchor |& |`{para area page} · |`{char para page}
+|: wrap layer |& |`{none side both auto through contour} · |`{front back}
+|: інше |& |`{gap width height rotate mirror crop opacity border padding style alt}
+|end table
+
+PNG, JPEG, SVG; шляхи від файлу, усередині проєкту. Одна з форм: шлях, |`{key=}, |`{svg=} або значення |`{img(…)}. Властивості стилю фрейму — типові значення аргументів |`{||frame}.
+
+|.CsH2: Стандартна бібліотека
+
+|table(cols=["15%", "85%"], header=0):
+|: числа |& |`{num(x,digits=) percent round_to(x,step) ceil_to floor_to round_money}
+|: гроші |& |`{money(x,"UAH") money_words money_full(kop="digits||words", cap=, currency_style="short||full") vat(net,rate) with_vat vat_in without_vat split(total,[30,70])}
+|: словами |& |`{words(n, gender="m||f||n", case=) ordinal date_words}
+|: дати |& |`{add_months add_years weeks hours minutes fmt_date(dt,"short||long||contract|||{d|} |{month_gen|}") fmt_time fmt_datetime weekday month_name workdays(d,n,calendar=) is_workday}
+|: одиниці |& |`{qty(x,"V",tol=) qty_range(a,b,u) convert(x,"kW","W")}
+|: текст |& |`{plural(n,"день","дні","днів",frac=) join_list(xs,last=,sep=) cap translit sort_key nbsp_short}; увесь текст — |`{typography(nbsp_short=True)}
+|: дані |& |`{group_by sum_by distinct}; |`{||import("std/math")}: |`{sqrt exp log log10 sin cos tan atan2 pi e floor ceil}
+|: QR |& |`{qr_svg(data, ecc=, size=, circle=) qr_matrix base64url(text, encoding=)}
+|end table
+
+Мова — |`{lang="uk||ru||en"}. |`{float} у грошових функціях — помилка (потрібен |`{dec()}). Ставку ПДВ передають явно.
+
+|.CsH2: Часті помилки
+
+|- пробіл, цифра, кінець рядка після |`{||}; |`{||–} (U+2013) замість |`{||—}
+|- |`{||sellerом} читається як команда |`{sellerом} — потрібно |`{||seller||;ом}
+|- |`{||end} не закриває |`{||if||for||def} — потрібні |`{||endif||endfor||enddef}; |`{||code:} — лише рядком |`{||end}
+|- кількість |`{<} і |`{level=} разом; пропуск рівня заголовка чи списку
+|- у |`{when=} рядок замість логічного значення; |`{||let} в |`{||if} верхнього рівня
+|- ключ |`{lines} і |`{primula: |{version: "1.0"|}} — помилки (режим рядків вилучено)
+|- |`{document:}/|`{documents:} у заголовку — помилка P1120 (тепер |`{doc}, |`{doc_defaults}, |`{ref_documents})
+
+|newcolumn
+
+|.CsH2: Проєкт project.p.prml
+
+|.CsPre:
+|verbatim(end="~~~"):
+---
+kind: project
+name: "Договори 2026"    language: uk-UA
+doc_defaults: {organization: "ТОВ «Постачальник»"}
+styles: [styles/business.s.prml]
+on_conflict: error    build_date: 2026-10-12
+params: {city: "м. Харків"}    keys: {logo: a/l.svg}
+ref_documents: {contract: c.prml}
+extends: ../../project.p.prml
+limits: {time: 20, recursion: 500, size: 10_000_000}
+targets:
+  - {source: c.prml, output: out/c.odt, pdf: true}
+---
+for row in load_csv("data/acts.csv"):
+    build("act.prml", params=row,
+          output=f"out/{row.no}.odt")
+~~~
+|end.CsPre
+
+Пріоритет параметрів: ціль → документ → проєкт. |`{batch_mode()} — лише в коді проєкту. Дані: |`{load_csv(шлях, types=|{…|}, sep=)} |`{load_yaml} |`{load_json} |`{load_ods} |`{load_xlsx} |`{load_text}. |`{extends:} — проєкт успадковує базовий (параметри, ключі, |`{ref_documents}, |`{doc_defaults}, стилі, код; цілі не успадковуються). |`{doc_defaults} — типові метадані ODT; документ замінює їх поштучно.
+
+|.CsH2: Стилі (модуль .s.prml)
+
+|table(cols=["14%", "86%"], header=0):
+|: групи YAML |& |`{paragraphs characters blocks tables lists frames pages} = функції |`{paragraph_style character_style block_style table_style list_style frame_style page_style}; успадкування |`{parent}
+|: абзац |& |`{font size bold italic color background underline strike language align line_height space_before space_after left right first_line keep_with_next keep_together page_break_before widows orphans}
+|: таблиця |& |`{width align frame rules border padding background header_* footer_* paragraph repeat_header keep_rows may_break space_before space_after cols}
+|: список |& |`{paragraph levels:|{1:|{type format prefix suffix bullet left hanging start letters|}|}}
+|end table
+
+Налаштування: |`{structure_profile("business||report")}, |`{structure_styles(link=, clause_number=, heading_number=, …)}, |`{numbering}, |`{captions}, |`{appendices}, |`{ref_labels}, |`{footnotes}, |`{quotes}, |`{abbreviations}, |`{admonition_words}, |`{placeholders("mark||final")}, |`{typography(…)}, |`{derive(base, name=, **props)}. Шари: проєкт → |`{--style} → |`{styles} документа → код документа; |`{extends: std/styles/business} — основа модуля, шар перед ним. Набори комплекту |`{std/styles/…}: |`{business letter technical report compact} (основа |`{default}).
+
+|.CsH2: Обчислювальне ядро
+
+|- типи: |`{None bool decimal float str list tuple dict record datetime length content function}; ціле — |`{decimal}; |`{2.20} → «2,20»; |`{1.5e3} — |`{float}; |`{round} — від нуля
+|- довжини: |`{10*mm}, |`{"10mm"} (|`{mm cm pt inch}); дати: |`{date(2026,10,12)}, |`{dt + 5} — доби
+|- є: |`{def while for if}, генератори, f-рядки, |`{*args **kw}; |*{немає:} |`{class import from try except raise with global del lambda yield async await := match}
+|- функції: |`{len range enumerate zip sorted reversed min max sum any all abs round int float dec str bool list tuple dict record date datetime type getattr hasattr repr fail debug markup build_date}; методи |`{str list dict} як у Python
+|- верхній рівень: означення (ліниві, незмінні) і дії; ліміти |`{time} 20 с · |`{recursion} 500 · |`{size} 10⁷
+|- відмінності від Python докладно — на с. 4
+
+|.CsH2: Командний рядок
+
+|.CsPre:
+|verbatim(end="~~~"):
+primula build файл [-o out.odt] [--pdf [f.pdf]] [--report r.json]
+primula check файл [--dump-project | --dump-structure --dump-styles]
+              [--overlay ФАЙЛ=БУФЕР]
+primula export файл --to md|html|docx [-o вихід] [--pandoc-arg А]
+primula commands [--format json] [--functions | --header]
+primula console [файл] [--json]
+~~~
+|end.CsPre
+
+|`{--project F} |`{--no-project} |`{--strict} |`{--review} |`{--build-date YYYY-MM-DD} |`{--style F} (повторюється) |`{--param ІМ'Я=ЗНАЧ} (повторюється) |`{--format text||json} |`{--lang} |`{--timeout СЕК} |`{--unsafe} |`{--embed-sources} |`{--no-embed-report}. Код повернення: 0 успіх, 2 помилка. Діагностика |`{P0…P9}: CLI/введення-виведення · синтаксис · імена/ядро · стилі · структура/посилання · таблиці · сторінки/графіка · модулі/проєкт · ODF · техдок.
+
+|`{--dump-*} і |`{commands} дають JSON для редакторів і Studio; |`{console} — проба коду й функцій бібліотеки (|`{:help ім'я}, |`{:functions}, |`{:vars}, |`{:reset}, |`{:context}, |`{:quit}).
+
+|end section
+
+|newpage
+
+|topbar("Код: діалект Python (§12) — відмінності від Python")
+
+|section(cols=2, gap="6mm", balance=False):
+|.CsH2: Числа: decimal замість int і float
+
+Ціле й число з крапкою без експоненти — |`{decimal}: точне, до 64 значущих цифр, пам'ятає кількість знаків. Типу |`{int} немає: |`{type(5) == "decimal"}. |`{float} — лише літерал з експонентою |`{1.5e3} або |`{float(x)}; |`{decimal} з |`{float} → |`{float}.
+
+|table(cols=["36%", "30%", "34%"], header=1):
+|: Вираз |& Primula |& Python 3
+|: |`{0.1 + 0.2 == 0.3} |& |`{True} |& |`{False}
+|: |`{2.20 * 3} |& |`{6.60} |& |`{6.6000000000000005}
+|: |`{7 / 2} |& |`{3.5} decimal |& |`{3.5} float
+|: |`{1 / 3} |& 28 значущих цифр |& 16–17 цифр
+|: |`{round(2.5)}, |`{round(-2.5)} |& |`{3}, |`{-3} |& |`{2}, |`{-2}
+|: |`{round(2.675e0, 2)} |& |`{2.68} |& |`{2.67}
+|: |`{-7 // 2}, |`{-7 % 2} |& |`{-4}, |`{1} |& те саме
+|: |`{2 ** -1} |& |`{0.5} decimal |& |`{0.5} float
+|: |`{10 ** 70} |& P2309 (>64 цифр) |& ціле
+|: |`{True + 1} |& P2304 |& |`{2}
+|: |`{[1, 2][2.0 - 1]} |& |`{2} |& TypeError
+|end table
+
+Округлення одне — половина від нуля, |`{float} — за десятковим записом. Гроші — лише |`{decimal} (|`{dec("0.20")}); грошові функції |`{float} не приймають (P2703). У текст — |`{num money percent}, не |`{f"{x:,.2f}"} (формат Python англійський).
+
+|.CsH2: Рядки
+
+|- символи Unicode, NFC: |`{len("Київ") == 4}, зрізи й ітерація за символами
+|- методи — лише: |`{split rsplit splitlines join strip lstrip rstrip replace startswith endswith find rfind count upper lower capitalize title isdigit isalpha isspace zfill format}; інші (|`{center partition encode}) — P2313
+|- f-рядки за синтаксисом 3.11: усередині |`{|{…|}} немає лапок того самого виду (P1208) — |`{f"|{d['k']|}"}
+|- |`{"|{0.name|}".format(r)} — P2330; поле запису — |`{"|{0[name]|}"}; |`{"%s: %d" % (a, n)} можна
+|- |`{"x" * 2.5}, індекс |`{0.5} — P2322 (потрібне ціле значення)
+
+|.CsH2: Списки, кортежі, словники
+
+|- генератори списків і словників, розпакування |`{a, *b = xs} — як у Python
+|- множин немає: |`{|{1, 2|}} — P2101; унікальність — словник або |`{not in}
+|- операторів |`{|| & ^ << >> ~} немає; злиття словників — |`{|{**a, **b|}}
+|- |`{is} / |`{is not} — лише з |`{None} (P2103)
+|- ключ словника — незмінне: |`{None bool decimal str datetime}, кортеж і запис із них; |`{float} і довжина — P2317; |`{5} і |`{5.00} — один ключ
+|- |`{range()}, |`{reversed()} повертають список; |`{key=} — звичайний |`{def}, |`{lambda} немає
+|- методи списку: |`{append extend insert pop remove index count sort reverse}; словника: |`{get keys values items update pop setdefault}
+|- |`{[1] + (2,)} — P2301, як TypeError у Python
+
+|.CsH2: Записи record
+
+|.CsPre:
+|verbatim(end="~~~"):
+r = record(назва="Папір", кількість=3)
+r.назва   r["кількість"]   hasattr(r, "назва")
+getattr(r, "ціна", 0)      r.replace(кількість=4)
+dict(r)   record(**d)
+~~~
+|end.CsPre
+
+Незмінний, |*{не послідовність}: |`{"x" in r}, |`{len(r)}, ітерація — помилки (у |`{namedtuple} |`{in} шукає серед значень!). Немає поля — P2314. Записи — параметри YAML, дані проєкту, |`{load_csv/yaml/json}; YAML: |`{15.00} — decimal, |`{2026-10-12} — datetime. Словник лишається словником: |`{d.a} — помилка.
+
+|.CsH2: Чого немає — що замість
+
+|table(cols=["38%", "62%"], header=0):
+|: |`{import}, |`{from} |& |`{||import("std/math")}, модулі |`{.m.prml}
+|: |`{class} |& |`{record(…)} і функції
+|: |`{try except raise} |& помилка зупиняє збирання; |`{fail("…")}, |`{getattr(…, default)}, |`{d.get}
+|: |`{print open with} |& |`{||(x)}, |`{debug(x)} — у звіт; |`{load_*}
+|: |`{lambda yield async} |& |`{def}, функція, що будує список
+|: |`{global nonlocal del} |& нове ім'я
+|: |`{for … else}, анотації |& прапорець, |`{any()}; без типів
+|: |`{x.__class__} |& |`{type(x)} → рядок |`{"decimal"}
+|: годинник, |`{random} |& |`{build_date()} (|`{--build-date}); випадкових чисел немає
+|end table
+
+|newcolumn
+
+|.CsH2: Дати й довжини
+
+|table(cols=["44%", "56%"], header=1):
+|: Вираз |& Primula (Python)
+|: |`{date(2026,10,12) + 30} |& |`{date("2026-11-11")} (TypeError, потрібен timedelta)
+|: |`{d2 - d1} |& доби, |`{decimal}, бувають дробові (timedelta)
+|: |`{d + hours(36)}, |`{weeks(2)} |& кількість діб
+|: |`{add_months(date(2026,1,31), 1)} |& |`{2026-02-28}
+|: |`{d.weekday} |& атрибут 1–7, пн = 1 (метод 0–6)
+|: |`{str(dt)} |& |`{2026-10-12T14:30:00} (з |`{T})
+|: |`{float(d)} |& доби від 30.12.1899
+|: |`{10*mm + 1*cm} |& |`{length("20mm")} — одиниця лівого
+|: |`{72*pt == inch}, |`{(210*mm).cm} |& |`{True} (допуск 0,001 мм), |`{21}
+|end table
+
+Один тип |`{datetime} без |`{import}, точність — секунда, поясів немає. Довжини: |`{mm cm pt inch} (не |`{in}); |`{length * length} — P2301. У текст — |`{fmt_date(d, "contract")}.
+
+|.CsH2: Глобальні імена: ліниві, незмінні
+
+|.CsPre:
+|verbatim(end="~~~"):
+total = price * qty      # вище за означення — можна
+price = 250.00
+qty = 4
+rate = 20 if vat else 0  # не: if vat: rate = 20
+rows = [f(x) for x in xs]  # не: rows.append(…) у циклі
+def build(): …           # або функція, що повертає список
+~~~
+|end.CsPre
+
+Означення (|`{x = …}, |`{a, b = …}, |`{def}, |`{||let}, параметри заголовка) збираються з усього файлу, обчислюються під час першого звернення й заморожуються; порядок у тексті не важливий. Непрочитане означення не обчислюється — і його помилки не видно. Інші оператори верхнього рівня (|`{for if} виклики) — дії: виконуються після збирання, їхні імена локальні.
+
+|table(cols=["40%", "60%"], header=0):
+|: |`{x = 1} … |`{x = 2} |& P2203; параметр заголовка в коді — теж
+|: |`{x += 1} верхнього рівня |& P2105
+|: |`{a = b + 1; b = a + 1} |& P2204 цикл
+|: |`{for r in xs: rows.append(r)} |& P2318 заморожений
+|: |`{for r in xs: total += r} |& P2202 + P2501
+|end table
+
+|.CsH2: Функції
+
+|`{def} з типовими значеннями, |`{*args **kw}, |`{*, b}, рекурсія, вкладені функції й замикання, |`{while}; усередині функції змінні змінювані. Немає |`{lambda yield global nonlocal}. Типове значення заморожується: |`{def f(x, acc=[])} — P2318 під час |`{append}; глобальний список, переданий у функцію, — теж заморожений. Ліміти замість |`{RecursionError}: глибина 500 (P2402), 20 с (P2406), 10⁷ елементів.
+
+|.CsH2: Модулі й фрагменти
+
+|.CsPre:
+|verbatim(end="~~~"):
+|import("lib/ціни")              ціни.з_пдв(x)  |ціни.macro(…)
+|import("lib/ціни", "з_пдв")     з_пдв(x)
+|import("lib/ціни", alias="ц")   ц.з_пдв(x)
+# у фрагменті (.f.prml): імена закриті, назовні — явно
+@export                          # функція під своїм ім'ям
+def знижка(сума, p): …
+@export(name="g")                # під ім'ям g
+def _g(x): …
+|export("підпис")  |let(x=1, export=True)  |export(y=2)
+|include("f", ns="f")   # експорт у f.*; rename={…}
+~~~
+|end.CsPre
+
+Модуль: відкриті всі імена без |`{_}, експорт не потрібен; |`{модуль._ім'я} — помилка. |`{||import} документа видно у фрагментах, |`{||import} фрагмента — лише в ньому; шлях — від файлу. |`{@export} — єдиний декоратор: поза фрагментом P2610, над вкладеною функцією P2106, у модулі — P2638.
+
+|.CsH2: Значення в тексті
+
+Друку немає: лише |`{||(x)}. Вставляються |`{str}, числа, дати, |`{content}; |`{None bool list dict record} — P2603 (не «None»): |`{||(x or "—")}, |`{join_list(xs)}, |`{str(x)}. Неоформлений дріб або дата — P2604. |`{markup("…") + "…"} — P2301: спершу рядки, потім |`{markup()}.
+
+|end section

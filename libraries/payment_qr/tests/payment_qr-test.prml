@@ -1,0 +1,71 @@
+---
+doc: {title: "payment_qr: перевірка", language: uk-UA}
+---
+|% Test document of the library: the structures of the examples of the NBU rules
+|% (resolution No 97 of 19.08.2025, appendices 3 and 4) and the reasons for wrong
+|% data. expect() calls fail() at the first difference.
+|import("../payment_qr")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+
+# Appendix 3, example 1 (format 002). The IBAN of the example has a wrong check
+# number, so the check is switched off; the rules give the link with bank.gov.ua/qr/.
+EXAMPLE_002 = ("BCD\n002\n2\nUCT\n\nТОВ “Стоматологія”\nUA783226690000026005012107358\nUAH1034.28\n40723824\n\n\n"
+               + "Стоматологічні послуги\n")
+expect("payload 002", payment_qr.payload("ТОВ “Стоматологія”", "UA783226690000026005012107358", "40723824",
+                                         "Стоматологічні послуги", amount=dec("1034.28"), category="",
+                                         version="002", check_iban=False), EXAMPLE_002)
+expect("link 002", payment_qr.link("ТОВ “Стоматологія”", "UA783226690000026005012107358", "40723824",
+                                   "Стоматологічні послуги", amount=dec("1034.28"), category="", version="002",
+                                   check_iban=False),
+       "https://qr.bank.gov.ua/QkNECjAwMgoyClVDVAoK0s7CIJPR8u7s4PLu6-7js_-UClVBNzgzMjI2NjkwMDAwMDI2MDA1MDEyMTA3MzU4"
+       + "ClVBSDEwMzQuMjgKNDA3MjM4MjQKCgrR8u7s4PLu6-7js_ftsyDv7vHr8-PoCg")
+
+# Appendix 4, example 2 (format 003, instant P2P transfer); the example writes "RFU"
+# into the reserved field 17, the library leaves it empty.
+EXAMPLE_003 = ("BCD\n003\n2\nICT\n\nПетренко Роман Петрович\nUA906543210000000260323012024\nUAH63\n40121425\n"
+               + "MP2P/MP2B\nDR-5678-12\nЗа каву.\n"
+               + "?<UltmtCdtr><Nm>Іванов Іван Іванович</Nm><Id><PrvtId>2944202757</PrvtId></Id></UltmtCdtr>\n"
+               + "FEFF\n250921120000\n250221120000\n")
+expect("payload 003", payment_qr.payload(
+    "Петренко Роман Петрович", "UA906543210000000260323012024", "40121425", "За каву.", amount=63,
+    category="MP2P/MP2B", function="ICT", reference="DR-5678-12",
+    display="?<UltmtCdtr><Nm>Іванов Іван Іванович</Nm><Id><PrvtId>2944202757</PrvtId></Id></UltmtCdtr>",
+    editable=["amount"], valid_until=datetime(2025, 9, 21, 12, 0, 0), created=datetime(2025, 2, 21, 12, 0, 0)),
+    EXAMPLE_003)
+
+# Amounts: the shortest form, two digits of kopecks or none.
+IBAN = "UA213223130000026007233566001"
+expect("amount 3.00", payment_qr.payload("ФОП Приклад", IBAN, "1234567890", "Послуги", amount=dec("3.00")).split("\n")[7],
+       "UAH3")
+expect("amount 12.5", payment_qr.payload("ФОП Приклад", IBAN, "1234567890", "Послуги", amount=dec("12.5")).split("\n")[7],
+       "UAH12.50")
+expect("no amount", payment_qr.payload("ФОП Приклад", IBAN, "1234567890", "Послуги").split("\n")[7], "")
+expect("apostrophe", payment_qr.payload("Марʼяна", IBAN, "1234567890", "Послуги").split("\n")[5], "Мар’яна")
+
+# Reasons for wrong data.
+expect("wrong iban", payment_qr.problem("ТОВ", "UA223223130000026007233566001", "12345678", "Оплата"),
+       "рахунок «UA223223130000026007233566001» не є правильним IBAN UA")
+expect("no purpose", payment_qr.problem("ТОВ", IBAN, "12345678", " "), "призначення платежу не вказане")
+expect("kopecks", payment_qr.problem("ТОВ", IBAN, "12345678", "Оплата", amount=dec("1.005")),
+       "сума має містити не більше двох знаків після крапки")
+expect("char", payment_qr.problem("ТОВ ☺", IBAN, "12345678", "Оплата"), "отримувач: недопустимий знак «☺»")
+expect("category", payment_qr.problem("ТОВ", IBAN, "12345678", "Оплата", category="SUPP"),
+       "категорія / ціль «SUPP» має бути у формі CCCC/PPPP (коди ISO 20022)")
+expect("too big", payment_qr.problem("ТОВ", IBAN, "12345678", "П" * 420, display="Д" * 140, reference="R" * 35),
+       "дані завеликі для QR-коду: 917 байтів, можна не більше 507")
+expect("ICT in 002", payment_qr.problem("ТОВ", IBAN, "12345678", "Оплата", function="ICT", category="", version="002"),
+       "функція має бути одна з: UCT")
+
+# The image: version 10 for a short link, the white circle of 17 modules, the sign.
+IMAGE = payment_qr.svg("ФОП Приклад", IBAN, "1234567890", "Оплата за рахунком № 17", amount=dec("12500.00"))
+expect("svg size", IMAGE.startswith('<svg xmlns="http://www.w3.org/2000/svg" width="32.5mm" height="32.5mm"'), True)
+expect("svg circle", '<circle cx="32.5" cy="32.5" r="8.5" fill="#fff"/>' in IMAGE, True)
+expect("svg sign", "M226.8,197.6" in IMAGE, True)
+|end
+|< payment_qr |(payment_qr.VERSION)
+
+|img(svg=IMAGE)

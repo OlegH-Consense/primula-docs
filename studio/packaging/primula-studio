@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Installed launcher of Primula Studio (runtime package, stage 14.11).
+# The installer copies it to PREFIX/bin. Studio finds its translations through
+# PRIMULA_STUDIO_DATA_DIR and the translator as `primula` in PATH: PREFIX/bin
+# goes first, also when Studio is started from the desktop menu.
+set -euo pipefail
+prefix="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export PRIMULA_STUDIO_DATA_DIR="${prefix}/share/primula-docs/share/primula-studio"
+export PATH="${prefix}/bin:${PATH}"
+exec "${prefix}/libexec/primula-studio" "$@"

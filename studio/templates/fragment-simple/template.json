@@ -1,0 +1,32 @@
+{
+ "kind": "fragment",
+ "order": 10,
+ "title": {
+  "en": "Fragment",
+  "uk": "Фрагмент",
+  "ru": "Фрагмент"
+ },
+ "description": {
+  "en": "Text inserted with |include.",
+  "uk": "Текст, що вставляється через |include.",
+  "ru": "Текст, вставляемый через |include."
+ },
+ "files": [
+  {
+   "from": "frag.f.prml",
+   "to": "{{name}}.f.prml",
+   "open": true
+  }
+ ],
+ "strings": {
+  "en": {
+   "text": "Text of the fragment."
+  },
+  "uk": {
+   "text": "Текст фрагмента."
+  },
+  "ru": {
+   "text": "Текст фрагмента."
+  }
+ }
+}

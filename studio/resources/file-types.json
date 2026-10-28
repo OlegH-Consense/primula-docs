@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "description": "File types of Primula Studio: which files of a project the Files panel shows and how they open. Built in; the user file (~/.config/primula-docs/file-types.json) and the project file (.primula-studio/file-types.json) add types or override them by pattern. open: editor — the text editor of Studio; preview — the PDF preview; system — the program of the desktop; command — the command below (%f the file, %d its folder, %r the path from the project root; not allowed in a project file).",
+  "types": [
+    {"name": "Primula", "patterns": ["*.prml"], "open": "editor"},
+    {"name": "Data", "patterns": ["*.yaml", "*.yml", "*.csv", "*.json"], "open": "editor"},
+    {"name": "Text", "patterns": ["*.md", "*.txt"], "open": "editor"},
+    {"name": "Images", "patterns": ["*.svg", "*.png", "*.jpg", "*.jpeg"], "open": "system"},
+    {"name": "PDF", "patterns": ["*.pdf"], "open": "preview"},
+    {"name": "Documents", "patterns": ["*.odt", "*.docx"], "open": "system"},
+    {"name": "Spreadsheets", "patterns": ["*.ods", "*.fods", "*.xlsx"], "open": "system"}
+  ]
+}

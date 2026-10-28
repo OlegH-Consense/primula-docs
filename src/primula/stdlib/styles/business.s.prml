@@ -1,0 +1,86 @@
+---
+kind: styles
+# Styles set std/styles/business (specification 11.9, stage 15.3): contracts,
+# acts, invoices, protocols, statements and their appendices.  Built on
+# std/styles/default (decision 133): a document names only this module,
+# `styles: [std/styles/business]`; a local module adds its differences with
+# `extends: std/styles/business`.
+#
+# Sources: the business set of ODT Markdown Kit 1.2 (names and the most of
+# the spacing) and DSTU 4163:2020 (paper documents of organisations): page
+# margins left 30, right 10, top and bottom 20 mm (6.2); text 12-14 pt with
+# line spacing 1-1.5; paragraph indent 10 mm; the approval grif from 100 mm of
+# the left margin (7.7).  Contracts are not bound by DSTU 4163; its margins
+# and indents are taken as the common practice of Ukrainian business papers.
+# To make the text denser: defaults: {size: 11pt} and the Body spacing in a
+# local module.
+extends: std/styles/default
+defaults: {font: Liberation Serif, size: 12pt, language: uk-UA}
+paragraphs:
+  Body:             {align: justify, line_height: "115%", space_after: 2mm}
+  # Headings of a contract: "1. ПРЕДМЕТ ДОГОВОРУ" (Kit: left, bold, 12/11 pt).
+  Heading:          {align: left, keep_together: true}
+  Heading1:         {size: 12pt, space_before: 4mm, space_after: 2mm}
+  Heading2:         {size: 12pt, space_before: 3mm, space_after: 1.5mm}
+  Heading3:         {size: 12pt, space_before: 2mm, space_after: 1mm}
+  Heading4:         {size: 12pt, italic: true, space_before: 2mm, space_after: 1mm}
+  # Title block of a document.
+  OrganizationName: {parent: BodyLeft, bold: true, space_after: 2mm, keep_with_next: true}
+  DocumentTitle:    {parent: BodyCentered, size: 14pt, bold: true, space_before: 3mm, space_after: 2mm,
+                     keep_with_next: true, keep_together: true}
+  DocumentSubtitle: {parent: BodyCentered, space_after: 2mm, keep_with_next: true, keep_together: true}
+  DocumentVersion:  {parent: BodyCentered, size: 9pt, color: "#444444", space_after: 4mm, keep_with_next: true}
+  # Place and date of a contract: "м. Харків        «12» жовтня 2026 р.".
+  DatePlace:        {parent: BodyLeft, space_before: 2mm, space_after: 4mm, keep_with_next: true}
+  # Approval grif "ЗАТВЕРДЖУЮ": a block 100 mm from the left margin (DSTU 4163:2020, 7.7).
+  Approval:         {parent: BodyLeft, left: 100mm, space_after: 0mm, keep_with_next: true, keep_together: true}
+  ApprovalTitle:    {parent: Approval, bold: true, space_after: 1mm}
+  # Parts of a contract.
+  Preamble:         {parent: Body, space_after: 3mm}
+  ClauseContinuation: {parent: Body, left: 7mm}
+  Note:             {size: 10pt, italic: false, space_before: 1mm}
+  AttachmentLabel:  {parent: BodyLeft, size: 10pt, space_before: 3mm, keep_with_next: true}
+  FormLabel:        {parent: BodyLeft, bold: true, space_after: 1mm, keep_with_next: true}
+  # Requisites and signatures.
+  Details:          {parent: BodyLeft, size: 10pt, line_height: "110%", space_after: 1mm}
+  DetailsTitle:     {parent: Details, bold: true, size: 11pt, space_after: 2mm, keep_with_next: true}
+  SignatureRole:    {parent: BodyLeft, space_before: 5mm, space_after: 2mm, keep_with_next: true,
+                     keep_together: true}
+  SignatureLine:    {parent: BodyLeft, space_after: 3mm, keep_together: true}
+  # Captions and cells (Kit).
+  TableText:        {size: 10pt, line_height: "110%", widows: 1, orphans: 1}
+  TableCaption:     {size: 10pt, space_before: 3mm, space_after: 1.5mm}
+  FigureCaption:    {size: 10pt, space_after: 3mm}
+  Footer:           {color: "#333333"}
+  Header:           {color: "#333333"}
+characters:
+  Placeholder:      {background: "#FFF2CC"}
+tables:
+  # Kit: grey thin lines, a light grey header, rows not split between pages.
+  TableGrid:        {frame: "0.5pt solid #999999", border: "0.5pt solid #999999", padding: 1.5mm,
+                     header_background: "#EEEEEE", header_paragraph: TableHeader, keep_rows: true,
+                     space_before: 1mm, space_after: 3mm}
+  # Field / value.
+  TableForm:        {parent: TableGrid, cols: ["30%", "70%"]}
+  # Requisites (or signatures) of two parties side by side, without lines.
+  TableParties:     {parent: TableNoBorders, cols: ["50%", "50%"], paragraph: Details,
+                     header_paragraph: DetailsTitle, header_background: none, padding: [0.5mm, 3mm, 0.5mm, 0mm],
+                     may_break: false}
+  # Name / quantity / price / sum.
+  TableServices:    {parent: TableGrid, cols: ["52%", "12%", "18%", "18%"]}
+  # Stage / result / term.
+  TableSchedule:    {parent: TableGrid, cols: ["35%", "45%", "20%"]}
+frames:
+  # Widths of images (|img(style=…), |figure(style=…)).
+  LogoSmall:         {width: 25mm}
+  Logo:              {width: 40mm}
+  IllustrationSmall: {width: 70mm}
+  Illustration:      {width: 110mm}
+  IllustrationWide:  {width: 160mm}
+pages:
+  # DSTU 4163:2020, 6.2: margins top 20, right 10, bottom 20, left 30 mm.
+  Portrait:         {margin: [20mm, 10mm, 20mm, 30mm], footer_gap: 3mm, footer_min_height: 5mm}
+---
+# Page number and the number of pages at the bottom (Kit); a local module
+# replaces it with its own footer("Portrait", …) or removes it with markup("").
+footer("Portrait", markup("|.Footer: |field.page / |field.pages"))

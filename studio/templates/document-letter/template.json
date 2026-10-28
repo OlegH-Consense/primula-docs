@@ -1,0 +1,47 @@
+{
+ "kind": "document",
+ "order": 50,
+ "title": {
+  "en": "Business letter",
+  "uk": "Діловий лист",
+  "ru": "Деловое письмо"
+ },
+ "description": {
+  "en": "Sender and addressee as parameters, date, subject, body and signature, without numbering.",
+  "uk": "Відправник і адресат — параметри, дата, тема, текст і підпис, без нумерації.",
+  "ru": "Отправитель и адресат — параметры, дата, тема, текст и подпись, без нумерации."
+ },
+ "files": [
+  {
+   "from": "letter.prml",
+   "to": "{{name}}.prml",
+   "open": true
+  }
+ ],
+ "strings": {
+  "en": {
+   "sender": "Sender LLC",
+   "addressee": "To the director of Addressee LLC",
+   "signer": "J. Smith",
+   "greeting": "Dear Sir or Madam,",
+   "text": "Text of the letter.",
+   "regards": "Yours faithfully,"
+  },
+  "uk": {
+   "sender": "ТОВ «Відправник»",
+   "addressee": "Директорові ТОВ «Адресат»",
+   "signer": "І. П. Петренко",
+   "greeting": "Шановний пане директоре!",
+   "text": "Текст листа.",
+   "regards": "З повагою,"
+  },
+  "ru": {
+   "sender": "ООО «Отправитель»",
+   "addressee": "Директору ООО «Адресат»",
+   "signer": "И. П. Петренко",
+   "greeting": "Уважаемый господин директор!",
+   "text": "Текст письма.",
+   "regards": "С уважением,"
+  }
+ }
+}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120mm" height="50mm" viewBox="0 0 120 50">
+  <rect x="2" y="10" width="30" height="30" rx="2" fill="#DDEEFF" stroke="#335577" stroke-width="0.6"/>
+  <text x="17" y="27" font-family="Liberation Sans" font-size="5" text-anchor="middle">БЖ</text>
+  <rect x="45" y="10" width="30" height="30" rx="2" fill="#E8F5E0" stroke="#447733" stroke-width="0.6"/>
+  <text x="60" y="27" font-family="Liberation Sans" font-size="5" text-anchor="middle">X300</text>
+  <rect x="88" y="10" width="30" height="30" rx="2" fill="#FFF0DD" stroke="#886622" stroke-width="0.6"/>
+  <text x="103" y="27" font-family="Liberation Sans" font-size="5" text-anchor="middle">Датчик</text>
+  <path d="M32 25 H45 M75 25 H88" stroke="#000" stroke-width="0.6"/>
+</svg>

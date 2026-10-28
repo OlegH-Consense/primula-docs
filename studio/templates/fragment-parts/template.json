@@ -1,0 +1,41 @@
+{
+ "kind": "fragment",
+ "order": 20,
+ "title": {
+  "en": "Fragment with parameters and parts",
+  "uk": "Фрагмент із параметрами й частинами",
+  "ru": "Фрагмент с параметрами и частями"
+ },
+ "description": {
+  "en": "Declared parameters with defaults and named parts |part(…) for |include(…, part=…).",
+  "uk": "Оголошені параметри з типовими значеннями та іменовані частини |part(…) для |include(…, part=…).",
+  "ru": "Объявленные параметры со значениями по умолчанию и именованные части |part(…) для |include(…, part=…)."
+ },
+ "files": [
+  {
+   "from": "frag.f.prml",
+   "to": "{{name}}.f.prml",
+   "open": true
+  }
+ ],
+ "strings": {
+  "en": {
+   "item": "the item",
+   "for": "Warranty for",
+   "months": "months",
+   "extra": "Additional terms."
+  },
+  "uk": {
+   "item": "виріб",
+   "for": "Гарантія на",
+   "months": "місяців",
+   "extra": "Додаткові умови."
+  },
+  "ru": {
+   "item": "изделие",
+   "for": "Гарантия на",
+   "months": "месяцев",
+   "extra": "Дополнительные условия."
+  }
+ }
+}

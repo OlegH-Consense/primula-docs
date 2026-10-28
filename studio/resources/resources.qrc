@@ -1,0 +1,23 @@
+<RCC>
+  <qresource prefix="/icons">
+    <file alias="primula-studio.svg">primula-studio.svg</file>
+  </qresource>
+  <qresource prefix="/config">
+    <file alias="file-types.json">file-types.json</file>
+    <file alias="file-types.user.json">file-types.user.json</file>
+  </qresource>
+  <qresource prefix="/help">
+    <file alias="studio-user-guide.en.md">../help/studio-user-guide.en.md</file>
+    <file alias="studio-user-guide.ru.md">../help/studio-user-guide.ru.md</file>
+    <file alias="studio-user-guide.uk.md">../help/studio-user-guide.uk.md</file>
+    <file alias="primula-cheatsheet.ru.pdf">../help/primula-cheatsheet.ru.pdf</file>
+    <file alias="primula-cheatsheet.uk.pdf">../help/primula-cheatsheet.uk.pdf</file>
+    <file alias="primula-cheatsheet.en.pdf">../help/primula-cheatsheet.en.pdf</file>
+    <file alias="primula-spec.ru.md">../../primula-spec-v1.1-draft.ru.md</file>
+    <file alias="primula-spec.uk.md">../../primula-spec-v1.1-draft.uk.md</file>
+    <file alias="primula-spec.en.md">../../primula-spec-v1.1-draft.en.md</file>
+    <file alias="primula-stdlib.ru.md">../../primula-stdlib-v1.1-draft.ru.md</file>
+    <file alias="primula-stdlib.uk.md">../../primula-stdlib-v1.1-draft.uk.md</file>
+    <file alias="primula-stdlib.en.md">../../primula-stdlib-v1.1-draft.en.md</file>
+  </qresource>
+</RCC>

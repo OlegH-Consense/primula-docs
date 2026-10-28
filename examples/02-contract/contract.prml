@@ -1,0 +1,73 @@
+---
+doc:
+  title: "Договір поставки"
+  identifier: "П-2026/045"
+  language: uk-UA
+params:
+  city: "м. Харків"
+  sign_date: 2026-10-12
+  vat: true
+  days: 10
+styles: [std/styles/default, styles/contract.s.prml]
+---
+|% Example 2: contract — clause numbering, cross references, footnotes,
+|% data from CSV/YAML, typed table with formulas, appendix, table of contents,
+|% standard library: fmt_date, money_full, money, with_vat, percent.
+|import("lib/business")
+|code:
+parties = load_yaml("data/parties.yaml")
+seller = parties.seller
+buyer = parties.buyer
+items = load_csv("data/items.csv", types={"qty": "decimal", "price": "money"})
+rate = dec("0.20") if vat else dec("0")
+# Totals for the text (the table computes the same with its own formulas).
+net = sum([it.qty * it.price for it in items])
+# The header parameter 'vat' shadows the library function vat() (10.4:
+# document names come before built-in ones), so the tax is with_vat − net.
+tax = with_vat(net, 20) - net if vat else 0
+|end
+|footer("Portrait"):
+|.Footer: Договір № |(doc.identifier) — сторінка |field.page з |field.pages
+|end footer
+|<(number=False) Договір поставки № |(doc.identifier)
+|(city), |(fmt_date(sign_date, "contract"))
+
+|(seller.name) (далі — Постачальник) в особі директора |(seller.director) та |(buyer.name)
+(далі — Покупець) в особі директора |(buyer.director) уклали цей договір про таке.
+
+|toc(title="ЗМІСТ")
+|<(id="subject") Предмет договору
+|>(id="supply") Постачальник зобов'язується поставити, а Покупець — прийняти й оплатити товар згідно зі специфікацією (|@("spec", "label")).
+|> Асортимент, кількість і ціна товару наведені в таблиці (|@("t-items", "label")).
+
+|<(id="price") Ціна і порядок розрахунків
+|>(id="pay") Покупець оплачує товар протягом |(days) банківських днів|footnote{Банківський день — день, у який банки України здійснюють розрахунки.} з дати поставки.
+|> Ціни зазначено |if(vat){з ПДВ за ставкою |(percent(20))}|else{без ПДВ}.
+|>> Зміна ціни можлива лише за згодою сторін (див. п. |@("pay")).
+|> Загальна ціна договору — |(money_full(net + tax, "UAH"))|if(vat){, у тому числі ПДВ |(money(tax, "UAH"))}.
+
+|<(id="liability") Відповідальність сторін
+|> За прострочення оплати (п. |@("pay")) Покупець сплачує пеню в розмірі подвійної облікової ставки НБУ.
+|> Сторони звільняються від відповідальності за обставин непереборної сили.
+
+|<(id="final") Прикінцеві положення
+|> Договір набирає чинності з дати підписання.
+|> Невід'ємною частиною договору є |@("spec", "label").
+
+|<(number=False) Реквізити і підписи сторін
+|business.requisites(seller)
+|business.sign("Постачальник", seller.director)
+|business.requisites(buyer)
+|business.sign("Покупець", buyer.director)
+
+|appendix(id="spec", title="Специфікація", subtitle="до Договору поставки"):
+|table(id="t-items", caption="Перелік товару", cols=["10mm", "*", "15mm", col("15mm", id="qty", type="decimal", align="right"), col("28mm", id="price", type="money", align="right"), col("32mm", id="sum", type="money", currency="UAH", align="right")], header=1, footer=3):
+|: № |& Найменування |& Од. |& К-сть |& Ціна |& Сума
+|for(i, it in enumerate(items, 1)):
+|: |(i) |& |(it.name) |& |(it.unit) |& |(it.qty) |& |(it.price) |& |=(this_row("qty") * this_row("price"))
+|endfor
+|:|&(span=5, align="right") Разом без ПДВ |& |=(sum(column("sum", rows=body_rows())))
+|:|&(span=5, align="right") ПДВ |& |=(round(cell(len(items) + 2, "sum") * rate, 2))
+|:|&(span=5, align="right") |*{Усього до сплати} |& |=(cell(len(items) + 2, "sum") + cell(len(items) + 3, "sum"))
+|end table
+|end appendix

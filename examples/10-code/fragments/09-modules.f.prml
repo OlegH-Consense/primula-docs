@@ -1,0 +1,83 @@
+---
+kind: fragment
+---
+|% Topic 9: modules and fragments — where names live and how they cross
+|% file borders (spec 10.3, 10.4, decision 135).
+|%
+|% Python: "import ціни" binds the module; "from ціни import з_пдв" binds
+|% names; a module's names are all reachable (the leading "_" is only a
+|% convention); there are no "fragments".
+|% Primula has two kinds of included files:
+|%   * a MODULE (.m.prml, |import) holds only definitions.  All its names
+|%     without "_" are public, no export is needed; "_name" is really
+|%     private (ціни._ставка is an error).  Forms of |import:
+|%       |import("lib/ціни")                    -> ціни.з_пдв(…), |ціни.сума_прописом(…)
+|%       |import("lib/ціни", "з_пдв")           -> з_пдв(…) without the prefix
+|%       |import("lib/ціни", alias="ц")         -> ц.з_пдв(…)  ("as" is a keyword)
+|%     An |import in the document is visible in its fragments (this fragment
+|%     uses ціни.* imported by code.prml); an |import inside a fragment is
+|%     visible only in that fragment;
+|%   * a FRAGMENT (.f.prml, |include) is text with its own definitions.
+|%     They are PRIVATE: the same fragment can be included twice without a
+|%     conflict.  The document sees only what the fragment exports:
+|%       @export                       on a top-level def: the function, same name
+|%       @export(name="…")             the function under another name
+|%       |export("name", …)            names already defined: macros, functions, |let
+|%       |let(x=…, export=True), |export(x=…)   define and export a value
+|%     @export is the only decorator of Primula.  Outside a fragment it is an
+|%     error (P2610), in a module a warning (P2638), on a nested def P2106.
+|%     A conflict of two exports is resolved where the fragment is included:
+|%     |include(…, ns="f") puts the exports into f.*, rename={…} renames them.
+|% Advice: functions shared by documents belong in a module; export from a
+|% fragment the functions and macros that belong to its text.
+|< Модулі й фрагменти
+Підключені файли бувають двох видів. |*{Модуль} (|`{.m.prml}, команда |`{||import}) містить лише визначення; усі його імена без |`{_} на початку відкриті, експортувати нічого не треба. |*{Фрагмент} (|`{.f.prml}, команда |`{||include}) — це текст документа зі своїми визначеннями, і вони закриті: документ бачить лише те, що фрагмент явно експортував. Функції, якими користуються кілька документів, місце в модулі.
+
+|% An |import inside the fragment: з_пдв without the prefix and the alias ц
+|% exist only here.  ціни.* comes from the |import of the document.  A path
+|% is relative to the file that names it (10.1): from fragments/ the module
+|% is ../lib/ціни, while code.prml writes lib/ціни.  The namespace is the
+|% file name either way.
+|import("../lib/ціни", "з_пдв")
+|import("../lib/ціни", alias="ц")
+
+|table(cols=["38%", "*"], style="TableGrid"):
+|: Запис |& Значення й пояснення
+|: |`{ціни.з_пдв(1000.00)} |& |(num(ціни.з_пдв(1000.00), 2)) — модуль підключено в документі, фрагмент його бачить
+|: |`{з_пдв(1000.00)} |& |(num(з_пдв(1000.00), 2)) — ім'я вибрано: |`{||import("../lib/ціни", "з_пдв")} (шлях — від файла фрагмента)
+|: |`{ц.пдв(1000.00)} |& |(num(ц.пдв(1000.00), 2)) — псевдонім: |`{||import("../lib/ціни", alias="ц")} (|`{as} — ключове слово Python)
+|: |`{||ціни.сума_прописом(1200.00)} |& |ціни.сума_прописом(1200.00)
+|: |`{ціни._ставка} |& помилка P2102: ім'я з |`{_} закрите в модулі
+|end table
+
+Визначення фрагмента експортуються так (рішення 135):
+
+|table(cols=["38%", "*"], style="TableGrid"):
+|: Запис |& Що експортується
+|: |`{@export} над |`{def f(…)} |& функція під своїм ім'ям
+|: |`{@export(name="g")} над |`{def _f(…)} |& функція під ім'ям |`{g}; |`{_f} лишається закритим
+|: |`{||export("підпис", "f")} |& уже визначені імена: макроси |`{||def}, функції, |`{||let}
+|: |`{||let(x=…, export=True)}, |`{||export(x=…)} |& нове значення
+|: |`{||include(…, ns="f")} |& експорт фрагмента потрапляє в |`{f.*}; |`{rename=} перейменовує
+|end table
+
+|% The exports of this fragment, used by code.prml after the |include.
+|code:
+# @export: the function leaves the fragment under its own name.
+@export
+def знижка(сума, відсоток):
+    return round(сума * (100 - відсоток) / 100, 2)
+
+# @export(name=…): exported as ціна_рядка; _ціна_рядка stays private.
+@export(name="ціна_рядка")
+def _ціна_рядка(p):
+    return p.кількість * p.ціна
+|end
+
+|% A macro is markup, it has no decorator: |export("name") exports it.
+|def рядок_позиції(p):
+|(p.назва) — |(num(_ціна_рядка(p), 2)) грн
+|enddef
+|export("рядок_позиції")
+
+Усередині фрагмента: |`{знижка(1000.00, 5)} = |(num(знижка(1000.00, 5), 2)); |`{||рядок_позиції(позиції[0])} дає: |рядок_позиції(позиції[0]).

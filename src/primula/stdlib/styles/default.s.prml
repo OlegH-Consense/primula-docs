@@ -1,0 +1,186 @@
+---
+kind: styles
+# Built-in styles module std/styles/default (specification 11.1, decision 55).
+# Used when neither the project nor the document names styles modules; to
+# build on it, name it as the base of a styles module (extends:
+# std/styles/default, decision 133) or explicitly in the list of styles.
+# The sets of the kit (11.9) build on it: std/styles/business, letter,
+# technical, report, compact.
+defaults: {font: Liberation Sans, size: 11pt, language: uk-UA}
+paragraphs:
+  # first_line: 0mm explicitly: when the text is bound to an indented style
+  # (|set, structure_styles), a paragraph style of its own keeps no indent
+  # (the cascade of decision 61 adds only the properties a style lacks).
+  Body:      {align: justify, line_height: "115%", space_after: 2mm, first_line: 0mm, widows: 2, orphans: 2}
+  Heading:   {parent: Body, bold: true, align: left, keep_with_next: true, space_before: 4mm, space_after: 2mm}
+  Heading1:  {parent: Heading, size: 14pt}
+  Heading2:  {parent: Heading, size: 13pt}
+  Heading3:  {parent: Heading, size: 12pt}
+  Heading4:  {parent: Heading, size: 11pt}
+  Heading5:  {parent: Heading, size: 11pt, italic: true}
+  Heading6:  {parent: Heading, size: 11pt, bold: false, italic: true}
+  Clause:    {parent: Body}
+  SubClause: {parent: Clause, left: 5mm}
+  Note:      {parent: Body, size: 9pt, italic: true, align: left}
+  Admonition: {parent: Body, keep_together: true}
+  Header:    {parent: Body, size: 9pt, align: center, space_after: 0mm}
+  Footer:    {parent: Body, size: 9pt, align: center, space_after: 0mm}
+  TableText: {parent: Body, align: left, space_after: 0mm}
+  # General-purpose variants (stage 15.3; names after the business set of
+  # ODT Markdown Kit 1.2): alignment, indented and compact text, quotations,
+  # secondary details, preformatted text, compact table cells.
+  BodyLeft:      {parent: Body, align: left}
+  BodyCentered:  {parent: Body, align: center}
+  BodyRight:     {parent: Body, align: right}
+  BodyIndented:  {parent: Body, first_line: 10mm}
+  BodyCompact:   {parent: Body, size: 10pt, line_height: "110%", space_after: 1mm}
+  Quote:         {parent: Body, italic: true, left: 7mm, right: 5mm, space_before: 2mm, space_after: 3mm}
+  SmallPrint:    {parent: Body, align: left, size: 9pt, line_height: "110%", space_after: 1.5mm, color: "#333333"}
+  Preformatted:  {parent: Body, font: Liberation Mono, size: 9pt, align: left, line_height: "100%",
+                  space_after: 0mm, widows: 1, orphans: 1}
+  ListText:      {parent: Body, align: left, space_after: 1mm}
+  TableHeader:   {parent: TableText, bold: true}
+  TableTextCompact:   {parent: TableText, size: 9pt, line_height: "105%"}
+  TableHeaderCompact: {parent: TableTextCompact, bold: true}
+  # Titles of the tracks of |parallel (7.7).
+  ParallelHeader: {parent: Body, bold: true, align: left, keep_with_next: true}
+  # Structure constructs (decision 70): captions, notes, annexes, contents.
+  TableCaption:  {parent: Body, align: left, keep_with_next: true, space_before: 2mm, space_after: 1mm}
+  FigureCaption: {parent: Body, align: center, space_before: 1mm, space_after: 2mm}
+  Figure:        {parent: Body, align: center, keep_with_next: true, space_before: 2mm, space_after: 1mm}
+  Footnote:      {parent: Body, size: 9pt, align: left, line_height: "100%", space_after: 0mm, left: 4mm,
+                  first_line: -4mm}
+  Endnote:       {parent: Footnote}
+  AppendixDesignation: {parent: Body, align: right, keep_with_next: true, space_after: 0mm}
+  AppendixSubtitle:    {parent: Body, align: right, keep_with_next: true, space_after: 2mm}
+  AppendixTitle:       {parent: Body, bold: true, align: center, keep_with_next: true, space_before: 2mm,
+                        space_after: 4mm}
+  ContentsTitle: {parent: Body, bold: true, size: 12pt, align: center, keep_with_next: true, space_after: 4mm}
+  Contents1: {parent: Body, align: left, space_after: 1mm}
+  Contents2: {parent: Contents1, left: 5mm}
+  Contents3: {parent: Contents1, left: 10mm}
+  Contents4: {parent: Contents1, left: 15mm}
+  Contents5: {parent: Contents1, left: 20mm}
+  Contents6: {parent: Contents1, left: 25mm}
+  IndexEntry: {parent: Body, align: left, space_after: 1mm}
+  IndexEntry2: {parent: IndexEntry, left: 5mm}
+  # Technical documentation (9.1, 9.2; decision 116): signal words in ANSI Z535
+  # colours (red, orange, dark yellow for legibility, blue), the text of blocks,
+  # labels of the --review mode.
+  AdmonitionText:    {parent: Body, align: left, space_after: 1mm, keep_with_next: false}
+  AdmonitionDanger:  {parent: AdmonitionText, bold: true, color: "#C00000"}
+  AdmonitionWarning: {parent: AdmonitionText, bold: true, color: "#E36C09"}
+  AdmonitionCaution: {parent: AdmonitionText, bold: true, color: "#9C6500"}
+  AdmonitionNotice:  {parent: AdmonitionText, bold: true, color: "#1F4E9E"}
+  ReviewLabel: {parent: Body, size: 8pt, italic: true, color: "#555555", align: left, space_after: 0mm,
+                keep_with_next: true}
+characters:
+  Strong:      {bold: true}
+  Emphasis:    {italic: true}
+  Underline:   {underline: true}
+  Superscript: {position: super}
+  Subscript:   {position: sub}
+  Code:        {font: Liberation Mono}
+  DefinedTerm: {bold: true}
+  StrikeText:  {strike: true}
+  SmallText:   {size: 9pt}
+  Placeholder: {background: "#FFFF00"}
+  NoteAnchor:  {position: super}
+  # References are not highlighted in business documents (decision 70).
+  Reference:   {}
+  NoteLabel:   {}
+  ReviewTrue:  {background: "#D9F2D9"}
+  ReviewFalse: {background: "#F8D7D7"}
+lists:
+  BulletList:
+    levels:
+      1: {type: bullet, bullet: "•", left: 5mm, hanging: 5mm}
+      2: {type: bullet, bullet: "–", left: 10mm, hanging: 5mm}
+      3: {type: bullet, bullet: "◦", left: 15mm, hanging: 5mm}
+  NumberedList:
+    levels:
+      1: {type: number, format: "1", suffix: ".", left: 6mm, hanging: 6mm}
+      2: {type: number, format: "1", suffix: ".", left: 12mm, hanging: 8mm}
+      3: {type: number, format: "a", suffix: ")", left: 18mm, hanging: 6mm}
+  # Lists of the business set of Kit: dash, letters, number then dash, check boxes.
+  # LetterList uses the letters of the document language (format "а",
+  # decision 115); LatinLetterList — a), b), c) in any language.
+  DashList:
+    paragraph: ListText
+    levels:
+      1: {type: bullet, bullet: "–", left: 7mm, hanging: 4mm}
+      2: {type: bullet, bullet: "–", left: 14mm, hanging: 4mm}
+  LetterList:
+    paragraph: ListText
+    levels:
+      1: {type: number, format: "а", suffix: ")", left: 9mm, hanging: 6mm}
+      2: {type: bullet, bullet: "–", left: 18mm, hanging: 4mm}
+  LatinLetterList:
+    paragraph: ListText
+    levels:
+      1: {type: number, format: "a", suffix: ")", left: 9mm, hanging: 6mm}
+      2: {type: bullet, bullet: "–", left: 18mm, hanging: 4mm}
+  MixedList:
+    paragraph: ListText
+    levels:
+      1: {type: number, format: "1", suffix: ".", left: 9mm, hanging: 6mm}
+      2: {type: bullet, bullet: "–", left: 18mm, hanging: 4mm}
+  Checklist:
+    paragraph: ListText
+    levels:
+      1: {type: bullet, bullet: "☐", left: 8mm, hanging: 5mm}
+  NoteList:
+    paragraph: Note
+    levels:
+      1: {type: number, format: "1", suffix: ".", left: 5mm, hanging: 5mm}
+tables:
+  TableGrid: {width: "100%", frame: "0.5pt solid #000000", rules: all, padding: 1mm, paragraph: TableText,
+              header_bold: true, repeat_header: true}
+  AdmonitionTable:        {parent: TableGrid, frame: none, rules: none, padding: [1mm, 2mm, 1mm, 2mm],
+                           paragraph: AdmonitionText, may_break: false, space_before: 3mm, space_after: 3mm}
+  AdmonitionTableDanger:  {parent: AdmonitionTable}
+  AdmonitionTableWarning: {parent: AdmonitionTable}
+  AdmonitionTableCaution: {parent: AdmonitionTable}
+  AdmonitionTableNotice:  {parent: AdmonitionTable}
+  TableCompact:   {parent: TableGrid, padding: 0.8mm, paragraph: TableTextCompact,
+                   header_paragraph: TableHeaderCompact}
+  TableNoBorders: {parent: TableGrid, frame: none, rules: none, padding: [1mm, 2mm, 1mm, 0mm],
+                   repeat_header: false, header_background: none}
+  AbbreviationList:       {parent: TableGrid, frame: none, rules: none, padding: [0.5mm, 2mm, 0.5mm, 0mm],
+                           repeat_header: false}
+  # |parallel (7.7): no rules, the gap is the padding of the columns; the
+  # text of the cells is ordinary body text.
+  ParallelTable: {width: "100%", frame: none, rules: none, padding: 0mm, repeat_header: true,
+                  space_before: 3mm, space_after: 3mm}
+blocks:
+  Group: {keep_together: true}
+pages:
+  Portrait: {size: A4, orientation: portrait, margin: [20mm, 15mm, 20mm, 25mm]}
+  Landscape: {parent: Portrait, orientation: landscape}
+---
+# Code section: profile, scales and binding of constructs (11.4-11.5).
+structure_profile("business")
+spacing = {"0": 0*mm, "s": 1*mm, "m": 2*mm, "l": 4*mm, "xl": 6*mm}
+indent_step = 5*mm
+structure_styles(
+    paragraph="Body",
+    heading={1: "Heading1", 2: "Heading2", 3: "Heading3", 4: "Heading4", 5: "Heading5", 6: "Heading6"},
+    clause={1: "Clause", 2: "SubClause"},
+    list="BulletList",
+    numbered_list="NumberedList",
+    table="TableGrid",
+    figure="Figure",
+    admonition="Admonition",
+    page="Portrait",
+    strong="Strong", emphasis="Emphasis", underline="Underline",
+    superscript="Superscript", subscript="Subscript",
+    code="Code", strike="StrikeText", placeholder="Placeholder",
+    caption={"table": "TableCaption", "figure": "FigureCaption"},
+    footnote="Footnote", endnote="Endnote", note_anchor="NoteAnchor",
+    appendix={"designation": "AppendixDesignation", "subtitle": "AppendixSubtitle", "title": "AppendixTitle"},
+    toc={"title": "ContentsTitle", 1: "Contents1", 2: "Contents2", 3: "Contents3", 4: "Contents4",
+         5: "Contents5", 6: "Contents6"},
+    list_of={"title": "ContentsTitle", "entry": "IndexEntry"},
+    reference="Reference",
+    parallel_table="ParallelTable", parallel_header="ParallelHeader",
+)

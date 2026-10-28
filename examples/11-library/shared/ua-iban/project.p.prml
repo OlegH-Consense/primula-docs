@@ -1,0 +1,8 @@
+---
+kind: project
+name: ua-iban
+language: uk-UA
+---
+# The project file of the library: its directory is the root for the test
+# documents in tests/ (they import ../iban). A project that links the library
+# (lib -> .../ua-iban) does not read this file.

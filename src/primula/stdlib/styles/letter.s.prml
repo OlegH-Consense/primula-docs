@@ -1,0 +1,36 @@
+---
+kind: styles
+# Styles set std/styles/letter (specification 11.9, stage 15.3): official
+# letters, memos, statements.  Built on std/styles/business (decision 133).
+#
+# DSTU 4163:2020 (as summarised from 6.2, 7.7): text with a paragraph indent
+# of 10 mm; the addressee 90 mm from the left margin, its parts with 1.5 line
+# intervals; lines of a multi-line requisite up to 73 mm; page numbers in the
+# middle of the top margin from the second page, the first page is counted
+# but not numbered.  The letter text is bound to BodyIndented.
+extends: std/styles/business
+paragraphs:
+  # Letterhead: the name of the organisation and its details in the top left corner.
+  LetterheadName:   {parent: BodyLeft, bold: true, size: 12pt, space_after: 1mm, right: 97mm}
+  LetterheadDetails: {parent: BodyLeft, size: 9pt, line_height: "105%", space_after: 0mm, right: 97mm}
+  # "Вих. № 12/3 від 16.10.2026" and "На № … від …".
+  OutgoingNumber:   {parent: BodyLeft, size: 11pt, space_before: 4mm, space_after: 0mm, right: 97mm}
+  # Addressee: a block 90 mm from the left margin (7.7).
+  Recipient:        {parent: BodyLeft, left: 90mm, line_height: "100%", space_after: 1.5mm, keep_with_next: true}
+  # Short heading of the text ("Щодо …"), without a period, up to 73 mm.
+  LetterSubject:    {parent: BodyLeft, bold: true, space_before: 6mm, space_after: 4mm, right: 97mm,
+                     keep_with_next: true}
+  Salutation:       {parent: BodyCentered, space_after: 3mm, keep_with_next: true}
+  BodyIndented:     {space_after: 1mm}
+  # Executor: name and phone in small print at the end of the letter.
+  Executor:         {parent: SmallPrint, space_before: 8mm, space_after: 0mm, keep_together: true}
+pages:
+  # First page without a number; the next pages are Portrait (number at the top).
+  LetterFirst:      {parent: Portrait, next: Portrait}
+---
+structure_styles(paragraph="BodyIndented", page="LetterFirst")
+# Page numbers at the top in the middle, no words, from the second page.
+footer("Portrait", markup(""))
+header("Portrait", markup("|.Header: |field.page"))
+header("LetterFirst", markup(""))
+footer("LetterFirst", markup(""))

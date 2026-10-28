@@ -1,0 +1,69 @@
+---
+kind: fragment
+---
+|% Topic 3: lists, tuples, dictionaries (spec 12.2, 12.3, 12.10).
+|%
+|% As in Python: list, tuple, dict; list and dict comprehensions, generator
+|% expressions; unpacking a, *rest = …; a dict keeps the insertion order.
+|%
+|% Differences from Python:
+|%   * no sets: the literal {1, 2} and set comprehensions are errors (P2101);
+|%     a set of keys is a dict, uniqueness — "x not in seen";
+|%   * the operators | & ^ << >> ~ (bits, dict merge d1 | d2) do not exist
+|%     (P2101): merge with {**d1, **d2} or d.update() inside a function;
+|%   * "is" / "is not" only with None (P2103): x is None, never x is 5;
+|%   * a dict key is an immutable value: None, bool, decimal, str, datetime,
+|%     a tuple or record of these.  float and length are not keys (P2317): a
+|%     binary float is a bad key, and 5 and 5.00 are one key anyway because
+|%     the hash of a decimal follows its value;
+|%   * range() and reversed() return a list, not a lazy object;
+|%   * sorted(key=…) and min/max(key=…) take a function, but there is no
+|%     lambda: define a small def (see мінус below);
+|%   * methods: list — append, extend, insert, pop, remove, index, count,
+|%     sort, reverse; dict — get, keys, values, items, update, pop,
+|%     setdefault.  No copy(), clear(), popitem(): use list(x), dict(x);
+|%   * a value bound to a GLOBAL name is frozen after it is computed:
+|%     append() on it is an error (P2318).  Inside a function a list built
+|%     there is an ordinary mutable list (topic 7).
+|< Списки, кортежі, словники
+
+|code:
+# There is no lambda: a key function is an ordinary def.
+def мінус(x):
+    return -x
+
+# Names of a fragment are private (10.4): мінус and квадрати are visible only
+# inside this fragment and do not conflict with names of other fragments.
+квадрати = [x * x for x in range(1, 6)]
+|end
+
+|table(cols=колонки, style="TableGrid"):
+|: Вираз |& Primula |& Python 3
+|: |`{квадрати} |& |(показ(квадрати)) |& [1, 4, 9, 16, 25] · list
+|: |`{квадрати[-2:]} |& |(показ(квадрати[-2:])) |& [16, 25] · list
+|: |`{sum(x for x in квадрати if x > 5)} |& |(показ(sum(x for x in квадрати if x > 5))) |& 50 · int
+|: |`{sorted([3, 1, 2], key=мінус)} |& |(показ(sorted([3, 1, 2], key=мінус))) |& [3, 2, 1] · list (key=lambda x: -x)
+|: |`{range(3)} |& |(показ(range(3))) |& range(0, 3) · range
+|: |`{reversed([1, 2])} |& |(показ(reversed([1, 2]))) |& <list_reverseiterator> · list_reverseiterator
+|: |`{list(zip([1, 2], "ab"))} |& |(показ(list(zip([1, 2], "ab")))) |& [(1, 'a'), (2, 'b')] · list
+|: |`{(1,) + (2, 3)} |& |(показ((1,) + (2, 3))) |& (1, 2, 3) · tuple
+|: |`{[1, 2] + (3,)} |& помилка P2301 |& TypeError
+|: |`{{1, 2}} |& помилка P2101 (множин немає) |& {1, 2} · set
+|: |`{1 is 1} |& помилка P2103 (is — лише з None) |& True · bool (SyntaxWarning)
+|end table
+
+Словники — як у Python, але ключ має бути незмінним значенням, а |`{float} і |`{length} ключами бути не можуть:
+
+|table(cols=колонки, style="TableGrid"):
+|: Вираз |& Primula |& Python 3
+|: |`{{"b": 1, "a": 2}} |& |(показ({"b": 1, "a": 2})) |& {'b': 1, 'a': 2} · dict
+|: |`{{5: "a"}[5.00]} |& |(показ({5: "a"}[5.00])) |& 'a' · str
+|: |`{{(1, "a"): 2}} |& |(показ({(1, "a"): 2})) |& {(1, 'a'): 2} · dict
+|: |`{{0.5e0: 1}} |& помилка P2317 (float — не ключ) |& {0.5: 1} · dict
+|: |`{{"a": 1}.get("z", "—")} |& |(показ({"a": 1}.get("z", "—"))) |& '—' · str
+|: |`{{**{"a": 1}, "b": 2}} |& |(показ({**{"a": 1}, "b": 2})) |& {'a': 1, 'b': 2} · dict
+|: |`{{"a": 1} || {"b": 2}} |& помилка P2101 (оператора || немає) |& {'a': 1, 'b': 2} · dict
+|: |`{{k: len(k) for k in ["аб", "в"]}} |& |(показ({k: len(k) for k in ["аб", "в"]})) |& {'аб': 2, 'в': 1} · dict
+|end table
+
+Значення, присвоєне глобальному імені, після обчислення заморожується: |`{квадрати.append(36)} — помилка P2318. Список, який будується всередині функції, — звичайний змінний список (розділ «Функції»).

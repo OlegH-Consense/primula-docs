@@ -1,0 +1,15 @@
+---
+kind: styles
+# A layer for --style: a serif "print" look for a document that names no
+# styles modules.  Only the differences from std/styles/default are given.
+defaults: {font: Liberation Serif, size: 12pt}
+paragraphs:
+  Heading:  {color: "#1F3864", space_before: 6mm}
+  Heading1: {size: 15pt}
+  Body:     {line_height: "125%"}
+characters:
+  Code:     {font: Liberation Mono, color: "#7F0000"}
+pages:
+  Portrait: {margin: [25mm, 20mm, 25mm, 30mm]}
+---
+header("Portrait", markup("|.Header: |field.title"))

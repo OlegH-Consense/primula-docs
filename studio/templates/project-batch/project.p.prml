@@ -1,0 +1,13 @@
+---
+kind: project
+name: "{{title_yaml}}"
+language: {{lang}}
+params:
+  company: "{{s.company}}"
+---
+# {{s.comment}}
+acts = load_csv("data/acts.csv", types={"number": "decimal", "amount": "money"})
+if batch_mode():
+    for row in acts:
+        build("act.prml", params={"number": row.number, "customer": row.customer, "amount": row.amount},
+              output=f"build/act-{row.number}.odt", pdf=True)

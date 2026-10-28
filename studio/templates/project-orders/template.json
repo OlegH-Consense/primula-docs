@@ -1,0 +1,77 @@
+{
+ "kind": "project",
+ "order": 30,
+ "title": {
+  "en": "Contract and orders",
+  "uk": "Договір і замовлення",
+  "ru": "Договор и заказы"
+ },
+ "description": {
+  "en": "A contract project: the contract, an order form filled from order data, sample data in orders/sample.yaml. Orders are created with New → Order project (extends).",
+  "uk": "Проєкт договору: договір, форма замовлення з даних замовлення, зразок даних у orders/sample.yaml. Замовлення створюються через Створити → Проєкт замовлення (extends).",
+  "ru": "Проект договора: договор, форма заказа из данных заказа, образец данных в orders/sample.yaml. Заказы создаются через Создать → Проект заказа (extends)."
+ },
+ "files": [
+  {
+   "from": "project.p.prml",
+   "to": "project.p.prml"
+  },
+  {
+   "from": "contract.prml",
+   "to": "{{name}}.prml",
+   "open": true
+  },
+  {
+   "from": "form.prml",
+   "to": "order-form.prml"
+  },
+  {
+   "from": "sample.yaml",
+   "to": "orders/sample.yaml"
+  }
+ ],
+ "strings": {
+  "en": {
+   "supplier": "Supplier LLC",
+   "comment": "Sample order data; an order project redefines 'order' from its order.yaml.",
+   "subject": "Subject",
+   "order_clause": "Each order is placed with the order form.",
+   "final": "Final provisions",
+   "effect": "The contract enters into force on signing.",
+   "form_title": "Order",
+   "to_contract": "To the contract No.",
+   "supplier_label": "Supplier",
+   "customer_label": "Customer",
+   "date_label": "Date",
+   "customer_sample": "Customer name"
+  },
+  "uk": {
+   "supplier": "ТОВ «Постачальник»",
+   "comment": "Зразок даних замовлення; проєкт замовлення перевизначає 'order' зі свого order.yaml.",
+   "subject": "Предмет договору",
+   "order_clause": "Кожне замовлення оформлюється формою замовлення.",
+   "final": "Прикінцеві положення",
+   "effect": "Договір набирає чинності з дати підписання.",
+   "form_title": "Замовлення",
+   "to_contract": "До договору №",
+   "supplier_label": "Постачальник",
+   "customer_label": "Замовник",
+   "date_label": "Дата",
+   "customer_sample": "Назва замовника"
+  },
+  "ru": {
+   "supplier": "ООО «Поставщик»",
+   "comment": "Образец данных заказа; проект заказа переопределяет 'order' из своего order.yaml.",
+   "subject": "Предмет договора",
+   "order_clause": "Каждый заказ оформляется формой заказа.",
+   "final": "Заключительные положения",
+   "effect": "Договор вступает в силу с даты подписания.",
+   "form_title": "Заказ",
+   "to_contract": "К договору №",
+   "supplier_label": "Поставщик",
+   "customer_label": "Заказчик",
+   "date_label": "Дата",
+   "customer_sample": "Название заказчика"
+  }
+ }
+}

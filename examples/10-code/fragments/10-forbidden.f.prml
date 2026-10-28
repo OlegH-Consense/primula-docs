@@ -1,0 +1,38 @@
+---
+kind: fragment
+---
+|% Topic 9: what the core does not have (spec 12.2) and what to write
+|% instead.  forbidden.prml next to code.prml contains every construct of this
+|% table: `primula check forbidden.prml` reports them all at once, because
+|% they are found when the code is parsed.  Evaluation errors (frozen values,
+|% types, limits) are in mistakes.prml.
+|%
+|% Why: a document is built the same way on every machine and every time —
+|% no input/output except load_*, no clock (build_date() is fixed by
+|% --build-date), no random numbers, no access to Python internals.  The
+|% prohibitions remove what would break that or what a document does not need
+|% (classes, exceptions, generators, rebinding of names).
+|< Чого в ядрі немає
+Документ має збиратися однаково на будь-якій машині й будь-коли, тому в ядрі немає вводу-виводу (крім |`{load_*}), годинника (|`{build_date()} фіксується параметром |`{--build-date}), випадкових чисел і доступу до внутрішніх об'єктів Python. Конструкції, які це порушили б або документові не потрібні, заборонені; їх виявляє ще розбір коду, до обчислення, тому |`{primula check forbidden.prml} показує всі одразу.
+
+|table(cols=["30%", "14%", "*"], style="TableGrid"):
+|: Python |& Код |& Замість цього
+|: |`{import math}, |`{from … import} |& P2101 |& |`{||import("std/math")} у розмітці; модулі проєкту — |`{||import("lib/x.m.prml")}
+|: |`{class} |& P2101 |& |`{record(…)} для даних, функції для дій
+|: |`{try} / |`{except} / |`{raise} |& P2101 |& помилка зупиняє збирання з позицією; |`{fail("…")} — навмисна помилка; |`{getattr(r, "f", default)}, |`{d.get(k, default)}
+|: |`{lambda} |& P2101 |& коротка |`{def}
+|: декоратори |`{@property}, |`{@cache} … |& P2101 |& єдиний декоратор — |`{@export} над |`{def} верхнього рівня у фрагменті (розділ «Модулі й фрагменти»; не там — P2106)
+|: |`{yield}, |`{async}, |`{await} |& P2101 |& функція, що будує й повертає список
+|: |`{global}, |`{nonlocal}, |`{del} |& P2101 |& нове ім'я; глобальні імена незмінні
+|: |`{with open(…)} |& P2101 |& |`{load_csv}, |`{load_yaml}, |`{load_json}
+|: |`{{1, 2}}, множини |& P2101 |& словник або список із |`{not in}
+|: |`{a || b}, |`{&}, |`{^}, |`{<<}, |`{~} |& P2101 |& |`{{**a, **b}} для словників; |`{and}, |`{or}
+|: |`{x is 5} |& P2103 |& |`{x == 5}; |`{is} — лише з |`{None}
+|: |`{x: int = 5} |& P2101 |& анотацій немає
+|: |`{for … else} |& P2101 |& прапорець або |`{any(…)}
+|: |`{x.__class__} |& P2102 |& |`{type(x)}
+|: |`{x += 1} на верхньому рівні |& P2105 |& нове ім'я: |`{y = x + 1}
+|: |`{f"{d["k"]}"} |& P1208 |& |`{f"{d['k']}"} (синтаксис Python 3.11)
+|: |`{print(x)} |& P2201 |& |`{||(x)} у тексті; |`{debug(x)} — у звіт збирання
+|: |`{money(2.5e2, "UAH")} |& P2703 |& грошові суми — |`{decimal}: |`{250.00}, |`{dec("250")}
+|end table

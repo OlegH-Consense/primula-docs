@@ -1,0 +1,12 @@
+# Working-day calendar of the lender (standard library 5): the schedule
+# moves a payment date that falls on a day off to the next working day.
+#
+# While martial law is in force, holidays of art. 73 of the Labour Code of
+# Ukraine are not days off and days off are not moved (part 6 of art. 6 of
+# Law No. 2136-IX), so 'holidays' is empty.  Check the legal status for the
+# period of the schedule; after martial law fill 'holidays' and the moves
+# ('rest_days', 'workdays') from the official calendar.
+weekend: [sat, sun]
+holidays: []
+workdays: []
+rest_days: []

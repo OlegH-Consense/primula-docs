@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Primula Studio
+GenericName=Primula document editor
+Comment=Edit Primula documents and build ODT and PDF
+Exec="@STUDIO_DESKTOP_EXEC@" %f
+Icon=@STUDIO_DESKTOP_ICON@
+Terminal=false
+Categories=Office;Development;Qt;
+StartupNotify=true
+StartupWMClass=org.primula_docs.Studio

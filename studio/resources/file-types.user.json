@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "description": "Your file types for Primula Studio. Each type: name, patterns, open (editor, preview, system or command), command (a list: the program and its arguments; %f the file, %d its folder, %r the path from the project root), enabled (false switches a type off). A pattern given here replaces the built-in type of the same pattern. Save the file: Studio applies it at once.",
+  "types": [
+    {"name": "PlantUML", "patterns": ["*.puml", "*.plantuml"], "open": "command",
+     "command": ["plantuml-viewer", "%f"], "enabled": false}
+  ]
+}

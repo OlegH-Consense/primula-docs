@@ -1,0 +1,54 @@
+---
+kind: fragment
+---
+|% Topic 4: records (spec 12.6).
+|%
+|% record is a type Python does not have.  The nearest is
+|% collections.namedtuple, and the third column of the table shows what a
+|% namedtuple with the same fields gives — the differences are instructive:
+|%   * fields by name: r.назва and by key: r["назва"] (a namedtuple has no
+|%     r["…"]); field names are Unicode identifiers, normalized to NFKC;
+|%   * a record is NOT a sequence: len(r), iteration and "x in r" are errors
+|%     (a namedtuple is a tuple: "x in r" searches the VALUES — a silent bug
+|%     in Python).  A field is tested with hasattr(r, "назва");
+|%   * a missing field is an error (P2314); getattr(r, "ціна", 0) gives a
+|%     default;
+|%   * immutable: r.replace(кількість=4) returns a new record
+|%     (namedtuple: r._replace — names with "_" are not allowed in Primula);
+|%   * dict(r) turns a record into a dict, record(**d) a dict into a record;
+|%     a dict stays a dict: d.a is an error, write d["a"].
+|% Records come from the YAML header (params:), the project file and
+|% load_csv / load_yaml / load_json: a mapping is a record, a list of
+|% mappings is a list of records.
+|< Записи
+Запис (|`{record}) — незмінне значення з полями: |`{r.назва} або |`{r["назва"]}. У Python такого типу немає, найближчий — |`{collections.namedtuple}; третя колонка показує, що дав би |`{namedtuple} з тими самими полями. Записами є параметри із заголовка YAML, дані проєкту й результати |`{load_csv}, |`{load_yaml}, |`{load_json}.
+
+|code:
+r = record(назва="Папір", кількість=3)
+|end
+
+|table(cols=колонки, style="TableGrid"):
+|: Вираз |& Primula |& Python 3 (namedtuple)
+|: |`{r} |& |(показ(r)) |& R(назва='Папір', кількість=3)
+|: |`{r.назва} |& |(показ(r.назва)) |& 'Папір' · str
+|: |`{r["кількість"]} |& |(показ(r["кількість"])) |& TypeError
+|: |`{hasattr(r, "назва")} |& |(показ(hasattr(r, "назва"))) |& True · bool
+|: |`{"назва" in r} |& помилка P2301 |& False · bool (шукає серед значень!)
+|: |`{len(r)} |& помилка P2322 |& 2 · int
+|: |`{r.ціна} |& помилка P2314 (поля немає) |& AttributeError
+|: |`{getattr(r, "ціна", 0)} |& |(показ(getattr(r, "ціна", 0))) |& 0 · int
+|: |`{r.replace(кількість=4)} |& |(показ(r.replace(кількість=4))) |& r._replace(кількість=4)
+|: |`{dict(r)} |& |(показ(dict(r))) |& r._asdict()
+|end table
+
+Параметри із заголовка цього документа — теж записи й списки записів:
+
+|table(cols=колонки, style="TableGrid"):
+|: Вираз |& Primula |& Python 3
+|: |`{сторона.назва} |& |(показ(сторона.назва)) |& —
+|: |`{type(позиції[0])} |& |(показ(type(позиції[0]))) |& —
+|: |`{позиції[1].ціна} |& |(показ(позиції[1].ціна)) |& —
+|: |`{type(дата_договору)} |& |(показ(type(дата_договору))) |& —
+|end table
+
+Ціна |`{15.00} у заголовку YAML прочиталася як |`{decimal} з двома знаками, а дата без лапок — як |`{datetime}: YAML читається за правилами Primula, а не за загальною схемою YAML 1.2, у якій |`{15.00} — двійкове дробове число.

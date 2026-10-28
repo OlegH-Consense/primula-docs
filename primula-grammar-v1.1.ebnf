@@ -1,0 +1,431 @@
+/* ==========================================================================
+   Primula — grammar of the lexical structure and markup, v1.1-draft
+   Date: 2026-10-14. Primula Documenting System (primula-docs);
+   file extension .prml (sub-extensions .f .m .s .p); internal working
+   name: ngml.
+
+   Notation: W3C EBNF as defined in XML 1.0 (Fifth Edition), section 6:
+     Name ::= expr        rule
+     "x" 'x'              literal
+     [a-z] [^a-z]         character class / negated class
+     #xN                  character by code point
+     A?  A*  A+           optional, zero or more, one or more
+     A | B                alternative
+     A - B                A that does not match B
+     slash-asterisk ... asterisk-slash   comment (comments do not nest)
+   [C: ...] marks a constraint that the grammar cannot express and that
+   the translator checks after parsing; the constraint text is normative.
+
+   The computing core (expressions, arguments, code blocks) is a subset of
+   the Python grammar restricted by the node whitelist of the core
+   specification (spec section 12). Those parts are referenced here as
+   opaque nonterminals:
+     PyExpr       Python expression
+     PyArgs       Python call arguments (positional, key=value, *a, **k)
+     PyParams     Python function parameters
+     PyTarget     Python for-loop target
+     PyStatements Python statements (block of code)
+     PyString     Python string literal
+   They are parsed with ast.parse; bracket and string nesting inside them
+   follows Python rules, so a ')' inside a string does not end the args.
+
+   Preprocessing before this grammar applies (spec sections 2 and 3):
+     1. decoding UTF-8, line ends normalised to LF (#xA);
+     2. Unicode normalisation NFC;
+     3. the YAML header (if any) is split off.
+   Names written by the author are compared after NFKC normalisation
+   (spec section 3.9); the Unicode version is fixed by the language
+   version.
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. File
+   -------------------------------------------------------------------------- */
+
+File          ::= Header? Body
+Header        ::= "---" EOL YamlLine* "---" EOL
+                  /* [C: the header starts at the first line of the file;
+                      its content is YAML 1.2 data, no expressions] */
+YamlLine      ::= ( [^#xA]* - "---" ) EOL
+
+Body          ::= Block*
+                  /* [C: for kind: project the body is PyStatements,
+                      not markup] */
+
+EOL           ::= #xA
+WS            ::= ( #x20 | #x9 )
+Indent        ::= WS*
+BlankLine     ::= Indent EOL
+LineEnd       ::= WS* Comment? EOL
+                  /* end of a command line: optional spaces and a
+                     line comment (decision 34) */
+
+
+/* --------------------------------------------------------------------------
+   2. Names
+   -------------------------------------------------------------------------- */
+
+XidStart      ::= [A-Za-z] | [#x80-#x10FFFF]
+                  /* [C: the code point has the Unicode property
+                      XID_Start (UAX #31); the Unicode version is fixed
+                      by the language version] */
+XidContinue   ::= XidStart | [0-9] | "_" | [#x80-#x10FFFF]
+                  /* [C: the code point has the property XID_Continue] */
+Ident         ::= XidStart XidContinue*
+                  /* [C: names are compared after NFKC normalisation,
+                      case is significant; built-in commands and the
+                      predefined header keys are ASCII] */
+Name          ::= Ident ( "." Ident )*
+                  /* command name; dots separate module names */
+StyleName     ::= XidStart ( XidContinue | "-" )*
+                  /* style name; may contain '-' (#x2D).
+                     Used only after '|.' and in '|end.' */
+Args          ::= "(" PyArgs ")"
+                  /* [C: no whitespace between a name and '(';
+                      the arguments may span several lines: a line break
+                      inside the brackets does not end a line form;
+                      the same holds for '|(' and '|='] */
+Expr          ::= "|(" PyExpr ")"
+                  /* [C: the arguments of commands are core expressions
+                      evaluated in the evaluation phase; only path, part
+                      and key of |include must be known when the tree is
+                      built (spec sections 3.2, 3.6, 10.2)] */
+
+
+/* --------------------------------------------------------------------------
+   3. Blocks (line level)
+   A block construct starts at the beginning of a source line after
+   optional indentation. A line form ends at the end of the source line;
+   there is no other line mode.
+   [C: the key 'lines' in the header 'primula:' is an error; a comment-only
+       line is removed before boundaries are determined]
+   -------------------------------------------------------------------------- */
+
+/* [C: the alternatives of Block are an ordered choice (as in PEG): the
+    first alternative that matches the line wins. A long command at the
+    start of a line is a LineCommand only when the line ends after its
+    arguments or continues with the ':' forms; otherwise the line is text
+    and the command is inline (for example '|img("a.png") у тексті')] */
+
+Block         ::= BlankLine
+                | LineComment
+                | CommentBlock
+                | VerbatimBlock
+                | CodeBlock
+                | Heading
+                | Clause
+                | ListItem
+                | Admonition
+                | ParagraphStyle
+                | TableRow
+                | IfBlock
+                | ForBlock
+                | DefBlock
+                | ParallelBlock
+                | LineCommand
+                | Paragraph
+
+Paragraph     ::= TextLine+
+                  /* consecutive text lines form one paragraph;
+                     a single EOL inside a paragraph is a space */
+TextLine      ::= Indent Inline+ EOL
+                  /* tried after all other Block alternatives */
+
+LineComment   ::= Indent "|%" [^#xA]* EOL
+                  /* a line consisting only of a comment disappears */
+
+
+/* 3.1 Headings, clauses, list items, admonitions ------------------------- */
+
+Heading       ::= Indent "|" "<"+ Args? WS+ Inline+ EOL
+                  /* [C: the level is the number of '<' (1..6), or, with a
+                      single '<', the argument level=N (1..6), a core
+                      expression evaluated in the evaluation phase; both
+                      at once is an error. '|>', '|-', '|#' have no level
+                      argument. Always ends at the end of the source
+                      line] */
+
+Clause        ::= Indent "|" ">"+ Args? ( LineBody | EnvBody CloseClause )
+                  /* level = number of '>'.
+                     [C: implicit clause region (spec section 3.6): all
+                      following blocks belong to the clause except those
+                      that close it: a Paragraph or ParagraphStyle, a
+                      Heading, a Clause of the same or higher level, the
+                      structural and page commands page, newpage, section,
+                      appendix, scope, document, toc, list_of, header,
+                      footer, an IfBlock or ForBlock that has a Heading or
+                      a Clause of the same or higher level at its top
+                      level, the end of the enclosing environment or file.
+                      |include is transparent: the blocks of the fragment
+                      are treated as if they stood in its place] */
+
+ListItem      ::= Indent "|" ListMarker Args? WS+ Inline+ EOL
+                  /* [C: the prefix characters of the marker must match
+                      the types of the parent items; mixing bullet and
+                      numbered items on one level of one list and skipping
+                      a level are errors] */
+ListMarker    ::= [#x2D#x23]+
+                  /* characters '-' and '#'; length = level,
+                     the last character = item type:
+                     '-' bullet, '#' numbered */
+
+Admonition    ::= Indent "|!" Args ( LineBody | EnvBody CloseAdm )
+                  /* first positional argument = kind:
+                     danger | warning | caution | notice | note | tip.
+                     [C: implicit region as for Clause] */
+
+ParagraphStyle ::= Indent "|." StyleRef Args? ( ColonLineBody | EnvBody CloseStyle )
+                  /* '|.Note: текст' or '|.Note:' ... '|end.Note' */
+StyleRef      ::= StyleName | "(" PyExpr ")"
+
+
+/* 3.2 Bodies ------------------------------------------------------------- */
+
+LineBody      ::= WS+ Inline+ EOL
+                  /* single-line form */
+EnvBody       ::= ":" LineEnd Block*
+                  /* environment form: ':' at the end of the line */
+ColonLineBody ::= ":" WS+ Inline+ EOL
+                  /* line form of a long command: '|name: text'
+                     [C: recognised only when the command is the first
+                      thing on the line; elsewhere ':' is text.
+                      A literal colon after such a command is written
+                      after an empty separator: '|name|;: text'] */
+
+
+/* 3.3 Closing environments ----------------------------------------------- */
+
+Close         ::= Indent "|end" ( CloseTag )? LineEnd
+CloseTag      ::= ">"+                     /* clause of that level */
+                | "!"                      /* admonition */
+                | "." StyleName            /* paragraph style */
+                | WS+ Name                 /* named environment */
+CloseClause   ::= Close
+CloseAdm      ::= Close
+CloseStyle    ::= Close
+                  /* [C: '|end' without a tag closes the nearest open
+                      environment; with a tag the tag must match it.
+                      Canonical names: '>' = clause, '!' = admonition,
+                      '|end clause' closes the nearest clause of any
+                      level, '|end>', '|end>>' ... check the level;
+                      '.Name' or 'style' = paragraph style.
+                      A closing marker always occupies a whole line.
+                      Gluing 'end' to an arbitrary name is not allowed;
+                      only '|endif', '|endfor', '|enddef' exist.
+                      '|end' and '|end name' never close |if, |for, |def;
+                      if the nearest open construct is one of them, an
+                      anonymous '|end' is an error] */
+
+
+/* 3.4 Long line commands and environments --------------------------------- */
+
+LineCommand   ::= Indent "|" Name Args? ( LineEnd
+                                        | ColonLineBody
+                                        | EnvBody Close )
+                  /* examples: |page("Landscape"):  ...  |end page
+                               |list("LetterList")
+                               |newpage
+                               |include("fragments/warranty.f.prml")
+                               |table(...):  rows  |end table
+                     [C: '|end name' must name the command] */
+
+
+/* 3.5 Tables --------------------------------------------------------------
+   Inside '|table(...):' ... '|end table' only these blocks are allowed:
+   TableRow, Row environments ('|row:'), '|caption:' environment,
+   IfBlock, ForBlock, CodeBlock, '|include' (the inserted blocks are
+   subject to the same restrictions), comments and blank lines.
+   Inside '|row:' ... '|end row' '|include' may insert cells.
+   [C: '|let' and '|set' in a table or row body are errors]            */
+
+TableRow      ::= Indent "|:" Args? Cells EOL
+Cells         ::= ( WS* Cell )*
+Cell          ::= ( "|&" Args? )? CellContent
+                  /* the first cell has no '|&' unless it carries
+                     arguments: '|:|&(span=3) Разом'.
+                     [C: '|&' directly after '|:' (or after the row
+                      Args), without white space, belongs to the
+                      first cell; '|: |& Б' — with a space — starts
+                      with an empty first cell] */
+CellContent   ::= ( Inline - "|&" )*
+Formula       ::= "|=(" PyExpr ")"
+                  /* [C: allowed only in a table cell] */
+
+
+/* 3.5a Parallel tracks (spec section 7.7) ---------------------------------
+   Inside '|parallel(...):' ... '|end parallel' only these blocks are
+   allowed: SegmentBlock, IfBlock, ForBlock, CodeBlock, '|include' (the
+   inserted blocks are subject to the same restrictions), comments and
+   blank lines.                                                           */
+
+ParallelBlock ::= Indent "|parallel" Args? ":" LineEnd ParallelItem* Close
+                  /* [C: '|end' or '|end parallel'; at least two tracks] */
+ParallelItem  ::= BlankLine | LineComment | CommentBlock | SegmentBlock
+                | IfBlock | ForBlock | CodeBlock | LineCommand
+                  /* [C: LineCommand only '|include'; IfBlock, ForBlock and
+                      included blocks contain only ParallelItem] */
+
+SegmentBlock  ::= Indent "|segment" Args? ( ":" LineEnd SegmentBody Close
+                                          | ( WS+ TrackInline )+ EOL )
+SegmentBody   ::= ( BlankLine | LineComment )* TrackBlock+
+                | Block*
+                  /* [C: Block* only with span="all", TrackBlock otherwise;
+                      the forbidden commands of spec section 7.7 are
+                      errors in both; '|end' or '|end segment'] */
+TrackBlock    ::= Indent "|track" Args ":" LineEnd Block*
+                  /* [C: a track block ends before the next TrackBlock or
+                      before the close of the segment; the implicit clause
+                      region (spec section 3.6) ends there too] */
+TrackInline   ::= "|track" Args InlineBody
+                  /* the body is the inline markup of one paragraph */
+
+
+/* 3.6 Control constructs -------------------------------------------------- */
+
+IfBlock       ::= Indent "|if(" PyExpr ")" EnvBody ElseEnv* Indent "|endif" LineEnd
+ElseEnv       ::= Indent ( "|elif(" PyExpr ")" | "|else" ) ":" LineEnd Block*
+
+ForBlock      ::= Indent "|for(" PyTarget WS+ "in" WS+ PyExpr ")"
+                  EnvBody Indent "|endfor" LineEnd
+                  /* block forms are environments only; '|if(c){...}' and
+                     '|for(...){...}' at the start of a line are inline
+                     forms (InlineIf, InlineFor) inside a Paragraph or a
+                     table cell */
+
+DefBlock      ::= Indent "|def" WS+ Ident "(" PyParams ")" ":" LineEnd
+                  Block* Indent "|enddef" LineEnd
+                  /* user command (macro); the body is markup and is
+                     passed to the function as parameter 'body' */
+
+LetCommand    ::= "|let(" PyArgs ")"
+                  /* [C: 'export' and 'override' are reserved keyword
+                      arguments of |let] */
+
+
+/* 3.7 Code, comments, verbatim --------------------------------------------- */
+
+CodeBlock     ::= Indent "|code:" LineEnd CodeLine* Indent "|end" LineEnd
+CodeLine      ::= ( [^#xA]* - ( Indent "|end" WS* Comment? ) ) EOL
+                  /* the lines form PyStatements; '|' is not markup
+                     inside a code block.
+                     [C: the indentation of the opening line (the same
+                      prefix, character by character) is removed from
+                      every line; a non-empty line with a smaller or
+                      different indentation is an error. The same rule
+                      applies to VerbatimBlock] */
+
+CommentBlock  ::= Indent "|comment:" LineEnd Block* Close
+                  /* only environment balance is checked inside */
+
+VerbatimBlock ::= Indent "|verbatim" ( "(end=" PyString ")" )? ":" LineEnd
+                  VerbatimLine* EndMarker
+VerbatimLine  ::= [^#xA]* EOL
+                  /* [C: the block ends at the first line equal to the
+                      end marker; default marker is '|end'; the end
+                      marker is compared literally, no comment may follow
+                      it] */
+EndMarker     ::= Indent [^#xA]+ EOL
+
+
+/* --------------------------------------------------------------------------
+   4. Inline level
+   -------------------------------------------------------------------------- */
+
+Inline        ::= Text
+                | Escape
+                | Expr
+                | Formula
+                | InlineIf
+                | InlineFor
+                | InlineShort
+                | StyleSpan
+                | Reference
+                | InlineCommand
+                | Comment
+
+Text          ::= TextChar+
+TextChar      ::= [^|#xA]
+                  /* '{' and '}' are text outside bodies;
+                     inside InlineBody they must be balanced */
+
+Escape        ::= "||"          /* literal '|'                 */
+                | "|{" | "|}"   /* literal braces              */
+                | "|;"          /* empty separator             */
+                | "|~"          /* no-break space              */
+                | "|\"          /* line break inside paragraph */
+
+Comment       ::= "|%" [^#xA]*  /* to the end of the line      */
+
+InlineIf      ::= "|if(" PyExpr ")" InlineBody InlineElse*
+InlineElse    ::= WS* ( "|elif(" PyExpr ")" InlineBody | "|else" InlineBody )
+                  /* whitespace between '}' and '|elif' / '|else' belongs
+                     to the construct and is not output.
+                     [C: a paragraph consisting only of InlineIf,
+                      InlineFor and whitespace that is empty after
+                      evaluation is not output] */
+InlineFor     ::= "|for(" PyTarget WS+ "in" WS+ PyExpr ")" InlineBody
+
+InlineShort   ::= "|" InlineMark Args? InlineBody
+InlineMark    ::= "*"   /* bold                    */
+                | "/"   /* italic                  */
+                | "_"   /* underline               */
+                | "^"   /* superscript             */
+                | ","   /* subscript               */
+                | "`"   /* monospace               */
+                | '"'   /* quotes of the language  */
+                | "?"   /* draft placeholder       */
+                | #x2014 /* strikethrough: em dash U+2014, "|—{…}" */
+
+StyleSpan     ::= "|." StyleRef Args? InlineBody
+                  /* character style */
+
+Reference     ::= "|@" Args
+                  /* |@("id"), |@("id", "label"|"title"|"page") */
+
+InlineCommand ::= "|" Name Args? InlineBody?
+                  /* examples: |img("logo.png", height="8mm")
+                               |footnote{текст}
+                               |field.page
+                     [C: a letter directly after a command name needs the
+                      empty separator '|;'] */
+
+InlineBody    ::= "{" BodyItem* "}"
+BodyItem      ::= Inline | "{" BodyItem* "}" | EOL
+                  /* may span lines; braces are counted by balance */
+
+
+/* --------------------------------------------------------------------------
+   5. Character after '|'
+   -------------------------------------------------------------------------- */
+
+ShortChar     ::= [#x21-#x2F#x3A-#x40#x5B-#x60#x7B-#x7E] | [#x80-#x10FFFF]
+                  /* [C: ASCII punctuation, or a single code point of the
+                      Unicode general category P* or S*; the Unicode
+                      version is fixed by the language version] */
+
+/* [C: the character after '|' decides the construct by syntax alone:
+       '|'                 literal
+       XidStart            long command
+       '('                 expression
+       ShortChar           short form; a short form that is not defined is
+                           an error (this includes the em dash U+2014,
+                           category Pd, defined as strikethrough)
+       space, end of line, digit, control character, other categories
+                           error
+       Reserved short forms: '|$', '|[', '|]' and any other P*/S*
+       character not listed in spec section 3.3] */
+
+
+/* --------------------------------------------------------------------------
+   6. Reserved names
+   [C: user definitions (|def, |let, code) may not use:
+       if elif else endif for endfor def enddef let code end comment
+       verbatim, Python keywords, names of built-in commands.
+       Built-in command names (table, page, newpage, newcolumn, section,
+       header, footer, img, figure, frame, include, import, document,
+       part, scope, appendix, toc, list_of, footnote, endnote, set,
+       block, list, row, cell, caption, field.*, watermark, abbr, index,
+       export, fmt, call) are not overridable; library functions of style
+       modules (for example admonition) are overridable]
+   -------------------------------------------------------------------------- */

@@ -1,0 +1,8 @@
+---
+kind: project
+name: "{{title_yaml}}"
+language: {{lang}}
+styles: [styles/local.s.prml]
+targets:
+  - {source: {{name}}.prml, output: build/{{name}}.odt, pdf: true}
+---

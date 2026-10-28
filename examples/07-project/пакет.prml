@@ -1,0 +1,19 @@
+---
+doc:
+  title: "Пакет документів за договором про технічне обслуговування"
+  language: uk-UA
+---
+|% Example 7: a compound document (spec 10.7).  Each |document is a part:
+|% its own header, parameters and names, its own numbering scope; IDs of a
+|% part are "scope:id".  A part starts on a new page; page= sets its page
+|% style.  The table of contents is common.  Parameters of the acts come
+|% from the function of the project code section.
+|<(number=False) Пакет документів за договором № |(договір.номер)
+|.Місце-дата: Замовник: |(замовник.назва). Виконавець: |(виконавець.назва).
+
+|toc(title="ЗМІСТ")
+|document("договір.prml", scope="договір")
+|document("реєстр.prml", scope="реєстр", page="Альбомна")
+|document("акт.prml", scope="акт-1", params=параметри_акта(акти[0]))
+|document("акт.prml", scope="акт-2", params=параметри_акта(акти[1]))
+|document("акт.prml", scope="акт-3", params=параметри_акта(акти[2]))

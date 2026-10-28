@@ -1,0 +1,42 @@
+# Packaging of the Primula Documenting System prototype.
+# PEP 621 metadata: https://packaging.python.org/en/latest/specifications/pyproject-toml/
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "primula-docs"
+version = "0.3.0.dev11"
+description = "Primula Documenting System: translator of Primula markup (.prml) to ODT"
+readme = "README.md"
+requires-python = ">=3.11"
+# Code under Apache-2.0; documentation CC BY 4.0, examples CC0 (LICENSING.md of the public repository).
+license = { text = "Apache-2.0" }
+authors = [{ name = "Oleg Kh" }]
+dependencies = [
+    "PyYAML>=6.0,<7",
+]
+
+[project.optional-dependencies]
+# Font metrics for "auto" table columns (stage 13.7).
+metrics = ["fonttools>=4.40"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+primula = "primula.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+# Data files: ODF attribute list (11.8), built-in styles module (decision 55).
+primula = ["styles/odf_attributes.txt", "stdlib/**/*.prml"]
+
+[tool.pytest.ini_options]
+# Run tests against the source tree without installing the package.
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+    "soffice: needs LibreOffice (soffice) in PATH",
+    "xmllint: needs xmllint for ODF RelaxNG validation",
+]

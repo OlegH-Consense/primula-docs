@@ -1,0 +1,21 @@
+---
+doc:
+  title: "{{title_yaml}}"
+  language: {{lang}}
+params:
+  date: {{date}}
+  sender: "{{s.sender}}"
+  addressee: "{{s.addressee}}"
+  signer: "{{s.signer}}"
+---
+|.Body: |*{|(sender)}
+|.Body: |(fmt_date(date, "long"))
+
+|.Body: |(addressee)
+
+|<(number=False) |(doc.title)
+{{s.greeting}}
+
+{{s.text}}
+
+|.Body: {{s.regards}}|\|(signer)

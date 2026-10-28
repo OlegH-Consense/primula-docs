@@ -1,0 +1,58 @@
+---
+kind: fragment
+---
+|% Topic 2: strings (spec 12.5, 12.10, 2.1).
+|%
+|% As in Python 3: a string is a sequence of Unicode characters (code points),
+|% not bytes: len("Київ") == 4, indexing, slices and iteration work on
+|% characters.  The source is normalized to NFC when it is read (2.1), so
+|% "й" typed as и + U+0306 is one character.
+|%
+|% Differences from Python:
+|%   * only the methods listed in 12.10 exist: split, rsplit, splitlines,
+|%     join, strip/lstrip/rstrip, replace, startswith, endswith, find, rfind,
+|%     count, upper, lower, capitalize, title, isdigit, isalpha, isspace,
+|%     zfill, format.  center(), ljust(), partition(), encode() … are errors
+|%     (P2313 "has no attribute");
+|%   * f-strings follow Python 3.11: a quote of the same kind inside the
+|%     braces is an error (P1208) — f"{d["k"]}" works in Python 3.12+, here
+|%     write f"{d['k']}";
+|%   * str.format() allows positional and named fields with [index] and a
+|%     format spec; attribute access "{0.name}" is an error (P2330): it would
+|%     reach object internals.  A record field is read by key: "{0[name]}";
+|%   * format specs (:,.2f, :>8) are Python's and know nothing of the
+|%     document language: 1,234.50 is English grouping.  For text in the
+|%     document use num(), money(), fmt_date() — they follow doc.language;
+|%   * repetition "x" * n needs an integer value, a fraction is P2322.
+|% %-formatting ("%s: %d" % (…)) is allowed as in Python.
+|< Рядки
+Рядок — послідовність символів Unicode, як у Python 3. Вихідний текст нормалізується до NFC під час читання, тому літера, набрана з комбінованим знаком, — один символ.
+
+|table(cols=колонки, style="TableGrid"):
+|: Вираз |& Primula |& Python 3
+|: |`{len("Київ")} |& |(показ(len("Київ"))) |& 4 · int
+|: |`{"Київ"[0]} |& |(показ("Київ"[0])) |& 'К' · str
+|: |`{"Київ"[::-1]} |& |(показ("Київ"[::-1])) |& 'вїиК' · str
+|: |`{"абв".upper()} |& |(показ("абв".upper())) |& 'АБВ' · str
+|: |`{"a; b".split("; ")} |& |(показ("a; b".split("; "))) |& ['a', 'b'] · list
+|: |`{"7".zfill(3)} |& |(показ("7".zfill(3))) |& '007' · str
+|: |`{"abc".center(7)} |& помилка P2313 (методу немає) |& '  abc  ' · str
+|: |`{"x" * 3} |& |(показ("x" * 3)) |& 'xxx' · str
+|: |`{"x" * 2.5} |& помилка P2322 |& TypeError
+|: |`{"%s: %d" % ("n", 3)} |& |(показ("%s: %d" % ("n", 3))) |& 'n: 3' · str
+|end table
+
+f-рядки й |`{str.format} працюють як у Python 3.11, з двома обмеженнями: усередині фігурних дужок f-рядка не можна вживати лапки того самого виду, що й навколо рядка, а поле формату не звертається до атрибутів (|`{{0.name}}) — поле запису читається за ключем (|`{{0[name]}}). Специфікація формату (|`{:,.2f}) — англійська й мови документа не знає; для тексту документа є |`{num()} і |`{money()}.
+
+|table(cols=колонки, style="TableGrid"):
+|: Вираз |& Primula |& Python 3
+|: |`{f"{2.20:>8}"} |& |(показ(f"{2.20:>8}")) |& '     2.2' · str
+|: |`{f"{1234.5:,.2f}"} |& |(показ(f"{1234.5:,.2f}")) |& '1,234.50' · str
+|: |`{num(1234.5, 2)} |& |(показ(num(1234.5, 2))) |& —
+|: |`{f"{'a'}"} |& |(показ(f"{'a'}")) |& 'a' · str
+|: |`{f"{"a"}"} |& помилка P1208 (лапки того самого виду) |& 'a' · str (з 3.12)
+|: |`{"{0[name]}".format(record(name="x"))} |& |(показ("{0[name]}".format(record(name="x")))) |& —
+|: |`{"{0.name}".format(record(name="x"))} |& помилка P2330 |& —
+|end table
+
+У рядку |`{num()} |`{\xa0} — нерозривний пробіл між групами розрядів: так число не розривається в кінці рядка. Зверніть увагу й на перший рядок: |`{2.20} — це |`{decimal} з двома знаками, тому f-рядок виводить «2.20», а Python — «2.2».

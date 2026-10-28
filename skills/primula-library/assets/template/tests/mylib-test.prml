@@ -1,0 +1,16 @@
+---
+doc: {title: "mylib: перевірка", language: uk-UA}
+---
+|% Test document: expect() calls fail() at the first difference, so
+|% "primula check" exits with code 2 and names the expectation.
+|import("../mylib")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+
+expect("rate_on", mylib.rate_on(date(2026, 10, 26)), 20)
+expect("amount", mylib.amount(dec("100.00"), date(2026, 10, 26)), dec("120.00"))
+|end
+mylib |(mylib.VERSION): |(money(mylib.amount(dec("100.00"), date(2026, 10, 26)), "UAH")).

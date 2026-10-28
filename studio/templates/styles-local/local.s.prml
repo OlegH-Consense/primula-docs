@@ -1,0 +1,10 @@
+---
+kind: styles
+extends: std/styles/business
+defaults: {font: Liberation Serif, size: 12pt, language: {{lang}}}
+paragraphs:
+  Signature: {parent: Body, align: left, space_before: 8mm}
+characters:
+  Accent: {bold: true, color: "#1F4E79"}
+---
+# {{s.comment}}

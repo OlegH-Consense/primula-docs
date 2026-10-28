@@ -1,0 +1,55 @@
+|% Module 'фінанси' (the namespace is the file name without .m.prml, spec 10.3):
+|% annuity and payment schedule on top of the standard library (stage 13.9):
+|% add_months, workdays with a calendar, round_money.
+|% Names are Unicode identifiers (spec 3.9); names starting with '_' are private.
+|code:
+def ануїтет(сума, річна_ставка, місяців):
+    """Monthly annuity payment, rounded to kopecks.
+
+    P = S·r / (1 − (1 + r)^−n), r — monthly rate.  Decimal arithmetic:
+    a negative integer power stays decimal (spec 12.4).
+    """
+    r = річна_ставка / 100 / 12
+    return round_money(сума * r / (1 - (1 + r) ** -місяців))
+
+def _дата_платежу(видача, день, k):
+    """The payment day of the k-th month after the month of issue, clipped to the month length."""
+    перше = add_months(date(видача.year, видача.month, 1), k)
+    днів_у_місяці = add_months(перше, 1) - перше
+    return перше + (min(день, днів_у_місяці) - 1)
+
+def графік(сума, річна_ставка, місяців, видача, день_платежу, календар=None):
+    """Payment schedule: a list of records, one per month.
+
+    The first payment falls on the payment day of the issue month if that
+    day is still ahead, otherwise of the next month (30 → 28 February).  A
+    date on a day off moves to the next working day of the calendar:
+    workdays(d − 1, 1) is d itself when d is a working day.  Interest
+    accrues on the actual number of days at the rate per year of 365 days;
+    the last payment closes the remaining debt exactly.
+    """
+    платіж = ануїтет(сума, річна_ставка, місяців)
+    рядки = []
+    залишок = сума
+    попередня = видача
+    зсув = 0 if день_платежу > видача.day else 1
+    for i in range(1, місяців + 1):
+        планова = _дата_платежу(видача, день_платежу, i - 1 + зсув)
+        дата = workdays(планова - 1, 1, calendar=календар)
+        днів = дата - попередня
+        відсотки = round_money(залишок * річна_ставка / 100 * днів / 365)
+        тіло = залишок if i == місяців else платіж - відсотки
+        рядки.append(record(n=i, дата=дата, днів=днів, залишок=залишок,
+                            тіло=тіло, відсотки=відсотки, перенесено=дата != планова))
+        залишок -= тіло
+        попередня = дата
+    return рядки
+|end
+
+|% A macro with Unicode parameters; its body is markup.
+|def підпис(сторона, роль):
+|.Підпис:
+|*{|(роль)}|\
+|(сторона.посада) _________ |(сторона.підписант)
+|end.Підпис
+|enddef

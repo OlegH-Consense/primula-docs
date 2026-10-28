@@ -1,0 +1,88 @@
+---
+doc:
+  title: "Модуль X300. Настанова з експлуатації"
+  identifier: "X300 НЕ"
+  language: uk-UA
+params:
+  model: "X300"
+  features: [wifi, display]
+  draft: true
+styles: [std/styles/default, styles/manual.s.prml]
+---
+|% Example 3: technical manual — variants (when=/has), fragments, figures,
+|% frames, columns, page styles, headers and footers, watermark.
+|% Standard library: qty, qty_range, convert, words, plural; unit() in the styles module.
+|% Technical documentation (stage 13.10): |! warnings with a symbol, notes and a tip,
+|% abbreviations |abbr with a list, the alphabetical index |index; run.sh also builds
+|% this example with --review (all variants marked).
+|% Try: change 'features' or 'draft' in the header and rebuild.
+|let(напруга=24 if model == "X300" else 230)
+|if(draft):
+|watermark("ЧЕРНЕТКА", opacity=30)
+|endif
+|frame(rel="page", x="170mm", y="12mm", width="22mm"):
+|img("img/logo.svg", width="20mm")
+|end frame
+|<(number=False) Модуль |(model): настанова з експлуатації
+|toc(title="ЗМІСТ")
+
+|< Загальні відомості
+|> Модуль |(model) призначений для збирання показів датчиків (|@("f-scheme", "label")).
+|>(when=has("wifi")) Модуль передає дані мережею Wi-Fi 802.11 b/g/n.
+|>(when=has("bluetooth")) Модуль передає дані через Bluetooth LE.
+|>(when=has("display")) На передній панелі розташовано |abbr("РКІ", "рідкокристалічний індикатор")|index("індикатор", sub="рідкокристалічний").
+
+|figure("img/scheme.svg", id="f-scheme", width="120mm"):
+Схема підключення модуля
+|end figure
+
+|< Вимоги безпеки
+|include("fragments/power", voltage=напруга)
+|!("danger", hazard="Небезпечна напруга на клемах живлення", consequence="Дотик до клем під напругою може спричинити ураження електричним струмом.", symbol="img/sign-warning.svg"):
+Перед підключенням і обслуговуванням модуля:
+
+|- вимкніть живлення;
+|- перевірте відсутність напруги на клемах.
+|end!
+
+|!("notice") Не встановлюйте модуль поблизу джерел тепла: перегрів скорочує строк служби |abbr("РКІ", text="рідкокристалічного індикатора").
+|abbr("ЕМС", "електромагнітна сумісність", show=False)
+
+|< Технічні характеристики
+|table(id="t-spec", caption="Основні параметри", cols=["*", col("35mm", align="right")], header=1):
+|: Параметр |& Значення
+|: Напруга живлення |& |(qty(напруга, "V"))
+|: Споживаний струм |& |(qty(0.15, "A")) (|(qty(convert(0.15, "A", "mA"), "mA")))
+|:(when=has("wifi")) Діапазон Wi-Fi |& |(qty(2.4, "GHz"))
+|: Діапазон робочих температур |& |(qty_range(-20, 55, "degC"))
+|end table
+
+|!("note") Значення наведено для температури навколишнього повітря |(qty(20, "degC")).
+
+|!("note") Модуль відповідає вимогам щодо |abbr("ЕМС") для промислових зон.
+
+|< Обслуговування
+|section(cols=2, gap="6mm", rule="0.5pt solid"):
+|.Body-b0: Щомісяця перевіряйте затягування клем, стан кабелів і чистоту вентиляційних отворів.
+
+Щороку виконуйте повірку|index("повірка") вимірювального каналу відповідно до методики, наведеної в додатку до паспорта виробу. Результати заносьте до журналу обслуговування.
+|img("img/logo.svg", height="12mm", place="right", wrap="side")
+Під час обслуговування модуль відключають від мережі. Замінювати запобіжник|index("запобіжник") дозволено лише на запобіжник того самого номіналу.
+|end section
+
+|!("tip") Записи до журналу обслуговування|index("журнал обслуговування") зручно вести одразу після робіт.
+
+|page("Landscape")
+|< Журнал обслуговування
+|table(cols=["25mm", "*", "*", "40mm"], header=1):
+|: Дата |& Вид робіт |& Виконавець |& Підпис
+|for(i in range(5)):
+|:|& |& |& |&
+|endfor
+|end table
+
+|page("Portrait")
+|list_of("figure", title="ПЕРЕЛІК РИСУНКІВ")
+|list_of("table", title="ПЕРЕЛІК ТАБЛИЦЬ")
+|list_of("abbr")
+|list_of("index")

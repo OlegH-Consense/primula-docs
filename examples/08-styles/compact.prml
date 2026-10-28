@@ -1,0 +1,44 @@
+---
+doc:
+  title: "Набір стилів compact"
+  language: uk-UA
+styles: [std/styles/compact]
+---
+|% Gallery of std/styles/compact (stage 15.3): a dense quick reference in two
+|% columns — small type, narrow margins, compact tables and code.
+|<(number=False) Пам'ятка: команди Primula
+|section(cols=2, gap="5mm", balance=False):
+|<<(number=False) Перевірка і збирання
+|- |.Code{primula check ФАЙЛ} — перевірка без запису ODT;
+|- |.Code{primula build ФАЙЛ -o out.odt --pdf} — ODT і PDF;
+|- |.Code{--strict} — попередження стають помилками;
+|- |.Code{--param назва=значення} — параметр збирання.
+
+|<<(number=False) Вигрузки
+|table(header=1, cols=["45%", "*"]):
+|: Параметр |& Що дає
+|: |.Code{--dump-styles} |& стилі за шарами
+|: |.Code{--dump-structure} |& структура й ID
+|: |.Code{--dump-project} |& опис проєкту
+|end table
+
+|newcolumn
+|<<(number=False) Стилі комплекту
+|table(header=1, cols=["35%", "*"]):
+|: Модуль |& Призначення
+|: business |& договори, акти, рахунки
+|: letter |& службові листи
+|: technical |& настанови, інструкції
+|: report |& звіти за ДСТУ 3008
+|: compact |& пам'ятки, довідки
+|end table
+
+|<<(number=False) Свій модуль стилів
+|.Preformatted: ---
+|.Preformatted: kind: styles
+|.Preformatted: extends: std/styles/business
+|.Preformatted: defaults: {size: 11pt}
+|.Preformatted: ---
+
+|.Note: Модуль містить лише відмінності від набору.
+|end section

@@ -1,0 +1,55 @@
+{
+ "kind": "document",
+ "order": 30,
+ "title": {
+  "en": "Document from fragments",
+  "uk": "Документ із фрагментів",
+  "ru": "Документ из фрагментов"
+ },
+ "description": {
+  "en": "The main document includes two fragments from fragments/: a plain one and one with a parameter and named parts.",
+  "uk": "Основний документ підключає два фрагменти з fragments/: простий і з параметром та іменованими частинами.",
+  "ru": "Основной документ подключает два фрагмента из fragments/: простой и с параметром и именованными частями."
+ },
+ "files": [
+  {
+   "from": "main.prml",
+   "to": "{{name}}.prml",
+   "open": true
+  },
+  {
+   "from": "intro.f.prml",
+   "to": "fragments/{{name}}-intro.f.prml"
+  },
+  {
+   "from": "terms.f.prml",
+   "to": "fragments/{{name}}-terms.f.prml"
+  }
+ ],
+ "strings": {
+  "en": {
+   "terms": "Terms",
+   "intro_title": "Introduction",
+   "intro_text": "Text of the introduction from a fragment.",
+   "warranty": "The warranty period is",
+   "months": "months",
+   "service": "Service is provided by the manufacturer."
+  },
+  "uk": {
+   "terms": "Умови",
+   "intro_title": "Вступ",
+   "intro_text": "Текст вступу з фрагмента.",
+   "warranty": "Гарантійний строк становить",
+   "months": "місяців",
+   "service": "Обслуговування забезпечує виробник."
+  },
+  "ru": {
+   "terms": "Условия",
+   "intro_title": "Введение",
+   "intro_text": "Текст введения из фрагмента.",
+   "warranty": "Гарантийный срок составляет",
+   "months": "месяцев",
+   "service": "Обслуживание обеспечивает производитель."
+  }
+ }
+}

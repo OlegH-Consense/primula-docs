@@ -1,0 +1,32 @@
+{
+ "kind": "styles",
+ "order": 10,
+ "title": {
+  "en": "Local styles layer",
+  "uk": "Локальний шар стилів",
+  "ru": "Локальный слой стилей"
+ },
+ "description": {
+  "en": "A small layer over a styles set of the kit (extends: std/styles/business): defaults and two styles.",
+  "uk": "Невеликий шар над набором стилів комплекту (extends: std/styles/business): типові параметри й два стилі.",
+  "ru": "Небольшой слой над набором стилей комплекта (extends: std/styles/business): параметры по умолчанию и два стиля."
+ },
+ "files": [
+  {
+   "from": "local.s.prml",
+   "to": "{{name}}.s.prml",
+   "open": true
+  }
+ ],
+ "strings": {
+  "en": {
+   "comment": "Name only this module in 'styles'; its base is in extends (business, letter, technical, report, compact or default)."
+  },
+  "uk": {
+   "comment": "У 'styles' називайте лише цей модуль; його основа — в extends (business, letter, technical, report, compact або default)."
+  },
+  "ru": {
+   "comment": "В 'styles' называйте только этот модуль; его основа — в extends (business, letter, technical, report, compact или default)."
+  }
+ }
+}

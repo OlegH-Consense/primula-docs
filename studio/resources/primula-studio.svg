@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Primula Studio icon: a document page with a primrose (Primula vulgaris) flower. -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="page" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6fb4ec"/>
+      <stop offset="1" stop-color="#3a86cc"/>
+    </linearGradient>
+    <!-- One notched petal pointing up from the flower centre (32, 36). -->
+    <path id="petal" d="M32 36 C25 30 23 22 27.5 18.5 C29.5 17 31 18.5 32 20.5 C33 18.5 34.5 17 36.5 18.5 C41 22 39 30 32 36 Z"/>
+  </defs>
+  <rect x="8" y="4" width="48" height="56" rx="7" fill="url(#page)"/>
+  <path d="M44 4h5l7 8v5H44z" fill="#cfe6f8"/>
+  <path d="M15 12h20M15 17h14" stroke="#e6f2fc" stroke-width="2.5" stroke-linecap="round"/>
+  <g fill="#f7e27a" stroke="#d9a520" stroke-width="1">
+    <use xlink:href="#petal"/>
+    <use xlink:href="#petal" transform="rotate(72 32 36)"/>
+    <use xlink:href="#petal" transform="rotate(144 32 36)"/>
+    <use xlink:href="#petal" transform="rotate(216 32 36)"/>
+    <use xlink:href="#petal" transform="rotate(288 32 36)"/>
+  </g>
+  <circle cx="32" cy="36" r="5" fill="#e8962a"/>
+  <circle cx="32" cy="36" r="2" fill="#a85f12"/>
+</svg>

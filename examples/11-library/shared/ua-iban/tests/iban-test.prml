@@ -1,0 +1,30 @@
+---
+doc: {title: "ua-iban: перевірка", language: uk-UA}
+---
+|% Test document of the library: every check calls fail() with what was
+|% expected, so "primula check" exits with code 2 on the first difference.
+|% The text below shows the results for a reader.
+|import("../iban")
+|code:
+SAMPLE = "UA213223130000026007233566001"
+
+
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+    return got
+
+
+expect("normalized", iban.normalized(" ua21 3223 1300 0002 6007 2335 6600 1 "), SAMPLE)
+expect("is_valid", iban.is_valid(SAMPLE), True)
+expect("grouped", iban.grouped(SAMPLE), "UA21 3223 1300 0002 6007 2335 6600 1")
+expect("bank_code", iban.bank_code(SAMPLE), "322313")
+expect("make", iban.make("322313", "26007233566001"), SAMPLE)
+expect("wrong check digits", iban.problem("UA223223130000026007233566001"), "не збігається контрольне число")
+expect("short", iban.problem("UA21322313"), "IBAN UA має 29 знаків, а тут 10")
+expect("country", iban.problem("PL61109010140000071219812874"), "IBAN має починатися з «UA»")
+expect("letters", iban.problem("UA21322313000002600723356600X"), "після «UA» мають бути лише цифри")
+|end
+|< Бібліотека ua-iban |(iban.VERSION)
+
+Зразок: |(iban.grouped(SAMPLE)), код банку |(iban.bank_code(SAMPLE)).

@@ -1,0 +1,12 @@
+---
+kind: fragment
+params:
+  months: 24
+---
+|part("short"):
+|> {{s.warranty}} |(months) {{s.months}}.
+|end part
+|part("full"):
+|> {{s.warranty}} |(months) {{s.months}}.
+|> {{s.service}}
+|end part

@@ -1,0 +1,23 @@
+---
+doc:
+  title: "{{title_yaml}}"
+  language: {{lang}}
+params:
+  features: [wifi]
+---
+|<(number=False) |(doc.title)
+|toc(title="{{s.contents}}")
+|< {{s.safety}}
+|!("warning", hazard="{{s.hazard}}") {{s.disconnect}}
+|!("note") {{s.note}}
+|< {{s.specs}}
+|table(cols=["*", "40mm"], header=1, caption="{{s.parameters}}", id="t-specs"):
+|: {{s.parameter}} |& {{s.value}}
+|: {{s.voltage}} |& 230|~V
+|:(when=has("wifi")) Wi-Fi |& 2,4|~GHz
+|end table
+{{s.see}} |@("t-specs", "label").
+|< {{s.use}}
+|> {{s.abbr_intro}} |abbr("{{s.abbr}}", "{{s.abbr_full}}").
+|> {{s.abbr_again}} |abbr("{{s.abbr}}").
+|>(when=has("wifi")) {{s.wifi}}

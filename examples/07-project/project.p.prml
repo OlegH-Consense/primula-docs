@@ -1,0 +1,51 @@
+---
+kind: project
+name: "Технічне обслуговування котельні — 2026"
+language: uk-UA
+styles: [std/styles/default, styles/проєкт.s.prml]
+params:
+  місто: "м. Харків"
+  договір: {номер: "ТО-2026/14", дата: 2026-01-12}
+  абонплата: 18500.00
+  ставка_пдв: 20
+  виконавець:
+    назва: "ТОВ «Тепло-Сервіс Схід»"
+    в_особі: "директора Коваленка Петра Івановича"
+    підписант: "П. І. Коваленко"
+    код: "41234567"
+    адреса: "61001, м. Харків, вул. Умовна, 1"
+  замовник:
+    назва: "ТОВ «Агрохліб Слобожанщина»"
+    в_особі: "директорки Мельник Олени Сергіївни"
+    підписант: "О. С. Мельник"
+    код: "42345678"
+    адреса: "62301, Харківська обл., м. Дергачі, вул. Умовна, 2"
+    обʼєкт: "м. Дергачі, вул. Умовна, 2, котельня № 1"
+keys:
+  логотип: assets/логотип.svg
+  оплата: fragments/оплата.f.prml#передоплата
+targets:
+  - {source: договір.prml, output: out/договір.odt}
+  - source: договір.prml
+    output: out/договір-післяплата.odt
+    keys: {оплата: "fragments/оплата.f.prml#післяплата"}
+  - {source: пакет.prml, output: out/пакет.odt}
+---
+# Example 7: the code section of the project.  Its definitions are names
+# of the "project" level (spec 10.4): every document of the project sees
+# `акти` and `параметри_акта`; the descriptive parameters are `project.*`
+# and plain names.  The data file is read only when `акти` is used.
+акти = load_csv("data/акти.csv", types={"номер": "decimal", "дата": "datetime", "сума": "money"})
+
+
+def параметри_акта(р):
+    """Parameters of акт.prml for one CSV row (only declared parameters, 10.7)."""
+    return {"номер": р.номер, "дата": р.дата, "період": р.період, "сума": р.сума}
+
+
+# Batch build (primula build project.p.prml): one act per CSV row.  When a
+# single document of the project is built, batch_mode() is False and the
+# loop does not run.
+if batch_mode():
+    for р in акти:
+        build("акт.prml", params=параметри_акта(р), output=f"out/акт-{р.номер}.odt")

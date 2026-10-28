@@ -1,0 +1,47 @@
+{
+ "kind": "document",
+ "order": 10,
+ "title": {
+  "en": "Simple document",
+  "uk": "Простий документ",
+  "ru": "Простой документ"
+ },
+ "description": {
+  "en": "A title, two numbered sections with text and a list.",
+  "uk": "Назва, два нумеровані розділи з текстом і списком.",
+  "ru": "Название, два нумерованных раздела с текстом и списком."
+ },
+ "files": [
+  {
+   "from": "doc.prml",
+   "to": "{{name}}.prml",
+   "open": true
+  }
+ ],
+ "strings": {
+  "en": {
+   "intro": "Short introduction.",
+   "section1": "General provisions",
+   "text1": "Text of the section.",
+   "section2": "Details",
+   "item1": "first item;",
+   "item2": "second item."
+  },
+  "uk": {
+   "intro": "Короткий вступ.",
+   "section1": "Загальні положення",
+   "text1": "Текст розділу.",
+   "section2": "Подробиці",
+   "item1": "перший пункт;",
+   "item2": "другий пункт."
+  },
+  "ru": {
+   "intro": "Краткое введение.",
+   "section1": "Общие положения",
+   "text1": "Текст раздела.",
+   "section2": "Подробности",
+   "item1": "первый пункт;",
+   "item2": "второй пункт."
+  }
+ }
+}

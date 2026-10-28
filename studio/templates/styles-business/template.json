@@ -1,0 +1,35 @@
+{
+ "kind": "styles",
+ "order": 20,
+ "title": {
+  "en": "Business styles with settings",
+  "uk": "Ділові стилі з налаштуваннями",
+  "ru": "Деловые стили с настройками"
+ },
+ "description": {
+  "en": "Over std/styles/business (extends): numbering, typography, a footer with page numbers, code-defined styles.",
+  "uk": "Над std/styles/business (extends): нумерація, типографіка, нижній колонтитул із номерами сторінок, стилі в коді.",
+  "ru": "Над std/styles/business (extends): нумерация, типографика, нижний колонтитул с номерами страниц, стили в коде."
+ },
+ "files": [
+  {
+   "from": "business.s.prml",
+   "to": "{{name}}.s.prml",
+   "open": true
+  }
+ ],
+ "strings": {
+  "en": {
+   "page": "Page",
+   "of": "of"
+  },
+  "uk": {
+   "page": "Сторінка",
+   "of": "з"
+  },
+  "ru": {
+   "page": "Страница",
+   "of": "из"
+  }
+ }
+}

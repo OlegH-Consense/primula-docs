@@ -1,0 +1,43 @@
+{
+ "kind": "project",
+ "order": 10,
+ "title": {
+  "en": "Project with one document",
+  "uk": "Проєкт з одним документом",
+  "ru": "Проект с одним документом"
+ },
+ "description": {
+  "en": "project.p.prml, a document and a local styles module; the target builds the document into build/.",
+  "uk": "project.p.prml, документ і локальний модуль стилів; ціль збирає документ у build/.",
+  "ru": "project.p.prml, документ и локальный модуль стилей; цель собирает документ в build/."
+ },
+ "files": [
+  {
+   "from": "project.p.prml",
+   "to": "project.p.prml"
+  },
+  {
+   "from": "doc.prml",
+   "to": "{{name}}.prml",
+   "open": true
+  },
+  {
+   "from": "local.s.prml",
+   "to": "styles/local.s.prml"
+  }
+ ],
+ "strings": {
+  "en": {
+   "section": "First section",
+   "clause": "Text of the first clause."
+  },
+  "uk": {
+   "section": "Перший розділ",
+   "clause": "Текст першого пункту."
+  },
+  "ru": {
+   "section": "Первый раздел",
+   "clause": "Текст первого пункта."
+  }
+ }
+}

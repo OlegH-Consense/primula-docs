@@ -1,0 +1,3 @@
+number,customer,amount
+1,{{s.customer1}},1500.00
+2,{{s.customer2}},2400.50

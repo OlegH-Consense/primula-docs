@@ -1,0 +1,20 @@
+---
+kind: styles
+defaults: {font: Liberation Serif, size: 11pt, language: uk-UA}
+# Style names are Unicode identifiers with hyphens (spec 3.3, 11.2).
+paragraphs:
+  Підпис:     {parent: Body, align: left, space_before: 6mm}
+  Реквізити:  {parent: Body, align: left, size: 9.5pt, space_after: 0mm}
+  Сторона:    {parent: Реквізити, bold: true, space_after: 1mm}
+  Примітка:   {parent: Note, space_before: 1mm}
+characters:
+  Сума:       {bold: true}
+tables:
+  Графік:     {parent: TableGrid, padding: 0.8mm, header_background: "#E7EEF7", header_align: center,
+               footer_bold: true, footer_background: "#F2F2F2"}
+  Без-рамок:  {parent: TableGrid, frame: none, rules: none, padding: [0mm, 2mm, 0mm, 0mm]}
+---
+# Local layer on top of std/styles/default: business profile (ДСТУ 4163),
+# appendix designation as in the agreement.
+structure_profile("business")
+appendices("uk", designation="Додаток {n}", toc="{designation}. {title}")

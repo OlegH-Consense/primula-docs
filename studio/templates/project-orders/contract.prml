@@ -1,0 +1,9 @@
+---
+doc:
+  title: "{{title_yaml}}"
+---
+|<(number=False) |(doc.title) № |(contract_id)
+|<(id="subject") {{s.subject}}
+|>(id="order") {{s.order_clause}}
+|<(id="final") {{s.final}}
+|> {{s.effect}}

@@ -1,0 +1,67 @@
+---
+doc:
+  title: "Набір стилів technical"
+  language: uk-UA
+styles: [std/styles/technical]
+---
+|% Gallery of std/styles/technical (stage 15.3): an instruction with numbered
+|% headings, steps and their results, interface elements, program text and
+|% output, definitions, admonitions, a compact table, a figure computed as
+|% SVG and the table of revisions.
+|code:
+def смуга(частка):
+    w = 120
+    filled = int(w * частка)
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}mm" height="6mm" viewBox="0 0 {w} 6"><rect width="{w}" height="6" fill="#DDDDDD"/><rect width="{filled}" height="6" fill="#4A7AB5"/></svg>'
+|end
+|<(number=False) Настанова зі встановлення Primula
+|< Загальні відомості
+Програма |.Command{primula} перетворює документи |.FileName{*.prml} на ODT і PDF. Для PDF потрібен LibreOffice.
+
+|!("note") Команди наведено для Debian 12/13; у openSUSE імена пакетів відрізняються.
+
+|< Встановлення
+|<< Підготовка системи
+|list("StepList"):
+|# Відкрийте термінал (|.Key{Ctrl+Alt+T}).
+|# Установіть залежності:
+|end list
+
+|.Preformatted: sudo apt install python3-yaml libreoffice-writer
+
+|.StepResult: Менеджер пакетів покаже перелік пакетів і запитає підтвердження.
+
+|<< Перевірка
+|list("StepList"):
+|# Виконайте |.Command{primula --version}.
+|# Відкрийте |.MenuItem{Файл → Параметри} у Primula Studio і вкажіть шлях до |.Variable{<каталог>}|.FileName{/primula}.
+|end list
+
+|.ProgramOutput: primula-docs 0.1.0.dev35
+
+|!("notice") Не запускайте збирання від імені root: файли результату належатимуть root.
+
+|< Терміни
+|.DefinitionTerm: Модуль стилів
+|.DefinitionText: Файл |.FileName{*.s.prml} з описом стилів; підключається ключем |.Code{styles} заголовка.
+|.DefinitionTerm: Ціль збирання
+|.DefinitionText: Опис документа в |.FileName{project.p.prml}, який збирається командою |.Command{primula build}.
+
+|< Вимоги до системи
+|table(style="TableCompact", header=1, cols=["35%", "*"], caption="Мінімальні вимоги"):
+|: Компонент |& Вимога
+|: Python |& 3.11 або новіший, PyYAML 6
+|: LibreOffice |& 7.4 або новіший (для PDF)
+|: Qt |& 6.4 або новіший (для Primula Studio)
+|end table
+
+|figure(svg=смуга(0.7)):
+Частка готових розділів настанови
+|end figure
+
+|< Лист реєстрації змін
+|table(style="TableRevisions", header=1):
+|: Ред. |& Дата |& Зміни |& Автор
+|: 1 |& 16.10.2026 |& Перша редакція |& О. Коваленко
+|: 2 |& 21.10.2026 |& Додано розділ «Терміни» |& О. Коваленко
+|end table

@@ -1,0 +1,72 @@
+---
+kind: styles
+# Styles set std/styles/report (specification 11.9, stage 15.3): reports in
+# science and technology after DSTU 3008:2015 (also coursework, theses,
+# explanatory notes that follow it).  Built on std/styles/default
+# (decision 133); profile "report": "ДОДАТОК А", captions "Рисунок 2.1 — …".
+#
+# DSTU 3008:2015, section 7: Times New Roman (here the metric-compatible
+# Liberation Serif) 14 pt, 1.5-2 line intervals (7.1.5); margins top and
+# bottom >= 20 mm, left >= 25 mm, right >= 10 mm (7.1.11); headings of
+# structural elements and of sections from the paragraph indent in capitals,
+# bold, without a period, may be centred (7.1.20); headings of subsections,
+# clauses, subclauses from the paragraph indent with a capital letter
+# (7.1.21); one paragraph indent of five characters (7.1.22, here 12.5 mm);
+# >= two line intervals between a heading and the text (7.1.24, here 7 mm);
+# no heading on the last line of a page (7.1.25); numbers of sections and
+# subsections without a final period (7.4); page numbers in the top right
+# corner, the title page counted but not numbered (7.3); table titles above
+# the table from the paragraph indent (7.6.8), figure titles below it in the
+# middle (7.5.9); notes and footnotes 12 pt, single spacing (7.8.3, 7.9.6),
+# footnotes numbered within a page (7.9.2).
+extends: std/styles/default
+defaults: {font: Liberation Serif, size: 14pt, language: uk-UA}
+paragraphs:
+  Body:             {align: justify, line_height: "150%", first_line: 12.5mm, space_after: 0mm}
+  # Titles of the tracks of |parallel (7.7): no paragraph indent over a narrow column.
+  ParallelHeader:   {first_line: 0mm}
+  # Sections: capitals, bold, from the paragraph indent (7.1.20).
+  Heading:          {align: left, first_line: 12.5mm, space_before: 7mm, space_after: 7mm, keep_together: true}
+  Heading1:         {size: 14pt, odf: {"fo:text-transform": "uppercase"}}
+  Heading2:         {size: 14pt}
+  Heading3:         {size: 14pt}
+  Heading4:         {size: 14pt, italic: false}
+  # Headings of structural elements (РЕФЕРАТ, ЗМІСТ, ВСТУП, ВИСНОВКИ …): not
+  # numbered, capitals, bold, centred (7.1.18, 7.1.20); a new page.
+  StructuralHeading: {parent: Heading1, align: center, first_line: 0mm, page_break_before: true}
+  ContentsTitle:    {parent: StructuralHeading}
+  # Title page (4.1, 7.12): centred lines without the paragraph indent.
+  TitlePageText:    {parent: BodyCentered, first_line: 0mm, space_after: 2mm}
+  TitlePageName:    {parent: TitlePageText, bold: true, space_before: 40mm, space_after: 6mm,
+                     odf: {"fo:text-transform": "uppercase"}}
+  Contents1:        {first_line: 0mm, space_after: 0mm}
+  TableText:        {first_line: 0mm, size: 12pt, line_height: "100%"}
+  # Table title above the table from the paragraph indent (7.6.8); figure title below, centred (7.5.9).
+  TableCaption:     {first_line: 12.5mm, space_before: 3mm, space_after: 1mm}
+  FigureCaption:    {first_line: 0mm, space_before: 1mm, space_after: 3mm}
+  Figure:           {first_line: 0mm}
+  # Notes: 12 pt, single spacing, from the paragraph indent (7.8.3).
+  Note:             {size: 12pt, italic: false, line_height: "100%", first_line: 12.5mm, align: justify}
+  Footnote:         {size: 12pt}
+  # Appendices: "ДОДАТОК А" and the title below it in the middle (6.2.2).
+  AppendixDesignation: {align: center, first_line: 0mm, bold: true}
+  AppendixSubtitle: {align: center, first_line: 0mm}
+  AppendixTitle:    {first_line: 0mm, bold: false}
+  Header:           {align: right, size: 12pt, first_line: 0mm}
+  Footer:           {first_line: 0mm}
+  Preformatted:     {first_line: 0mm, size: 12pt}
+  ListText:         {first_line: 0mm, line_height: "150%", space_after: 0mm}
+pages:
+  # 7.1.11: top 20, right 10, bottom 20, left 25 mm.
+  Portrait:         {margin: [20mm, 10mm, 20mm, 25mm]}
+  # The title page: counted, not numbered (7.3.3).
+  ReportTitle:      {parent: Portrait, next: Portrait}
+---
+structure_profile("report")
+# 7.4: "1", "1.1", "1.1.1" without a final period.
+numbering(headings=True, heading_format="{n}", clause_format="{n}")
+footnotes(restart="page")
+structure_styles(page="ReportTitle")
+# Page number in the top right corner, without a period (7.3.1).
+header("Portrait", markup("|.Header: |field.page"))
+header("ReportTitle", markup(""))

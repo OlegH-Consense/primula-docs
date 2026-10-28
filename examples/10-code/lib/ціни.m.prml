@@ -1,0 +1,21 @@
+|% Module of example 10 (spec 10.3): only definitions — |code, |def, |let,
+|% |import.  The namespace is the file name: ціни.  Every name without a
+|% leading "_" is public: a module needs no export (@export here would only
+|% give the warning P2638).  _ставка is private: ціни._ставка is an error.
+|code:
+_ставка = 20
+
+def з_пдв(сума, ставка=_ставка):
+    """The sum with VAT, rounded to kopecks (a decimal stays a decimal)."""
+    return round(сума * (100 + ставка) / 100, 2)
+
+def пдв(сума, ставка=_ставка):
+    """The VAT of a sum without VAT."""
+    return з_пдв(сума, ставка) - сума
+|end
+
+|% A macro of the module: called as |ціни.сума_прописом(…), or as
+|% |сума_прописом(…) after |import("lib/ціни", "сума_прописом").
+|def сума_прописом(сума):
+|(num(сума, 2)) грн (|(money_full(сума, "UAH")))
+|enddef

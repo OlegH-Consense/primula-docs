@@ -1,0 +1,76 @@
+---
+kind: fragment
+---
+|% Topic 7: global names — lazy, immutable, visible everywhere (spec 10.4,
+|% 12.7).  This is the second big difference from Python, after numbers.
+|%
+|% In Python a module runs from top to bottom; a name exists after its
+|% assignment has run and can be reassigned later.  In Primula the top level
+|% of |code (also of modules, styles modules, the project) is split into:
+|%   * DEFINITIONS: name = expr, a, b = …, def, |let — registered first,
+|%     computed on first use (lazily, in the order of dependencies), then
+|%     frozen.  The place in the text does not matter: total below uses
+|%     price and qty defined after it.  A name is defined once; a second
+|%     definition (also x += …) is an error with both positions; a cycle is
+|%     an error;
+|%   * ACTIONS: every other top-level statement (for, if, while, calls).  They
+|%     run after all definitions are collected and see every global name.  A
+|%     name bound inside an action (a loop variable, an assignment in if) is
+|%     LOCAL to it and does not become global — a warning P2501 says so.
+|% Consequences for a Python programmer:
+|%   * a conditional value is a conditional expression:
+|%     rate = 20 if vat else 0 — not "if vat: rate = 20";
+|%   * accumulation is a comprehension or a function that returns the value:
+|%     rows = [f(x) for x in xs] or def build(): …; rows = build() — never
+|%     rows.append(…) in a top-level loop (the list is frozen, P2318);
+|%   * header parameters are global names too: they cannot be redefined in
+|%     code (P2203); a parameter of the project is overridden by a parameter
+|%     of the document, not by code.
+|% Every file has its own namespace: the names of this fragment (ціна,
+|% кількість, разом) are invisible to the document and to other fragments,
+|% so the same name in two fragments is no conflict.  A name is passed out
+|% explicitly: |let(…, export=True) or |export(…) — разом_до_сплати below is
+|% used by the next fragment.
+|< Глобальні імена: ліниві й незмінні
+У Python модуль виконується згори донизу, а змінну можна перевизначити. У Primula визначення верхнього рівня (|`{x = …}, |`{def}, |`{||let}) збираються з усього файла заздалегідь, обчислюються під час першого звернення й після цього заморожуються. Тому порядок визначень у тексті неважливий, а повторне визначення — помилка. Визначення, яке ніхто не читає, взагалі не обчислюється — і його помилка не проявиться, доки ім'я не знадобиться.
+
+|code:
+# total is defined BEFORE price and qty: definitions are lazy, the order of
+# the text does not matter.
+разом = ціна * кількість
+ціна = 250.00
+кількість = 4
+
+# A conditional definition is a conditional expression (not an if statement).
+платник_пдв = True
+ставка = 20 if платник_пдв else 0
+пдв = round(разом * ставка / 100, 2)
+
+# Accumulation: a comprehension instead of append() in a top-level loop.
+назви = [p.назва for p in позиції]
+
+# An ACTION: a top-level loop.  It runs after the definitions; p is local to
+# the loop.  debug() writes to the build report (--report), not to the text.
+for p in позиції:
+    debug(p.назва)
+|end
+|% |let defines a global name in the text; export=True passes it to the
+|% document, so the next fragment (08-text) can read it.
+|let(разом_до_сплати=разом + пдв, export=True)
+
+Обчислено: разом |(num(разом, 2)), ПДВ |(ставка) % — |(num(пдв, 2)), до сплати |(num(разом_до_сплати, 2)); назви позицій — |(join_list(назви)).
+
+Що в Python працює, а в Primula на верхньому рівні — помилка (усі приклади відтворює |`{mistakes.prml}):
+
+|table(cols=["38%", "30%", "*"], style="TableGrid"):
+|: Код верхнього рівня |& Primula |& Як правильно
+|: |`{x = 1} … |`{x = 2} |& P2203: ім'я вже визначено |& різні імена або умовний вираз
+|: |`{x += 1} |& P2105: повторне визначення |& |`{y = x + 1}
+|: |`{a = b + 1}, |`{b = a + 1} |& P2204: циклічне визначення |& розірвати залежність
+|: |`{for r in xs: rows.append(r)} |& P2318: заморожений список |& |`{rows = [r for r in xs]}
+|: |`{for r in xs: total += r} |& P2202 і попередження P2501: |`{total} локальне в дії |& |`{total = sum(xs)}
+|: |`{if vat: rate = 20} |& P2501: |`{rate} не стає глобальним |& |`{rate = 20 if vat else 0}
+|: параметр заголовка |`{ціна} і |`{ціна = 10} у коді |& P2203 |& значення — у заголовку або |`{--param ціна=10} під час збирання
+|end table
+
+Імена цього фрагмента (|`{ціна}, |`{кількість}, |`{разом}) документові й іншим фрагментам не видно: у кожного файла свій простір імен. Назовні передається лише явно експортоване — тут |`{разом_до_сплати}; усі способи експорту, зокрема функцій, — у розділі «Модулі й фрагменти».

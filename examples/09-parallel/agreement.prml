@@ -1,0 +1,93 @@
+---
+doc:
+  title: "Договір про надання послуг / Services Agreement"
+  identifier: "ДП-2026/017"
+  language: uk-UA
+params:
+  city: {uk: "м. Харків", en: "Kharkiv"}
+  sign_date: 2026-10-12
+  price: 48000.00
+  days: 10
+  contractor: {uk: "ТОВ «Виконавець»", en: "Vykonavets LLC", code: "00000000"}
+  customer: {uk: "ТОВ «Замовник»", en: "Zamovnyk LLC", code: "11111111"}
+styles: [std/styles/business]
+---
+|% Example 9: a bilingual agreement — |parallel with two tracks (7.7):
+|% each track in its language (sums in words, dates, quotes, references,
+|% footnotes), the same numbering in both tracks, a full-width title and
+|% signatures, a table of contents of each track, parity="translation"
+|% (the tracks are compared: structure, IDs, references, names, numbers),
+|% rev/status of the confirmed translation (primula parallel --stamp).
+|toc(title="ЗМІСТ", max_level=1)
+|toc(track="en", max_level=1)
+
+|parallel(tracks=[track("uk", lang="uk", title="Українською мовою"), track("en", lang="en", title="In English")],
+          gap="8mm", rule="0.3pt solid #999999", parity="translation"):
+
+|segment(span="all"):
+|.DocumentTitle: ДОГОВІР № |(doc.identifier) / AGREEMENT No. |(doc.identifier)
+|end segment
+
+|segment(id="place") |track("uk"){|(getattr(city, track.id)), |(fmt_date(sign_date, "contract"))} |track("en", rev="5c025d/5c025d", status="reviewed"){|(getattr(city, track.id)), |(fmt_date(sign_date, "contract"))}
+
+|segment(id="parties"):
+|track("uk"):
+|(getattr(contractor, track.id)) (далі — Виконавець) і |(getattr(customer, track.id)) (далі — Замовник) уклали цей договір про таке.
+|track("en", rev="859464/4a47f9", status="reviewed"):
+|(getattr(contractor, track.id)) (the Contractor) and |(getattr(customer, track.id)) (the Customer) have made this Agreement as follows.
+|end segment
+
+|segment(id="subject"):
+|track("uk"):
+|<(id="subject") Предмет договору
+|>(id="services") Виконавець надає послуги з розроблення документації (далі — Послуги), а Замовник приймає й оплачує їх.
+|>(id="scope") Перелік і строки етапів наведено в таблиці.|footnote{Строки етапів можуть бути змінені додатковою угодою.}
+|track("en", rev="eb7f23/966437", status="reviewed"):
+|<(id="subject") Subject of the Agreement
+|>(id="services") The Contractor provides the services of developing documentation (the Services), and the Customer accepts and pays for them.
+|>(id="scope") The stages and their terms are given in the table.|footnote{The terms of the stages may be changed by an additional agreement.}
+|end segment
+
+|segment(id="stages"):
+|track("uk"):
+|table(caption="Етапи надання послуг", cols=["*", "25mm"]):
+|: Етап |& Строк, днів
+|: Аналіз вимог |& 5
+|: Розроблення документації |& 15
+|end table
+|track("en", rev="890e9e/610253", status="reviewed"):
+|table(caption="Stages of the Services", cols=["*", "25mm"]):
+|: Stage |& Term, days
+|: Analysis of the requirements |& 5
+|: Development of the documentation |& 15
+|end table
+|end segment
+
+|segment(id="price"):
+|track("uk"):
+|<(id="price") Ціна і порядок оплати
+|>(id="sum") Ціна Послуг становить |(money_full(price, "UAH")).
+|> Замовник сплачує ціну протягом |(days) банківських днів після підписання акта (див. |@("services", "label")).
+|track("en", status="translated"):
+|<(id="price") Price and Payment
+|>(id="sum") The price of the Services is |(money_full(price, "UAH")).
+|> The Customer pays the price within |(days) banking days after the act is signed (see |@("services", "label")).
+|end segment
+
+|segment(id="law"):
+|track("uk"):
+|<(id="law") Мова договору
+|> Договір укладено українською та англійською мовами. У разі розбіжностей переважає текст українською мовою (|@("subject", "label")–|@("price")).
+|track("en"):
+|<(id="law") Language of the Agreement
+|> The Agreement is made in Ukrainian and English. In case of discrepancies the Ukrainian text prevails (|@("subject", "label")–|@("price")).
+|end segment
+
+|segment(span="all"):
+|table(cols=["*", "*"], style="TableParties", header=0):
+|: |*{Виконавець / Contractor}|\|(contractor.uk)|\Код ЄДРПОУ |(contractor.code) |& |*{Замовник / Customer}|\|(customer.uk)|\Код ЄДРПОУ |(customer.code)
+|: ______________ |& ______________
+|end table
+|end segment
+
+|end parallel

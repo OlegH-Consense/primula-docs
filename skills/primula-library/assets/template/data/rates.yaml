@@ -1,0 +1,3 @@
+# Values with the date they take effect; a new value is a new row, old rows never change.
+rates:
+  - {from: 2011-01-01, value: 20}

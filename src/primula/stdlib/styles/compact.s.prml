@@ -1,0 +1,41 @@
+---
+kind: styles
+# Styles set std/styles/compact (specification 11.9, stage 15.3): dense
+# reference material — cheat sheets, memos, quick references, data sheets.
+# Built on std/styles/default (decision 133).  Small type, narrow margins,
+# small spacing; two columns are written in the document with
+# |section(cols=2) (7.5) — the Studio cheat sheet is laid out so
+# (studio/help/cheatsheet).
+extends: std/styles/default
+defaults: {font: Liberation Sans, size: 9pt, language: uk-UA}
+paragraphs:
+  Body:             {align: left, line_height: "112%", space_after: 1mm, widows: 1, orphans: 1}
+  Heading:          {space_before: 2.5mm, space_after: 1mm}
+  Heading1:         {size: 12pt}
+  Heading2:         {size: 10.5pt}
+  Heading3:         {size: 9.5pt}
+  Heading4:         {size: 9pt}
+  Heading5:         {size: 9pt}
+  Heading6:         {size: 9pt}
+  Note:             {size: 8pt}
+  SmallPrint:       {size: 7.5pt}
+  Preformatted:     {size: 8pt, background: "#F2F2F2", left: 1mm, right: 1mm}
+  TableText:        {size: 8.5pt, line_height: "105%"}
+  TableTextCompact: {size: 8pt}
+  ListText:         {space_after: 0.5mm}
+  Header:           {size: 7.5pt}
+  Footer:           {size: 7.5pt}
+lists:
+  BulletList:
+    levels:
+      1: {type: bullet, bullet: "•", left: 4mm, hanging: 3mm}
+      2: {type: bullet, bullet: "–", left: 8mm, hanging: 3mm}
+      3: {type: bullet, bullet: "◦", left: 12mm, hanging: 3mm}
+tables:
+  TableGrid:        {padding: 0.7mm, frame: "0.4pt solid #808080", border: "0.4pt solid #808080",
+                     header_background: "#E6E6E6", header_paragraph: TableHeader}
+pages:
+  Portrait:         {margin: [12mm, 12mm, 12mm, 12mm]}
+---
+spacing = {"0": 0*mm, "s": 0.5*mm, "m": 1*mm, "l": 2*mm, "xl": 3*mm}
+footer("Portrait", markup("|.Footer: |field.page / |field.pages"))

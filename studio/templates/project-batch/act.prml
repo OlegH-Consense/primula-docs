@@ -1,0 +1,12 @@
+---
+doc:
+  title: "{{s.act}}"
+params:
+  number: 1
+  customer: "{{s.customer1}}"
+  amount: 100.00
+---
+|<(number=False) |(doc.title) № |(number)
+{{s.text}} |(customer): |(money(amount, "UAH")).
+
+|.Body: |(company)

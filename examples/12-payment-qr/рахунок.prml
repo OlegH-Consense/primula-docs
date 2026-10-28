@@ -1,0 +1,42 @@
+---
+doc: {title: "Рахунок на оплату № 17", language: uk-UA, created: 2026-10-26, identifier: "17"}
+params:
+  постачальник: "ФОП Приклад Олена Петрівна"
+  код: "1234567890"
+  iban: "UA213223130000026007233566001"
+  покупець: "ТОВ «Навчальний покупець»"
+---
+|% Example 12: an invoice with the payment QR code of the NBU (format 003) built by
+|% the library payment_qr (libraries/payment_qr, linked as lib; warning P2639).
+|% The items are read from data/позиції.ods (load_ods, decision 138; the sheet
+|% is made from data/позиції.fods). The values are for training: the IBAN is
+|% the published sample of IBAN UA.
+|import("lib/payment_qr")
+|code:
+# The items come from a LibreOffice Calc sheet (decision 138); "сума" is a formula of the
+# sheet, its saved result is read; money columns are checked to have at most two kopeck digits.
+позиції = load_ods("data/позиції.ods", sheet="Позиції", types={"ціна": "money", "сума": "money"})
+разом = sum([p.сума for p in позиції])
+призначення = f"Оплата за рахунком № {doc.identifier} від {fmt_date(doc.created, 'short')}, без ПДВ"
+|end
+|<(number=False) Рахунок на оплату № |(doc.identifier) від |(fmt_date(doc.created, "contract"))
+
+Постачальник: |(постачальник), РНОКПП |(код), IBAN |(iban).
+
+Покупець: |(покупець).
+
+|table(cols=["*", "20mm", "30mm", "30mm"]):
+|: Найменування |& Кількість |& Ціна, грн |& Сума, грн
+|for(p in позиції):
+|: |(p.назва) |& |(num(p.кількість)) |& |(num(p.ціна, 2)) |& |(num(p.сума, 2))
+|endfor
+|: Разом |& |& |& |(num(разом, 2))
+|end table
+
+До сплати: |(money_full(разом, "UAH")). Без ПДВ.
+
+Призначення платежу: |(призначення).
+
+Відскануйте QR-код застосунком банку — реквізити й сума заповняться самі:
+
+|img(svg=payment_qr.svg(постачальник, iban, код, призначення, amount=разом, module="0.6mm"))

@@ -1,0 +1,21 @@
+---
+doc:
+  title: "Попередження"
+  language: uk-UA
+---
+|% Example 4c: the document builds, but the translator warns (lint, 14.2).
+|% Run: PYTHONPATH=../../src python3 -m primula check warnings.prml --lang uk
+|% With --strict every warning becomes an error.
+|code:
+vat = 20
+vаt = 7
+cityМісто = "Київ"
+ціна = 12.50
+|end
+|< 1. Вступ
+Ставки: |(str(vat)) і |(str(vаt)); місто — |(cityМісто).
+Ціна без оформлення: |(ціна) грн.
+Адреса доставки: |?{УТОЧНИТИ}.
+Колір задано прямо: |fmt(color="#C00000"){червоний текст}.
+|> Пункт у рядковій формі
+продовжений наступним рядком.

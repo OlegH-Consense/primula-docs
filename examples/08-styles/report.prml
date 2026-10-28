@@ -1,0 +1,50 @@
+---
+doc:
+  title: "Набір стилів report"
+  language: uk-UA
+styles: [std/styles/report]
+---
+|% Gallery of std/styles/report (stage 15.3): a report after DSTU 3008:2015 —
+|% structural elements without numbers, sections and subsections numbered
+|% without a final period, a table title above the table, a figure title
+|% below it, a note, a footnote, an appendix "ДОДАТОК А".
+|.TitlePageText: Міністерство освіти і науки України
+|.TitlePageName: Звіт про науково-дослідну роботу
+|.TitlePageText: Перевірка набору стилів report
+|.TitlePageText: Харків — 2026
+
+|.StructuralHeading: Реферат
+
+Звіт: 3 с., 1 табл., 1 рис., 1 додаток. Об'єкт дослідження — оформлення звітів у системі Primula.
+
+|.StructuralHeading: Вступ
+
+Метою роботи є перевірка правил оформлення звіту за ДСТУ 3008:2015 засобами набору стилів |"{report}|footnote{Набір входить до комплекту Primula з етапу 15.3.}.
+
+|< Методика перевірки
+|<< Вихідні дані
+Для перевірки використано документ, що містить розділи, підрозділи, таблицю, рисунок, примітку, виноску та додаток.
+
+|table(header=1, cols=["40%", "*"], caption="Параметри сторінки"):
+|: Параметр |& Значення
+|: Поля |& верхнє і нижнє 20 мм, ліве 25 мм, праве 10 мм
+|: Шрифт |& Liberation Serif, 14 пт
+|: Міжрядковий інтервал |& 1,5
+|end table
+
+|.Note: Примітка. Liberation Serif метрично сумісний із Times New Roman.
+
+|<< Результати
+Абзацний відступ однаковий у всьому тексті. Заголовки розділів надруковано великими літерами напівжирним шрифтом.
+
+|figure(svg='<svg xmlns="http://www.w3.org/2000/svg" width="60mm" height="20mm" viewBox="0 0 60 20"><rect x="1" y="1" width="58" height="18" fill="none" stroke="#000" stroke-width="0.5"/><line x1="10" y1="10" x2="50" y2="10" stroke="#000" stroke-width="0.5"/></svg>'):
+Схема сторінки
+|end figure
+
+|.StructuralHeading: Висновки
+
+Набір стилів report відповідає основним вимогам розділу 7 ДСТУ 3008:2015.
+
+|appendix(title="Перелік вимог"):
+Вимоги наведено за розділом 7 стандарту.
+|end appendix

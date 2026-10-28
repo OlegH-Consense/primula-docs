@@ -1,0 +1,12 @@
+---
+doc:
+  title: "{{s.form_title}}"
+---
+|<(number=False) |(doc.title) № |?{|(order.number)}
+{{s.to_contract}} |(contract_id).
+
+|table(cols=["50mm", "*"], header=0):
+|: {{s.supplier_label}} |& |(supplier)
+|: {{s.customer_label}} |& |?{|(order.customer)}
+|: {{s.date_label}} |& |?{|(fmt_date(order.date))}
+|end table

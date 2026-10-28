@@ -1,0 +1,58 @@
+---
+doc:
+  title: "Primula: базові можливості"
+  identifier: "EX-01"
+  language: uk-UA
+params:
+  author: "Іваненко І. І."
+  pages_planned: 3
+---
+|% Example 1: text markup, inline short forms, lists, variables, conditions.
+|% Build: PYTHONPATH=../../src python3 -m primula build basics.prml --pdf
+|% Another look without editing the document (--style, spec 11.7):
+|%   ... build basics.prml --style std/styles/default --style styles/print.s.prml
+|toc()
+|< Текст і внутрішньорядкові форми
+Звичайний абзац. Форми: |*{напівжирний}, |/{курсив}, |_{підкреслення}, H|,{2}O, м|^{2},
+|`{X300}, |—{закреслення}, |"{лапки |"{вкладені}} і заповнювач |?{ДАТА}.
+
+Нерозривний пробіл: 10|~кг; літерали: ||, |{, |}.
+
+|.Note: Розрив рядка|\усередині абзацу (стиль Note вирівняно ліворуч: у вирівнюванні за шириною Writer розтягує рядок перед розривом).
+
+|< Змінні та умови
+|let(n=5, product="Модуль X300")
+Автор — |(author) Виріб — |(product), назва має |(len(product)) символів.
+
+Поставка протягом |(n) |if(n == 1){робочого дня}|elif(n < 5){робочих днів}|else{робочих днів (довгий строк)}.
+
+|if(pages_planned > 2):
+Документ планується довшим за дві сторінки.
+|else:
+Документ короткий.
+|endif
+
+|< Імена українською
+|% Commands, variables and macros may have names in any alphabet (spec 3.9).
+|def виріб():
+|`{X300}
+|enddef
+|let(входів=4)
+Модифікація |виріб|;М має |(входів) входи, базова модель |виріб — три. Розділювач |`{||;} відокремлює ім'я команди від літер, що йдуть одразу за ним.
+
+|< Списки
+|- маркований елемент;
+|- ще один;
+|-- вкладений рівень.
+
+|# перший крок;
+|# другий крок;
+|## підкрок.
+
+|< Цикл
+|for(i in range(1, 4)):
+|# Ітерація |(i), квадрат — |(i * i).
+|endfor
+
+|< Поля
+Документ «|field.title», сторінка |field.page з |field.pages.

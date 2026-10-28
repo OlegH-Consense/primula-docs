@@ -1,0 +1,90 @@
+---
+kind: module
+---
+|% ua-iban — IBAN of Ukrainian accounts: normalization, checking, grouping
+|% by four, building from the bank code and the account number.
+|%
+|% IBAN UA (ISO 13616; NBU): "UA", two check digits, the bank code (6 digits,
+|% МФО), the account number (19 digits, left-padded with zeros) — 29 characters.
+|% The check: move the first four characters to the end, replace letters with
+|% numbers (A = 10 … Z = 35), the remainder of division by 97 must be 1.
+|%
+|% Public names have no leading "_"; a document imports the module with
+|% |import("lib/iban") and calls iban.check(…), iban.grouped(…) and so on.
+|code:
+VERSION = "0.1.0"
+
+_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
+def normalized(text):
+    """IBAN without spaces, in capitals: " ua21 3223…" -> "UA213223…"."""
+    return "".join(text.split()).upper()
+
+
+def _digits(text):
+    # Letters become their numbers (A = 10 … Z = 35): ord() is not in the core,
+    # so the position in _LETTERS is used.
+    out = []
+    for ch in text:
+        if ch.isdigit():
+            out.append(ch)
+        else:
+            out.append(str(_LETTERS.find(ch) + 10))
+    return "".join(out)
+
+
+def _mod97(text):
+    # The rearranged IBAN as a number modulo 97; 29 characters give at most
+    # 33 digits, within the 64 digits of decimal.
+    return int(_digits(text[4:] + text[:4])) % 97
+
+
+def problem(text):
+    """Why the text is not a valid IBAN UA: a message in Ukrainian, or "" if it is valid."""
+    s = normalized(text)
+    if not s.startswith("UA"):
+        return "IBAN має починатися з «UA»"
+    if len(s) != 29:
+        return f"IBAN UA має 29 знаків, а тут {len(s)}"
+    if not s[2:].isdigit():
+        return "після «UA» мають бути лише цифри"
+    if _mod97(s) != 1:
+        return "не збігається контрольне число"
+    return ""
+
+
+def is_valid(text):
+    """True for a valid IBAN UA (spaces and letter case do not matter)."""
+    return problem(text) == ""
+
+
+def check(text):
+    """The normalized IBAN; stops the build with the reason if it is not valid."""
+    reason = problem(text)
+    if reason:
+        fail(f"IBAN «{text}»: {reason}")
+    return normalized(text)
+
+
+def grouped(text):
+    """A valid IBAN in groups of four for the text: "UA21 3223 1300 …"."""
+    s = check(text)
+    return " ".join([s[i:i + 4] for i in range(0, len(s), 4)])
+
+
+def bank_code(text):
+    """The bank code (МФО): characters 5–10 of a valid IBAN."""
+    return check(text)[4:10]
+
+
+def make(bank, account):
+    """IBAN UA from the bank code (6 digits) and the account number (up to 19 digits)."""
+    if len(bank) != 6 or not bank.isdigit():
+        fail(f"код банку «{bank}»: потрібно 6 цифр")
+    if len(account) > 19 or not account.isdigit():
+        fail(f"номер рахунку «{account}»: потрібно до 19 цифр")
+    body = bank + account.zfill(19)
+    check_digits = 98 - _mod97("UA00" + body)
+    return "UA" + str(check_digits).zfill(2) + body
+|end

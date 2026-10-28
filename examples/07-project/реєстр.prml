@@ -1,0 +1,17 @@
+---
+doc:
+  title: "Реєстр актів"
+  language: uk-UA
+---
+|% Example 7: a part of the compound document on a landscape page
+|% (|document(…, page="Альбомна") in пакет.prml).  The data come from the
+|% code section of the project (акти); the page references point to the
+|% parts of the acts by full IDs "scope:id" (spec 5.6, 10.7).
+|<(number=False) Реєстр актів приймання-передачі за договором № |(договір.номер)
+|table(style="Реєстр", cols=["12mm", col("30mm", type="datetime", align="center"), "*", "24mm", col("38mm", id="сума", type="money", align="right"), col("38mm", id="пдв", type="money", align="right"), col("38mm", id="разом", type="money", align="right")], header=1, footer=1, live=True):
+|: № |& Дата |& Період |& Сторінка |& Без ПДВ |& ПДВ |& Разом
+|for(р in акти):
+|: |(р.номер) |& |(р.дата) |& |(р.період) |& |@(f"акт-{р.номер}:акт", "page") |& |(р.сума) |& |(vat(р.сума, ставка_пдв)) |& |=(this_row("сума") + this_row("пдв"))
+|endfor
+|:|&(span=4, align="right") Разом |& |=(sum(column("сума"))) |& |=(sum(column("пдв"))) |& |=(sum(column("разом")))
+|end table

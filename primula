@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+"""Launcher of the Primula translator from the source tree (no installation needed).
+
+Usage (the same commands and options as the installed ``primula``)::
+
+    ./primula build document.prml --pdf
+    ./primula check project.p.prml --dump-project
+    ./primula --help
+
+The script puts ``src/`` next to it at the front of ``sys.path`` and runs
+:func:`primula.cli.main`.  Symbolic links are resolved, so the script may be
+linked into a directory of ``PATH`` (``ln -s "$PWD/primula" ~/bin/primula``).
+Requirements: Python >= 3.11 and PyYAML (see README.md).
+"""
+
+import sys
+from pathlib import Path
+
+# src/ of this source tree, also when the script is called through a symlink.
+SOURCE_DIR = Path(__file__).resolve().parent / "src"
+sys.path.insert(0, str(SOURCE_DIR))
+
+from primula.cli import main  # noqa: E402 - the path is set up first
+
+if __name__ == "__main__":
+    sys.exit(main())

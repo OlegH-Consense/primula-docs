@@ -1,0 +1,43 @@
+{
+ "kind": "order",
+ "order": 10,
+ "title": {
+  "en": "Order project (extends)",
+  "uk": "Проєкт замовлення (extends)",
+  "ru": "Проект заказа (extends)"
+ },
+ "description": {
+  "en": "A project in orders/<name>/ that extends the open project: its own order.yaml (a copy of orders/sample.yaml when there is one), placeholders printed as plain text, targets — the documents of the base project except its first target (the contract).",
+  "uk": "Проєкт в orders/<ім'я>/, що розширює відкритий проєкт: свій order.yaml (копія orders/sample.yaml, якщо він є), заповнювачі — звичайним текстом, цілі — документи базового проєкту, крім його першої цілі (договору).",
+  "ru": "Проект в orders/<имя>/, расширяющий открытый проект: свой order.yaml (копия orders/sample.yaml, если он есть), заполнители — обычным текстом, цели — документы базового проекта, кроме его первой цели (договора)."
+ },
+ "files": [
+  {
+   "from": "project.p.prml",
+   "to": "project.p.prml",
+   "open": true
+  },
+  {
+   "from": "final.s.prml",
+   "to": "final.s.prml"
+  },
+  {
+   "from": "order.yaml",
+   "to": "order.yaml"
+  }
+ ],
+ "strings": {
+  "en": {
+   "comment": "The data of this order.",
+   "final_comment": "Filled forms: placeholders as plain text."
+  },
+  "uk": {
+   "comment": "Дані цього замовлення.",
+   "final_comment": "Заповнені форми: заповнювачі — звичайним текстом."
+  },
+  "ru": {
+   "comment": "Данные этого заказа.",
+   "final_comment": "Заполненные формы: заполнители — обычным текстом."
+  }
+ }
+}

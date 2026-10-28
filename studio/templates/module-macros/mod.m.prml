@@ -1,0 +1,5 @@
+|% {{s.comment}}
+|let(vat_rate=20)
+|def sign(role, name):
+|.Body: |(role) ____________ |(name)
+|enddef

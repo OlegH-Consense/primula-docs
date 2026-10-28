@@ -1,0 +1,14 @@
+---
+doc:
+  title: "{{title_yaml}}"
+  language: {{lang}}
+---
+|<(number=False) |(doc.title)
+{{s.intro}}
+
+|< {{s.section1}}
+{{s.text1}}
+
+|< {{s.section2}}
+|- {{s.item1}}
+|- {{s.item2}}

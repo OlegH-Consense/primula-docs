@@ -1,0 +1,61 @@
+---
+kind: fragment
+---
+|% Topic 8: from values to text — |(…), |if, |for, macros, markup()
+|% (spec 4.2, 5.1, 12.1, 12.3).
+|%
+|% Python has print() and str(); Primula has no output: a value reaches the
+|% document only through |(expr) in the text, and the type decides:
+|%   * str, decimal, datetime, content — inserted (a raw fractional decimal or
+|%     float and a raw datetime give the warning P2604: format them with num(),
+|%     money(), fmt_date() for the document language);
+|%   * None, bool, list, dict, record — an ERROR (P2603), not "None"/"True"/
+|%     "[1, 2]" as str() would give.  For an optional value: |(x or "—");
+|%     for a list: join_list(); a deliberate Python form: str(x);
+|%   * content (markup) is opaque: markup("…") + "text" is an error (P2301),
+|%     join strings first and call markup() on the result;
+|%   * a macro |def … |enddef is a function whose body is markup; a call with
+|%     a body {…} or an environment passes it as the parameter body; a def
+|%     from |code called as a command |f(…) inserts what it returns.
+|% |if and |for in the text are not Python statements: their bodies are
+|% markup, inline forms |if(c){…}|else{…} work inside a line and a cell.
+|< Значення в тексті, макроси й розмітка
+Друку (|`{print}) немає: значення потрапляє в документ лише виразом |`{||(…)}, і тип вирішує, як саме. Рядок, число, дата й розмітка (|`{content}) вставляються; |`{None}, |`{bool}, список, словник і запис — помилка P2603, а не «None», «True» чи «[1, 2]», як дав би |`{str()}. Неоформлене дробове число чи дата — попередження P2604: число й дату оформлюють для мови документа.
+
+|table(cols=["45%", "*"], style="TableGrid"):
+|: У тексті |& Результат
+|: |`{||(сторона.назва)} |& |(сторона.назва)
+|: |`{||(разом_до_сплати)} |& попередження P2604: дробове число без оформлення
+|: |`{||(num(разом_до_сплати, 2))} |& |(num(разом_до_сплати, 2))
+|: |`{||(money_full(разом_до_сплати, "UAH"))} |& |(money_full(разом_до_сплати, "UAH"))
+|: |`{||(fmt_date(дата_договору, "contract"))} |& |(fmt_date(дата_договору, "contract"))
+|: |`{||(None)}, |`{||(True)}, |`{||([1, 2])} |& помилка P2603
+|: |`{||(getattr(сторона, "ІПН", None) or "—")} |& |(getattr(сторона, "ІПН", None) or "—")
+|: |`{||(join_list([p.назва for p in позиції]))} |& |(join_list([p.назва for p in позиції]))
+|: |`{||(str([1, 2]))} |& |(str([1, 2]))
+|: |`{||(plural(4, "день", "дні", "днів"))} |& |(plural(4, "день", "дні", "днів"))
+|end table
+
+Ім'я |`{разом_до_сплати} визначено в попередньому фрагменті й експортовано звідти (|`{||let(…, export=True)}).
+
+Умова й цикл у тексті — не інструкції Python: їхні тіла — розмітка, а внутрішньорядкові форми працюють посеред рядка й у клітинці таблиці. Позицій у замовленні — |(len(позиції)) |if(len(позиції) == 1){позиція}|elif(len(позиції) < 5){позиції}|else{позицій}: |for(p in позиції){|(p.назва) (|(p.кількість) шт.); }
+
+|% A macro: its parameters are values, its body is markup; the call below
+|% passes a body in braces as the parameter body.
+|def позначка(текст, body):
+|.Note: |*{|(текст):} |(body)
+|enddef
+
+|% A function from |code: called as a command, it inserts what it returns —
+|% here content built by markup() from a string.  The strings are joined
+|% first: content + str is an error.
+|code:
+def жирно(текст):
+    return markup("|*{" + текст + "}")
+|end
+
+|позначка("Макрос"):
+Тіло виклику — розмітка з |/{курсивом} і значенням |(num(разом_до_сплати, 2)); макрос отримує його параметром |`{body} і вставляє виразом |`{||(body)}.
+|end
+
+Функція з блоку коду, викликана як команда: |жирно("цей текст виділила функція жирно()"). Розмітка (|`{content}) непрозора: |`{markup("…") + "…"} — помилка P2301, тому рядки спершу з'єднуються, а |`{markup()} викликається для результату.

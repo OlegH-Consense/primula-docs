@@ -1,0 +1,36 @@
+---
+doc:
+  title: "{{title_yaml}}"
+  identifier: "1/{{year}}"
+  language: {{lang}}
+params:
+  city: "{{s.city}}"
+  sign_date: {{date}}
+  seller: {name: "{{s.seller}}", code: "12345678", director: "{{s.director1}}"}
+  buyer: {name: "{{s.buyer}}", code: "87654321", director: "{{s.director2}}"}
+---
+|<(number=False) |(doc.title) № |(doc.identifier)
+|(city), |(fmt_date(sign_date, "long"))
+
+|(seller.name) ({{s.seller_role}}) {{s.and}} |(buyer.name) ({{s.buyer_role}}) {{s.agreed}}
+
+|<(id="subject") {{s.subject}}
+|>(id="supply") {{s.supply}} |@("spec", "label").
+|> {{s.quality}}
+|<(id="price") {{s.price}}
+|>(id="pay") {{s.pay}}
+|>> {{s.pay_change}} |@("pay", "label").
+|<(id="final") {{s.final}}
+|> {{s.effect}}
+|<(number=False) {{s.requisites}}
+|table(cols=["*", "*"], header=0):
+|: |*{|(seller.name)} |& |*{|(buyer.name)}
+|: {{s.code}} |(seller.code) |& {{s.code}} |(buyer.code)
+|: ____________ |(seller.director) |& ____________ |(buyer.director)
+|end table
+|appendix(id="spec", title="{{s.specification}}"):
+|table(cols=["*", "20mm", "30mm"], header=1, caption="{{s.goods}}"):
+|: {{s.item}} |& {{s.qty}} |& {{s.amount}}
+|: |?{{{s.item_placeholder}}} |& 1 |& 0,00
+|end table
+|end appendix

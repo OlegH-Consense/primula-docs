@@ -1,0 +1,12 @@
+---
+kind: styles
+defaults: {font: Liberation Serif, size: 12pt, language: uk-UA}
+paragraphs:
+  Signature:  {parent: Body, align: left, space_before: 8mm}
+  Requisites: {parent: Body, align: left, size: 10pt, keep_together: true, keep_with_next: true}
+---
+# Local layer on top of std/styles/default.
+structure_profile("business")
+# No-break space after short words («у власність») in the whole ODT (library 7, stage 13.9d).
+typography(nbsp_short=True)
+paragraph_style("Body-tight", parent="Body", space_after=0*mm)

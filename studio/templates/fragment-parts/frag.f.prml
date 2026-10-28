@@ -1,0 +1,13 @@
+---
+kind: fragment
+params:
+  item: "{{s.item}}"
+  months: 12
+---
+|part("short"):
+|> {{s.for}} |(item) — |(months) {{s.months}}.
+|end part
+|part("full"):
+|> {{s.for}} |(item) — |(months) {{s.months}}.
+|> {{s.extra}}
+|end part

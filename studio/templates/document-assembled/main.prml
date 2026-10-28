@@ -1,0 +1,9 @@
+---
+doc:
+  title: "{{title_yaml}}"
+  language: {{lang}}
+---
+|<(number=False) |(doc.title)
+|include("fragments/{{name}}-intro")
+|< {{s.terms}}
+|include("fragments/{{name}}-terms", part="short", months=12)

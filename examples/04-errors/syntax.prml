@@ -1,0 +1,19 @@
+---
+doc:
+  title: "Синтаксичні помилки"
+primula: {lines: para}
+params:
+  vat: yes
+---
+|% Example 4a: syntax mistakes, found before evaluation.
+|% Run: PYTHONPATH=../../src python3 -m primula check syntax.prml --lang uk
+|code:
+import os
+|end
+Невідома коротка форма: |$ тут.
+Тире замість довгого тире: |–{закреслення}.
+Символ Unicode без короткої форми: |«цитата».
+|<<(level=3) Рівень двічі: і «<<», і level=
+|>(id="a") Пункт без закриття оточення:
+|>:
+Багатоабзацний пункт без |end>.

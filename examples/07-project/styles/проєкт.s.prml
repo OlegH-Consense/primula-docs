@@ -1,0 +1,19 @@
+---
+kind: styles
+defaults: {font: Liberation Serif, size: 11pt, language: uk-UA}
+paragraphs:
+  Реквізити:  {parent: Body, align: left, size: 9.5pt, space_after: 0mm}
+  Підпис:     {parent: Body, align: left, space_before: 8mm}
+  Місце-дата: {parent: Body, align: left, space_after: 4mm}
+tables:
+  Акт:        {parent: TableGrid, padding: 1mm, header_background: "#E7EEF7", header_align: center}
+  Реєстр:     {parent: TableGrid, padding: 1mm, header_background: "#E7EEF7", header_align: center,
+               footer_bold: true, footer_background: "#F2F2F2"}
+  Без-рамок:  {parent: TableGrid, frame: none, rules: none, padding: [0mm, 2mm, 0mm, 0mm]}
+---
+# The styles layer of the project (spec 11.7): it is the first layer of
+# every document of the project and of the compound document.
+structure_profile("business")
+page_style("Альбомна", parent="Portrait", orientation="landscape")
+# The footer uses a project parameter: the styles level sees the project level.
+footer("Portrait", markup(f"|.Footer: Договір № {договір.номер} — сторінка |field.page"))

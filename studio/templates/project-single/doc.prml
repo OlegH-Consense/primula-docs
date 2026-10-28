@@ -1,0 +1,7 @@
+---
+doc:
+  title: "{{title_yaml}}"
+---
+|<(number=False) |(doc.title)
+|< {{s.section}}
+|> {{s.clause}}

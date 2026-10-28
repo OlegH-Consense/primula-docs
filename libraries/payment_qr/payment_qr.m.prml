@@ -1,0 +1,211 @@
+---
+kind: module
+---
+|% payment_qr — QR code for the exchange of requisites of credit and instant credit
+|% transfers by the rules of the National Bank of Ukraine: resolution of the NBU Board
+|% No 97 of 19.08.2025 (amended by No 128 of 11.10.2025), in force since 01.11.2025,
+|% https://zakon.rada.gov.ua/laws/show/v0097500-25 (checked 26.10.2026).
+|%
+|% Formats 003 (default) and 002: the structure (lines joined by Lf) is encoded
+|% with Base64URL and appended to https://qr.bank.gov.ua/; the QR code has
+|% version 10..17, error correction M or Q and the hryvnia sign in a white circle
+|% in the centre (appendix 1, points 5, 6, 10-13). The QR matrix and Base64URL are
+|% functions of the translator (qr_matrix, qr_svg, base64url; decision 137).
+|%
+|% Public functions: payload, link, problem, svg. A document imports the module
+|% with |import("lib/payment_qr") and puts |img(svg=payment_qr.svg(...)).
+|import("std/math")
+|code:
+VERSION = "0.1.0"
+
+#: Start code of the hyperlink (appendix 4, table 1).
+PREFIX = "https://qr.bank.gov.ua/"
+
+#: Category / purpose of format 003: codes of ISO 20022 (category/purpose).
+SUPPLIER = "SUPP/SUPP"
+GOODS = "OTHR/GDDS"
+SERVICES = "OTHR/SCVE"
+
+_ASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+# Characters 128..255 of Windows-1251 except 152 and 160 (appendix 1, point 4).
+_CP1251 = ("ЂЃ‚ѓ„…†‡€‰Љ‹ЊЌЋЏђ‘’“”•–—™љ›њќћџЎўЈ¤Ґ¦§Ё©Є«¬­®Ї°±Ііґµ¶·ё№є»јЅѕї"
+           + "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюя")
+_TEXT = _ASCII + _CP1251
+_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+_HEX = "0123456789ABCDEF"
+#: Fields that the payer may be allowed to change (format 003, field 14).
+_EDITABLE = {"receiver": 6, "iban": 7, "amount": 8, "code": 9, "category": 10, "purpose": 12, "display": 13}
+#: Diameter of the white circle by the QR version (appendix 1, point 11).
+_CIRCLE = {10: 17, 11: 19, 12: 19, 13: 21, 14: 23, 15: 23, 16: 25, 17: 25}
+# The hryvnia sign: one path in a box of 325 x 435 (Hryvnia_symbol.svg given by the user).
+_SIGN_W = 325
+_SIGN_H = 435
+_SIGN = "M226.8,197.6l-49.1,39.7h144.2v43.9h-187c-12.5,9.4-19.9,20.9-19.9,35.5c0,25.1,19.9,38.7,55.4,38.7 c30.3,0,56.4-14.6,77.3-44.9l57.5,38.7c-31.3,48.1-87.8,72.1-141.1,72.1c-70,0-122.2-33.4-122.2-88.8c0-17.8,6.3-36.6,18.8-51.2 H3.2v-43.9h91.9l50.2-39.7H3.2v-43.9h186c13.6-12.5,19.9-24,19.9-37.6c0-21.9-19.9-37.6-50.2-37.6c-29.3,0-54.3,16.7-72.1,44.9 L31.4,85.8c30.3-48.1,79.4-72.1,132.7-72.1c72.1,0,119.1,37.6,119.1,88.8c0,18.8-6.3,37.6-16.7,51.2h55.4v43.9H226.8z"
+
+
+def _clean(text):
+    # No-break spaces become spaces (160 is not allowed); the modifier apostrophe U+02BC
+    # of Ukrainian names is not in Windows-1251 and becomes U+2019.
+    return text.replace(" ", " ").replace(" ", " ").replace("ʼ", "’")
+
+
+def _bad_char(text, allowed):
+    for ch in text:
+        if ch not in allowed:
+            return ch
+    return ""
+
+
+def _iban_ok(iban):
+    if len(iban) != 29 or not iban.startswith("UA") or not iban[2:].isdigit():
+        return False
+    digits = "".join([c if c.isdigit() else str(_LETTERS.find(c) + 10) for c in iban[4:] + iban[:4]])
+    return int(digits) % 97 == 1
+
+
+def _amount(amount):
+    if amount is None:
+        return ""
+    if round(amount, 2) != amount:
+        return None
+    if amount == int(amount):
+        return "UAH" + str(int(amount))
+    return "UAH" + f"{amount:.2f}"
+
+
+def _stamp(moment):
+    # YYMMDDhhmmss from the ISO form 2026-10-12T14:30:05.
+    s = str(moment)
+    return s[2:4] + s[5:7] + s[8:10] + s[11:13] + s[14:16] + s[17:19]
+
+
+def _hex4(number):
+    out = ""
+    for _ in range(4):
+        out = _HEX[number % 16] + out
+        number = number // 16
+    return out
+
+
+def _lock(editable):
+    if editable is None:
+        return ""
+    mask = 65535
+    for name in editable:
+        if name not in _EDITABLE:
+            return None
+        mask = mask - 2 ** _EDITABLE[name]
+    return _hex4(mask)
+
+
+def _fields(receiver, iban, code, purpose, amount, category, function, reference, display, editable,
+            valid_until, created, version, encoding, check_iban):
+    """The elements of the structure, or a reason (string) why they cannot be built."""
+    if version not in ("002", "003"):
+        return "версія формату має бути «003» або «002»"
+    if encoding not in ("cp1251", "utf-8"):
+        return "кодування має бути «cp1251» або «utf-8»"
+    allowed_functions = ("UCT", "ICT", "XCT") if version == "003" else ("UCT",)
+    if function not in allowed_functions:
+        return f"функція має бути одна з: {', '.join(allowed_functions)}"
+    receiver = _clean(receiver).strip()
+    purpose = _clean(purpose).strip()
+    display = _clean(display).strip()
+    code = _clean(code).strip()
+    iban = "".join(iban.split()).upper()
+    if not receiver:
+        return "отримувач не вказаний"
+    if len(receiver) > 140:
+        return f"отримувач довший за 140 знаків ({len(receiver)})"
+    if check_iban and not _iban_ok(iban):
+        return f"рахунок «{iban}» не є правильним IBAN UA"
+    sum_text = _amount(amount)
+    if sum_text is None:
+        return "сума має містити не більше двох знаків після крапки"
+    if amount is not None and (amount <= 0 or amount > 999999999.99):
+        return "сума має бути від 0,01 до 999 999 999,99"
+    if not code or len(code) > 10:
+        return "код отримувача має містити від 1 до 10 знаків"
+    if not purpose:
+        return "призначення платежу не вказане"
+    if len(purpose) > 420:
+        return f"призначення платежу довше за 420 знаків ({len(purpose)})"
+    for name, text in (("отримувач", receiver), ("код отримувача", code), ("призначення", purpose),
+                       ("відображення", display)):
+        ch = _bad_char(text, _TEXT)
+        if ch:
+            return f"{name}: недопустимий знак «{ch}»"
+    if version == "002":
+        if category or reference or display or editable is not None or valid_until is not None:
+            return "у форматі 002 категорія, Reference, відображення, заборона змін і строк дії не заповнюються"
+        return ["BCD", "002", "2" if encoding == "cp1251" else "1", function, "", receiver, iban, sum_text, code,
+                "", "", purpose, ""]
+    if len(category) != 9 or category[4] != "/" or _bad_char(category[:4] + category[5:], _LETTERS + "0123456789"):
+        return f"категорія / ціль «{category}» має бути у формі CCCC/PPPP (коди ISO 20022)"
+    if len(reference) > 35 or _bad_char(reference, _ASCII):
+        return "Reference — до 35 знаків латиницею, цифрами й знаками ASCII"
+    if len(display) > 140:
+        return f"відображення довше за 140 знаків ({len(display)})"
+    lock = _lock(editable)
+    if lock is None:
+        return f"editable: допустимі поля {', '.join(_EDITABLE.keys())}"
+    until = "" if valid_until is None else _stamp(valid_until)
+    made = "" if created is None else _stamp(created)
+    return ["BCD", "003", "2" if encoding == "cp1251" else "1", function, "", receiver, iban, sum_text, code,
+            category, reference, purpose, display, lock, until, made, ""]
+
+
+def problem(receiver, iban, code, purpose, amount=None, category=SUPPLIER, function="UCT", reference="", display="",
+            editable=None, valid_until=None, created=None, version="003", encoding="cp1251", check_iban=True):
+    """Why the QR code cannot be built (a message in Ukrainian), or "" if it can."""
+    fields = _fields(receiver, iban, code, purpose, amount, category, function, reference, display, editable,
+                     valid_until, created, version, encoding, check_iban)
+    if type(fields) == "str":
+        return fields
+    encoded = base64url("\n".join(fields), encoding=encoding)
+    if len(encoded) > 475 or len(PREFIX) + len(encoded) > 507:
+        return f"дані завеликі для QR-коду: {len(PREFIX) + len(encoded)} байтів, можна не більше 507"
+    return ""
+
+
+def payload(receiver, iban, code, purpose, amount=None, category=SUPPLIER, function="UCT", reference="", display="",
+            editable=None, valid_until=None, created=None, version="003", encoding="cp1251", check_iban=True):
+    """The structure of the QR code: elements joined by Lf, before Base64URL."""
+    reason = problem(receiver, iban, code, purpose, amount, category, function, reference, display, editable,
+                     valid_until, created, version, encoding, check_iban)
+    if reason:
+        fail(f"payment_qr: {reason}")
+    fields = _fields(receiver, iban, code, purpose, amount, category, function, reference, display, editable,
+                     valid_until, created, version, encoding, check_iban)
+    return "\n".join(fields)
+
+
+def link(receiver, iban, code, purpose, amount=None, category=SUPPLIER, function="UCT", reference="", display="",
+         editable=None, valid_until=None, created=None, version="003", encoding="cp1251", check_iban=True):
+    """The hyperlink https://qr.bank.gov.ua/<Base64URL> that the QR code holds."""
+    text = payload(receiver, iban, code, purpose, amount, category, function, reference, display, editable,
+                   valid_until, created, version, encoding, check_iban)
+    return PREFIX + base64url(text, encoding=encoding)
+
+
+def svg(receiver, iban, code, purpose, amount=None, category=SUPPLIER, function="UCT", reference="", display="",
+        editable=None, valid_until=None, created=None, version="003", encoding="cp1251", check_iban=True,
+        module="0.5mm", ecc="M"):
+    """SVG of the QR code with the hryvnia sign, for |img(svg=...); module is the size of one module."""
+    if ecc not in ("M", "Q"):
+        fail("payment_qr: рівень корекції має бути «M» або «Q» (зі знаком гривні «L» не допускається)")
+    data = link(receiver, iban, code, purpose, amount, category, function, reference, display, editable,
+                valid_until, created, version, encoding, check_iban)
+    qr_version = int(qr_matrix(data, ecc=ecc, min_version=10, max_version=17).version)
+    circle = _CIRCLE[qr_version]
+    side = qr_version * 4 + 17 + 8
+    image = qr_svg(data, ecc=ecc, min_version=qr_version, max_version=qr_version, quiet=4, circle=circle,
+                   size=length(module) * side)
+    # The sign is inscribed in a circle 4 modules smaller than the white one (appendix 1, point 12).
+    scale = (circle - 4) / math.sqrt(_SIGN_W ** 2 + _SIGN_H ** 2)
+    x = side / 2 - _SIGN_W * scale / 2
+    y = side / 2 - _SIGN_H * scale / 2
+    sign = (f'<path fill="#000" transform="translate({round(x, 4)} {round(y, 4)}) scale({round(scale, 6)})" '
+            + f'd="{_SIGN}"/>')
+    return image.replace("</svg>", sign + "</svg>")
+|end

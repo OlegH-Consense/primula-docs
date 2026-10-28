@@ -1,0 +1,54 @@
+---
+kind: styles
+# Styles set std/styles/technical (specification 11.9, stage 15.3): manuals,
+# instructions, technical descriptions, software documentation.  Built on
+# std/styles/default (decision 133); profile "report": appendices
+# "ДОДАТОК А", captions "Рисунок 1 — …" (decisions 70, 71).
+#
+# Adds: program text and output, elements of an interface and of a command
+# line (keys, menu items, file names, commands, variables), steps of a
+# procedure with their results, a list of definitions, a compact table and a
+# table of revisions.  Admonitions |! of 9.1 are styled by std/styles/default.
+extends: std/styles/default
+defaults: {font: Liberation Sans, size: 10.5pt, language: uk-UA}
+paragraphs:
+  Body:             {align: left, line_height: "120%", space_after: 2mm}
+  Heading1:         {size: 15pt, space_before: 6mm, space_after: 3mm}
+  Heading2:         {size: 13pt, space_before: 5mm, space_after: 2mm}
+  Heading3:         {size: 11.5pt, space_before: 4mm, space_after: 1.5mm}
+  # Program text, configuration, terminal sessions: a grey band, no justification.
+  Preformatted:     {size: 9pt, left: 3mm, right: 3mm, background: "#F2F2F2", space_before: 1mm, space_after: 2mm}
+  # Program output: the same band, darker text.
+  ProgramOutput:    {parent: Preformatted, color: "#333333"}
+  # The result of a step: "Відкриється вікно …".
+  StepResult:       {parent: Body, italic: true, left: 8mm, space_after: 2mm}
+  # A list of definitions: the term, then its explanation indented.
+  DefinitionTerm:   {parent: Body, bold: true, space_after: 0.5mm, keep_with_next: true}
+  DefinitionText:   {parent: Body, left: 8mm, space_after: 2mm}
+characters:
+  # Interface and command line: Key — Ctrl+S, MenuItem — Файл → Зберегти,
+  # FileName — /etc/hosts, Command — primula check, Variable — <ФАЙЛ>.
+  Key:              {font: Liberation Mono, bold: true, background: "#E8E8E8"}
+  MenuItem:         {bold: true}
+  FileName:         {font: Liberation Mono}
+  Command:          {font: Liberation Mono, bold: true}
+  Variable:         {font: Liberation Mono, italic: true}
+  Code:             {background: "#F2F2F2"}
+lists:
+  # Steps of a procedure: 1., 2. …; inside a step а), б) …
+  StepList:
+    paragraph: ListText
+    levels:
+      1: {type: number, format: "1", suffix: ".", left: 8mm, hanging: 8mm}
+      2: {type: number, format: "а", suffix: ")", left: 16mm, hanging: 6mm}
+tables:
+  TableGrid:        {frame: "0.5pt solid #808080", border: "0.5pt solid #808080", header_background: "#E6E6E6",
+                     header_paragraph: TableHeader}
+  # Revisions: version / date / changes / author.
+  TableRevisions:   {parent: TableCompact, cols: ["16mm", "24mm", "*", "40mm"]}
+pages:
+  Portrait:         {margin: [20mm, 15mm, 20mm, 25mm]}
+---
+structure_profile("report")
+numbering(headings=True)
+footer("Portrait", markup("|.Footer: |field.page"))

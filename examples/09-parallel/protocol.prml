@@ -1,0 +1,52 @@
+---
+doc:
+  title: "Протокол розбіжностей"
+  identifier: "ПР-2026/017"
+  language: uk-UA
+params:
+  contract: "ДП-2026/017"
+styles: [std/styles/business]
+---
+|% Example 9: a protocol of disagreements — three tracks of |parallel (7.7):
+|% the wording of the supplier (optional: a new clause has none), the wording
+|% of the buyer (the primary track) and a comment of a lawyer (not numbered,
+|% optional, narrow, smaller text); the clauses cite the numbers of the
+|% contract, so they are plain paragraphs with the number in bold;
+|% parity="structure" checks that every segment has the wording of the
+|% buyer; segments without a comment leave its cell empty.
+|.DocumentTitle: ПРОТОКОЛ РОЗБІЖНОСТЕЙ
+|.DocumentSubtitle: до договору № |(contract)
+
+|parallel(tracks=[track("old", title="Редакція Постачальника", optional=True),
+                  track("new", title="Редакція Покупця", primary=True),
+                  track("note", title="Коментар", width="30%", numbered=False, optional=True)],
+          parity="structure", gap="6mm", rule="0.3pt solid #999999"):
+
+|segment(id="p-4-2"):
+|track("old"):
+|*{4.2.} Оплата здійснюється протягом 5 банківських днів з дати поставки.
+|track("new"):
+|*{4.2.} Оплата здійснюється протягом 30 календарних днів з дати поставки.
+|track("note"):
+|.SmallPrint: Відстрочку погоджено листом від 12.10.2026 № 45.
+|end segment
+
+|segment(id="p-4-3"):
+|track("new"):
+|*{4.3.} Покупець має право на дострокову оплату без штрафних санкцій.
+|track("note"):
+|.SmallPrint: Новий пункт.
+|end segment
+
+|segment(id="p-5-1"):
+|track("old"):
+|*{5.1.} Гарантійний строк — 12 місяців.
+|track("new"):
+|*{5.1.} Гарантійний строк — 24 місяці.
+|end segment
+
+|end parallel
+
+|table(cols=["*", "*"], style="TableParties", header=0):
+|: |*{Постачальник}|\______________ |& |*{Покупець}|\______________
+|end table

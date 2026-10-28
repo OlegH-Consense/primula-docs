@@ -1,0 +1,31 @@
+---
+doc:
+  title: "Помилки обчислення"
+---
+|% Example 4b: syntax is correct, mistakes are found during evaluation,
+|% styles, structure and table processing.
+|% Run: PYTHONPATH=../../src python3 -m primula check evaluation.prml --lang uk
+|code:
+a = b + 1
+b = a + 1
+big = 10 ** 70
+items = [1, 2]
+|end
+|def продавець():
+ТОВ «Альфа»
+|enddef
+|< Помилки
+Невідоме ім'я: |(unknown_name). Цикл визначень: |(a). Понад 64 значущі цифри: |(big).
+Посилання на неіснуючу ціль: |@("no-such-id").
+Договір із |продавецьом (потрібен |;: |продавець|;ом).
+|.NoSuchStyle: Абзац із невідомим стилем.
+|>(id="dup") Пункт.
+|>(id="dup") Пункт з тим самим ID.
+|table(cols=["*", "*"]):
+|: Одна комірка
+|: А |& |=(this_row(5))
+|end table
+|for(x in items):
+|let(total=x)
+|endfor
+|(items.append(3))

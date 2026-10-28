@@ -1,0 +1,9 @@
+---
+kind: project
+extends: {{base}}
+name: "{{title_yaml}}"
+styles: [{{styles}}]
+targets:
+{{targets}}---
+# {{s.comment}}
+order = load_yaml("order.yaml")

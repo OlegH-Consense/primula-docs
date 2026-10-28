@@ -1,0 +1,7 @@
+---
+kind: styles
+# Styles of example 10: the value columns of the comparison tables are
+# monospaced, so that 0.30000000000000004 and '    2.20' read as code.
+paragraphs:
+  TableValue: {parent: TableText, font: Liberation Mono, size: 8.5pt}
+---

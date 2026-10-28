@@ -1,0 +1,84 @@
+---
+doc: {language: uk-UA}
+params:
+  ціна: 250.00
+  сторона: {назва: "ТОВ «Альфа»"}
+---
+|% Example 10, deliberate errors (2/2): code that is valid Python but wrong
+|% in Primula.  These are evaluation errors: `primula check mistakes.prml`
+|% reports them once the syntax is correct (forbidden constructs are in
+|% forbidden.prml).  Each comment says what Python would do and what to write.
+|code:
+# Global names are immutable (12.7): a second definition is P2203.
+# Python: the name is simply rebound.
+x = 1
+x = 2
+
+# A header parameter is a global name too: P2203.  Change it in the header
+# or with --param ціна=…
+ціна = 300.00
+
+# A cycle of lazy definitions: P2204.  Python: NameError at the first line.
+a = b + 1
+b = a + 1
+
+# A global list is frozen after it is computed: append() is P2318.
+# Write rows = [r * 2 for r in xs] or build the list in a function.
+xs = [1, 2, 3]
+for r in xs:
+    xs.append(r * 2)
+
+# Names bound in a top-level action are local to it: total is read before it
+# is assigned (P2202), and the warning P2501 says it never becomes global.
+# Write total = sum(xs).
+for r in xs:
+    total += r
+
+# A default value is computed once and frozen: P2318 at the first call.
+# Python: the list silently grows from call to call.
+def додати(v, acc=[]):
+    acc.append(v)
+    return acc
+перший = додати(1)
+
+# bool takes no part in arithmetic: P2304.  Python: True + 1 == 2.
+кількість_прапорців = True + 1
+
+# Numbers have at most 64 significant digits: P2309.  Python int is unbounded.
+велике = 10 ** 70
+
+# A float is not a dictionary key: P2317.
+таблиця = {0.5e0: "половина"}
+
+# A record is not a sequence: "in" is P2301; test a field with hasattr().
+є_назва = "назва" in сторона
+
+# A missing field is P2314; getattr(сторона, "ІПН", None) gives a default.
+ІПН = сторона.ІПН
+
+# Different types are not ordered: P2305.  Python 3: TypeError as well.
+порівняння = 1 < "2"
+
+# Attribute access in a format field is P2330; write "{0[назва]}".format(сторона).
+рядок = "{0.назва}".format(сторона)
+
+# @export exists only in a fragment: the document is the root, it has no one
+# to export to (P2610).  In a module every public name is visible anyway.
+@export
+def подвоїти(x):
+    return x * 2
+
+# A money function does not take a float: write a decimal (250.00, dec("…")).
+сума = money(2.5e2, "UAH")
+|end
+|% Definitions are lazy: a definition nobody reads is never computed, and its
+|% error is not reported (Python would fail at the line).  The line below
+|% reads every name above, so their errors show.
+Обчислення: |(str(a)) |(str(перший)) |(str(кількість_прапорців)) |(str(велике)) |(str(таблиця)) |(str(є_назва)) |(str(ІПН)) |(str(порівняння)) |(рядок) |(сума)
+|% A list, None or bool cannot be inserted into the text (P2603): Python's
+|% str() would print "[1, 2]", "None", "True".  Use join_list(), x or "—", str().
+Значення: |(xs), |(None), |(True).
+|% A fractional decimal without formatting is a warning (P2604): num(), money().
+Ціна: |(ціна).
+|% content is opaque: content + str is P2301; join the strings, then markup().
+|(markup("|*{a}") + "b")

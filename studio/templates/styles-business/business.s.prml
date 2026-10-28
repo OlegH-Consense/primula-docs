@@ -1,0 +1,12 @@
+---
+kind: styles
+extends: std/styles/business
+defaults: {language: {{lang}}}
+paragraphs:
+  Requisites: {parent: Body, align: left, size: 10pt, keep_together: true}
+---
+structure_profile("business")
+numbering(headings=True, heading_format="{n}.", clause_format="{n}.")
+typography(nbsp_short=True)
+paragraph_style("Body-tight", parent="Body", space_after=0*mm)
+footer("Portrait", markup("|.Footer: {{s.page}} |field.page {{s.of}} |field.pages"))

@@ -1,0 +1,28 @@
+---
+kind: module
+---
+|% mylib — <one line: what the library does>.
+|% Rules and sources: <standard, law, regulation; the date they were checked>.
+|% Public names have no leading "_"; a document imports the module with
+|% |import("lib/mylib") (link or copy of this directory as lib/).
+|code:
+VERSION = "0.1.0"
+
+_rates = load_yaml("data/rates.yaml")
+
+
+def rate_on(day):
+    """The rate in force on a date (the document passes doc.created or a contract date)."""
+    found = None
+    for row in _rates.rates:
+        if row["from"] <= day:
+            found = row["value"]
+    if found is None:
+        fail(f"mylib: немає ставки на {fmt_date(day, 'short')}")
+    return found
+
+
+def amount(base, day):
+    """Base amount plus the rate (percent) in force on a date, rounded to kopecks."""
+    return round_money(base * (100 + rate_on(day)) / 100)
+|end

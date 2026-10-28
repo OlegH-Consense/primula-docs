@@ -1,0 +1,8 @@
+---
+kind: fragment
+params:
+  voltage: 230
+---
+|% Reusable fragment with a parameter.
+|> Напруга живлення|index("напруга живлення") — |(qty(voltage, "V")) (|(words(voltage)) |(plural(voltage, "вольт", "вольти", "вольт"))).
+|> Не вмикайте пристрій до заземлення корпусу.

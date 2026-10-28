@@ -1,0 +1,80 @@
+{
+ "kind": "document",
+ "order": 40,
+ "title": {
+  "en": "Manual (technical document)",
+  "uk": "Настанова (технічний документ)",
+  "ru": "Руководство (технический документ)"
+ },
+ "description": {
+  "en": "Table of contents, safety admonitions, a numbered table with a caption, abbreviations, variants by features (has()).",
+  "uk": "Зміст, попередження з безпеки, нумерована таблиця з підписом, скорочення, варіанти за властивостями виробу (has()).",
+  "ru": "Оглавление, предупреждения безопасности, нумерованная таблица с подписью, сокращения, варианты по свойствам изделия (has())."
+ },
+ "files": [
+  {
+   "from": "manual.prml",
+   "to": "{{name}}.prml",
+   "open": true
+  }
+ ],
+ "strings": {
+  "en": {
+   "contents": "CONTENTS",
+   "safety": "Safety",
+   "hazard": "Mains voltage",
+   "disconnect": "Disconnect the device from the mains before service.",
+   "note": "Keep this manual.",
+   "specs": "Specifications",
+   "parameters": "Main parameters",
+   "parameter": "Parameter",
+   "value": "Value",
+   "voltage": "Supply voltage",
+   "see": "See",
+   "use": "Use",
+   "abbr_intro": "The device is controlled by",
+   "abbr": "SW",
+   "abbr_full": "software",
+   "abbr_again": "Update the",
+   "wifi": "The device connects to a Wi-Fi network."
+  },
+  "uk": {
+   "contents": "ЗМІСТ",
+   "safety": "Безпека",
+   "hazard": "Напруга мережі",
+   "disconnect": "Перед обслуговуванням від'єднайте виріб від мережі.",
+   "note": "Зберігайте цю настанову.",
+   "specs": "Технічні характеристики",
+   "parameters": "Основні параметри",
+   "parameter": "Параметр",
+   "value": "Значення",
+   "voltage": "Напруга живлення",
+   "see": "Див.",
+   "use": "Використання",
+   "abbr_intro": "Виріб керується",
+   "abbr": "ПЗ",
+   "abbr_full": "програмним забезпеченням",
+   "abbr_again": "Оновлюйте",
+   "wifi": "Виріб підключається до мережі Wi-Fi."
+  },
+  "ru": {
+   "contents": "СОДЕРЖАНИЕ",
+   "safety": "Безопасность",
+   "hazard": "Напряжение сети",
+   "disconnect": "Перед обслуживанием отключите изделие от сети.",
+   "note": "Сохраняйте это руководство.",
+   "specs": "Технические характеристики",
+   "parameters": "Основные параметры",
+   "parameter": "Параметр",
+   "value": "Значение",
+   "voltage": "Напряжение питания",
+   "see": "См.",
+   "use": "Использование",
+   "abbr_intro": "Изделие управляется",
+   "abbr": "ПО",
+   "abbr_full": "программным обеспечением",
+   "abbr_again": "Обновляйте",
+   "wifi": "Изделие подключается к сети Wi-Fi."
+  }
+ }
+}

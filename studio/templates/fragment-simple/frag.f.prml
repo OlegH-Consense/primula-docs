@@ -1,0 +1,4 @@
+---
+kind: fragment
+---
+|> {{s.text}}

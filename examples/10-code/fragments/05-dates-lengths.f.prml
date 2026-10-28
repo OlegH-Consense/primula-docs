@@ -1,0 +1,54 @@
+---
+kind: fragment
+---
+|% Topic 5: dates and lengths (spec 12.3; the library: add_months, hours,
+|% workdays, fmt_date).
+|%
+|% datetime is ONE built-in type for a date and a moment (Python has date,
+|% datetime and timedelta in the module datetime, which needs import):
+|%   * a date is a moment at 00:00:00; seconds are the precision; no time
+|%     zones (a value with a zone is an error);
+|%   * dt + n, dt - n add n DAYS (a decimal or float; Python needs a
+|%     timedelta); dt - dt is a decimal number of days, fractional when the
+|%     time differs (Python: a timedelta, and datetime - date is a TypeError);
+|%   * hours(n), minutes(n), weeks(n) are numbers of days: dt + hours(36);
+|%     calendar months: add_months(d, n) — 31 January + 1 month is 28 February;
+|%   * weekday is an ATTRIBUTE 1..7, Monday = 1 (Python: a method 0..6);
+|%   * str(dt) is ISO with "T": 2026-10-12T14:30:00 (Python: a space);
+|%   * float(dt) is the serial number of the spreadsheet epoch 30.12.1899.
+|% For the text of a document use fmt_date() — it follows doc.language.
+|%
+|% length (10*mm, "10mm") has no Python counterpart: a decimal value with its
+|% unit; mm, cm, pt, inch are constants (not "in": a keyword); the result of
+|% an operation is in the unit of the left operand; == compares with a
+|% tolerance of 0.001 mm, so 72*pt == inch.
+|< Дати й довжини
+Дата й момент часу — один вбудований тип |`{datetime} без імпорту: дата — це момент 00:00:00, точність — секунда, поясів часу немає. До дати додається число діб, різниця дат — число діб.
+
+|table(cols=колонки, style="TableGrid"):
+|: Вираз |& Primula |& Python 3 (модуль datetime)
+|: |`{date(2026, 10, 12)} |& |(показ(date(2026, 10, 12))) |& date(2026, 10, 12) · date
+|: |`{date(2026, 10, 12) + 30} |& |(показ(date(2026, 10, 12) + 30)) |& TypeError (потрібен timedelta)
+|: |`{date(2026, 12, 31) - date(2026, 10, 12)} |& |(показ(date(2026, 12, 31) - date(2026, 10, 12))) |& timedelta(days=80) · timedelta
+|: |`{datetime(2026, 10, 12, 14, 30, 0) - date(2026, 10, 12)} |& |(показ(datetime(2026, 10, 12, 14, 30, 0) - date(2026, 10, 12))) |& TypeError
+|: |`{date(2026, 10, 12) + hours(36)} |& |(показ(date(2026, 10, 12) + hours(36))) |& —
+|: |`{add_months(date(2026, 1, 31), 1)} |& |(показ(add_months(date(2026, 1, 31), 1))) |& —
+|: |`{date(2026, 10, 12).weekday} |& |(показ(date(2026, 10, 12).weekday)) |& .weekday() → 0 · int
+|: |`{str(datetime(2026, 10, 12, 14, 30, 0))} |& |(показ(str(datetime(2026, 10, 12, 14, 30, 0)))) |& '2026-10-12 14:30:00' · str
+|: |`{float(date(2026, 10, 12))} |& |(показ(float(date(2026, 10, 12)))) |& TypeError
+|: |`{date("2026-02-30")} |& помилка P2307 (дати немає) |& TypeError (рядок — через date.fromisoformat: ValueError)
+|end table
+
+У тексті дата виводиться функцією |`{fmt_date} за мовою документа: |`{fmt_date(дата_договору, "contract")} дає «|(fmt_date(дата_договору, "contract"))», |`{fmt_date(дата_договору, "long")} — «|(fmt_date(дата_договору, "long"))».
+
+Довжина (|`{length}) — число з одиницею: |`{10*mm} або |`{"10mm"}. Константи |`{mm}, |`{cm}, |`{pt}, |`{inch} (не |`{in} — це ключове слово Python). У Python відповідника немає.
+
+|table(cols=колонки, style="TableGrid"):
+|: Вираз |& Primula |& Python 3
+|: |`{10*mm + 1*cm} |& |(показ(10*mm + 1*cm)) |& —
+|: |`{str(1*cm + 10*mm)} |& |(показ(str(1*cm + 10*mm))) |& —
+|: |`{72*pt == inch} |& |(показ(72*pt == inch)) |& —
+|: |`{(210*mm).cm} |& |(показ((210*mm).cm)) |& —
+|: |`{length("10mm") / (2*mm)} |& |(показ(length("10mm") / (2*mm))) |& —
+|: |`{(10*mm) * (10*mm)} |& помилка P2301 |& —
+|end table

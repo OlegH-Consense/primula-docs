@@ -1,0 +1,136 @@
+<!-- translation: source=studio/help/studio-user-guide.ru.md sections=102a2e80 09aded6b c9c99595 60173bf9 5d2c4641 b2721889 829c0307 08c81250 975c2730 9a252b16 e7fea4fd 97dda5de ccfb36ed -->
+# Primula Studio — quick help
+
+Primula Studio is an editor of documents in the Primula markup language (`.prml`) and an interface for building them into ODT and PDF. The `primula` translator does the build: Studio runs it as a separate program and shows its messages and the resulting PDF.
+
+> **Not sure what can be done here? Right-click.** The context menu of the editor offers the hint (`Ctrl+Shift+Space`), the specification section (`F1`), completion (`Ctrl+Space`), and in the YAML header the keys that can be inserted here (on an empty line too), the values of the key of the line and the missing metadata fields. The same keys work without the menu.
+
+## Project and document
+
+- **File → Open project or document…** (`Ctrl+O`) — a project file `project.p.prml` or any `.prml` document. The project of a document is found as the translator finds it: upwards from the document's directory up to the directory containing `.git`.
+- The main document (for a project — the source of its first target) or the files of the previous session are opened; fragments, modules and data open on request.
+- Errors in the project header do not prevent opening it: they are shown in the «Messages» panel, and the project file can be fixed right there.
+- **Recent projects** — in the File menu.
+
+Studio keeps its data in the service directory `.primula-studio/` in the project root; for an order project (`extends`) — in the root of the contract project, so a contract and all its orders share one directory:
+
+| File | Contents |
+|---|---|
+| `settings.json` | open files, cursor and scroll positions, layout, PDF, build settings — for every project or document opened |
+| `ai-context.md` | the persistent AI context of the project (plain Markdown) |
+| `ai-history/` | AI requests and responses |
+
+## Creating files and projects
+
+- **File → New** (`Ctrl+N` — a document): document, fragment, module of definitions, styles module, project, order project. The dialog lists the templates of the chosen kind with a description; you set the name, the title, the language of the template texts (by default the project language) and the place; the files to create are listed first, existing files are never overwritten.
+- Document templates: simple, contract, document from fragments, manual, business letter; project templates: with one document, with a batch build from CSV, contract and orders.
+- Styles sets of the kit: a document without project styles names a set in its header — `styles: [std/styles/business]` (contracts, acts), `letter` (letters), `technical` (manuals), `report` (reports after DSTU 3008), `compact` (memos). The templates of styles modules build on a set (`extends: std/styles/business`) and hold only the differences; samples — `examples/08-styles` of the source tree.
+- An **order project** is created in `orders/<name>/` of the open project: `extends` of the contract project, its own `order.yaml` (a copy of `orders/sample.yaml`), placeholders as plain text, targets — the documents of the contract project except its first target.
+- A new project opens at once; a new document opens in a tab.
+- Your own templates go to `~/.config/primula-docs/templates/` (**File → New → Open the folder of user templates**); the format is described in `studio/templates/README.md` of the source tree.
+
+The context menu of the Files panel: **New in this folder** (document, fragment, module, styles module, folder), **Copy under a new name…** (a file or a folder; for a copied folder Studio offers to replace the old name with the new one in its files — this is how `orders/cso270101-1` becomes the next order), **Open in an external application** (for example, a PDF in the system viewer), **Rename…**, **Move to trash** (when the trash of the partition is unavailable, deleting for good is offered), **Open the folder in the file manager**. Open tabs follow a rename; a file with unsaved changes cannot be renamed or deleted.
+
+## Files and tabs
+
+- The **Files** panel shows the project files; a double click opens a file. **File → Open file…** (`Ctrl+Shift+O`) opens any text file, also outside the project.
+- Images, ODT and other non-text files open in an external program (ODT in Writer), PDF in the PDF preview.
+- **File types** decide which files the Files panel shows and what opens them: the editor, the PDF preview, the program of the desktop or a command of your own. The built-in types are the files of a Primula project, data, texts, images, PDF, documents and spreadsheets (ODS, XLSX). **File → File types…** opens your file `~/.config/primula-docs/file-types.json` (the first time it is created from a template with a disabled example for PlantUML). A type: `name`, `patterns` (`["*.puml"]`), `open` (`editor`, `preview`, `system`, `command`), `command` — the program and its arguments (`%f` — the file, `%d` — its folder, `%r` — the path from the project root), `enabled`. A type with the same pattern replaces the built-in one. Saving the file applies the types at once; problems go to the Log tab. The project file `.primula-studio/file-types.json` may show types and choose the editor or the program of the desktop, but not commands: a project from someone else must not start programs. Example: `{"types": [{"name": "PlantUML", "patterns": ["*.puml"], "open": "command", "command": ["/home/user/puml_view.sh", "%f"]}]}`. The context menu of a file has **Open with …** (the command of the type, when a double click opens it otherwise) and **Open as text in the editor**.
+- Tabs close with their button, `Ctrl+W` or the tab context menu («Close other tabs», «Copy path»). Closing a modified file asks whether to save, discard or cancel.
+- A tab shows the short file name (without `.prml` and the sub-extension `.f`, `.m`, `.s`, `.p`, without the common beginning of the names); the full path is in the tooltip. `*` marks unsaved changes.
+- `Ctrl+E` lists all open files.
+- When a file changes outside Studio, a bar appears at the top: **Reload selected** or **Keep editor** (then the next save overwrites the file on disk).
+
+## Structure and styles
+
+The **Structure** and **Styles** panels are tabs next to **Files** (View → panels). Studio asks the translator for them (`primula check --dump-structure --dump-styles`) with the unsaved text of the open files, about a second after you stop typing, switch tabs or build; nothing is saved for that.
+
+- **Structure**: headings, clauses (folded under their headings), appendices, tables, figures, numbered lists of the current document; items of fragments show the file name. The item at the editor cursor is selected; double-click goes to its line; the context menu copies the number, the ID or a ready reference `|@("id")`. Parallel texts (`|parallel`): the row "Parallel tracks: uk | en", segments and track blocks with their state (`status`); items of a non-primary track are marked with its name ("[en] 2 Subject"), a translation that is outdated or changed after confirmation is coloured.
+- **Styles**: the layers of styles modules with their origin (project, `--style` option, document header, built-in, base `extends`), the document defaults and the styles by kind, with a filter. Italic — styles made by the translator (`derive`, variants); a warning icon — a broken style. For the selected style: its own properties with the layer that sets them and the inherited ones with the style they come from. Double-click a style, layer or own property to open its definition; modules of the standard library (`std/…`) open read-only.
+- **Applying a style**: **Format → Apply style…** (Ctrl+Shift+Y) picks a style with a filter; so does **Apply X at the cursor** in the context menu of a style. A character style wraps the selection: `|.X{…}` (without a selection, `|.X{}` is inserted). A paragraph style goes to the cursor line as `|.X: text`, to several selected lines as `|.X:` … `|end.X`; clause and heading lines (`|>`, `|<`) get it in their arguments: `|>(style="X")`. A block style — `|block("X"):` … `|end block`. A style already on the line is replaced. **Format → Remove style at the cursor** (Ctrl+Shift+Alt+Y) or **Remove X at the cursor** removes the nearest application around the cursor. Table, list, frame and page styles are set by the `style=` argument of their command. Ctrl+Z undoes an edit in one step.
+- When the document has errors, the panels keep their last content marked **Outdated** with the first error.
+
+## Inserting constructs
+
+- **Insert** lists the constructs of the language by section (text, structure, tables, pages and graphics, technical documents, modules, code); the tooltip shows the arguments with their defaults and the specification section. The **Palette** panel (a tab next to Styles) has the same with a search: double-click a construct or press Enter in the search field to insert it at the cursor.
+- A template is inserted with its first argument selected, ready to be typed over. Selected text becomes the body: select a word and choose `|*{…}` to get `|*{word}`. Environments (`|block`, `|table`, `|if`, `|appendix`…) wrap the selected lines; line forms (`|>`, `|newpage`…) without a selection go onto a line of their own.
+- **Hints**: hover over a `|command`, a short form, `|.Style` or `|@("id")` to see its description with arguments, the kind and parent of the style or the text of the referenced element; typing `|name(` shows the signature. The hint appears in a frame below the construct and closes when the mouse leaves the construct, on a click, a key or scrolling.
+- **Completion**: after `|` the commands are offered (the chosen one is inserted as a template), after `|.` the styles of the document, inside `|@("` the IDs of elements. On a line holding only `|end…` the closing of the nearest open environment comes first (`|end.Figure`, `|end block`, `|end>`, `|endif`…). The list appears as you type; Ctrl+Space calls it explicitly; Enter or Tab chooses, Esc closes. The hint on a closing marker shows which line it closes.
+- **Hint at once**: right-click a construct → **Hint: …** shows the same help without waiting, in a frame below the construct, until a click, a key or scrolling; the same menu has **Specification, section …**. For the construct at the text cursor: Ctrl+Shift+Space.
+- **Tab** after inserting a template goes to its next argument; Esc or a mouse click ends that.
+- **Functions** in code (`|code:` blocks, the code of styles modules and the project, command arguments, `|(…)` expressions): hover over a function to see its description, arguments, an example with its result and the section (a variable the file defines under the name of a function, e.g. `count = …`, gets no hint of that function unless it is called); typing `name(` shows the signature; completion starts after three letters of a name, after `x.` it offers the methods of strings, lists and dictionaries, after `math.` the functions of `std/math`; Ctrl+Space calls it at once. F1 on a function opens its section in the Primula standard library window (Help → Standard library) or in the specification. **Insert → Function** and the "Functions: …" sections of the palette list the same; a function inserted into the text of a document is wrapped in `|(…)`.
+- **F1** (Help → Help at the cursor; in the context menu — "Specification, section N") on a construct opens its section in the Primula language specification window (in the interface language; the Russian original is normative) or in the Primula standard library window. The construct the section is opened for is marked in the editor with a yellow background and a dotted underline, the window title names it ("… — context: |table(…)"), and a line above the text says which section is shown for which line. The mark goes when the window is closed or the specification is opened from the menu. Elsewhere F1 opens this help and says so in the status bar. **Help → Quick help** always opens this help. The whole specification: Help → Language specification.
+- The context menu of the palette: insert at the cursor, copy the form or the template, open the specification section.
+- **Insert → Image…** inserts `|img("path")` with the path relative to the file; an image outside the project can be copied into `assets/` (existing files are never overwritten).
+- A reference to a clause or heading: the context menu of the **Structure** panel → Insert the reference … at the cursor.
+- **YAML header** (between the `---` lines at the start of a file): hover a key for its description, type, values, example and section; F1 opens the section (on an empty line — the section of the block it lies in, or of the header of the file). The metadata of a document are `doc:` (in the text `|(doc.title)`), their defaults for every document of a project are `doc_defaults:` of the project file, the documents others refer to are `ref_documents:` of the project (decision 129). On `doc:` and `doc_defaults:` the hint names the recommended fields not filled yet. Completion (`Ctrl+Space`, also on an empty line) offers the keys of the current level (except those already there; also inside `targets`, `limits` and `{…}`) and values: the allowed ones (`kind`, `on_conflict`), languages, today's date, project files for `styles`, `extends`, `source`.
+- **Context menu of the header**: **Insert key into X:** and **Insert top-level key** — keys with descriptions, recommended ones marked ★, those already there disabled (the key goes to the empty line the menu was opened on, else first in its block); **Value of the key** — the allowed values of the key of the line; **Add missing metadata fields**; **All header keys** — the specification section.
+- **Insert → Header: add missing fields** (also in the context menu) adds `title`, `creator`, `language`, `created` under `doc:` in a document, and `creator`, `organization` under `doc_defaults:` in a project file (defaults for every document of the project; a document may replace them); Tab moves to the next value. A message box tells what was added where, or why there is nothing to add.
+
+## Check and build
+
+| Command | Keys | What it does |
+|---|---|---|
+| Check document | `Ctrl+Shift+Enter` | `primula check` of the current document, nothing is written |
+| Build document (ODT and PDF) | `F9` | ODT and PDF of the current document: a project target into its own output, another document into `build/` of the project root |
+| Build all targets of the project | `Shift+F9` | `primula build project.p.prml --pdf` |
+
+- A fragment, module or styles module is checked and built within the document shown in the PDF.
+- All files are saved before a check or build.
+- **Strict: warnings are errors** — the `--strict` option.
+- **Build → Document parameters: NAME…** lists the parameters of the project and the document NAME (`params:`; with the project file open — of the main document) with type and default. A value is set in the last column with one click (a list for `true`/`false` and dates), written as in `--param` (text, `true`/`false`, a number, a date), kept for the document in `.primula-studio/settings.json` and used by Check, Build of the document, the panels and the console; no file changes; empty keeps the default. Building all targets uses the parameters of the targets. The window itself explains this.
+- Translator messages are in the **Messages** panel: a double click opens the file at the line and column (also in a fragment). Lines with messages are underlined in the editor. The translator output is in the **Log** tab.
+- **Build → Export** (and Export in the context menu of a document in the Files panel and on its tab) — `primula export` through pandoc: **Markdown**, **HTML (one file)**, **DOCX (Word)**, **Another format…** (`gfm`, `latex`, `epub`, `rst`, `json` — the pandoc AST, no pandoc needed — and others), **Export as…** (choose the file). The file goes next to the ODT of the document (`build/document.md`; ODT through pandoc — `document.pandoc.odt`, so the ODT of the build stays); the parameters of the document and Strict apply. Numbers of clauses, references, footnotes, tables and captions are kept; page layout is not (a warning in Messages). After the export a window offers **Open the file** and **Open the folder**; without pandoc a window explains how to install it.
+
+## Parallel tracks
+
+For documents with `|parallel` (a bilingual agreement, a protocol of disagreements; the author guide, page "Parallel texts") — the submenu **Build → Parallel tracks** and the same submenu in the context menu of the editor when the document has a `|parallel`. The commands run `primula parallel`; the document is saved first, the file rewritten by the translator is reloaded in the editor, the report of the command is in the **Log** tab, the messages — in **Messages**.
+
+- **Confirm the translation of segment X, track Y…** — for the translation block under the cursor: writes `rev` (the hashes of the primary block and of the translation) and, when chosen, the status (`reviewed`, `translated`, `draft` or your own). With the cursor in a block of the primary track or outside a segment the item is disabled and says where to put the cursor.
+- **Confirm all blocks of a track…** — the same for all segments of the track.
+- **Write blank blocks of a track…** — segments without a block of the track get a copy of the structure of the primary block with placeholders `|?{…}`.
+- **Check the status of the translations…** — whether every block of the non-primary tracks is in the given state and has no outdated `rev`; differences go to Messages.
+- When the primary text changes after a confirmation, the check of the document gives P5320 "the translation is outdated", a changed confirmed translation — P5321; the Structure panel marks such blocks.
+
+## PDF
+
+- **View → Layout**: source and PDF side by side, or PDF as a tab; the toolbar button switches the layout.
+- `F4` switches between the source and the PDF. The PDF opens at the page of the heading before the cursor (through the PDF bookmarks; after the first build of the document).
+- **Build → Show PDF after a successful build**: if the PDF was visible (default), always or never.
+- `Ctrl+wheel` over the PDF zooms around the point under the cursor; without `Ctrl` the wheel scrolls. Position and zoom are kept in the session.
+
+## AI
+
+- **AI → Ask AI about the document…** (`Ctrl+Alt+Enter`): the task, the selected text or the whole file; optionally the project file, the messages of the last check or build, the styles modules of the project and the other open files. AI receives the text read-only and does not change files.
+- **Primula language** — what AI learns about the language: *Reference* (default) is the catalogue of the translator, every construct and function with its summary and section (about 18 thousand characters); *Whole specification and library* (about 100 thousand tokens: slower and more expensive); *None*. **Sections in full** — sections of the specification sent as they are (`6.8, 10.5`; the standard library — `stdlib:3`); the section of the construct at the cursor is proposed. The choice is kept for the project.
+- **AI → Edit AI context of the project** opens `ai-context.md`: what AI should know about the documents (purpose, parties, terms, style). The context is added to every request.
+- Responses are saved in `ai-history/` and open in the «AI» tab.
+- The tool is Codex CLI (`codex`) or Claude CLI (`claude`), chosen in **File → Settings**. Claude runs as `claude -p` without a saved session, with the reading tools only.
+
+## Evaluator console
+
+**View → Console** (`Ctrl+Alt+C`) — a non-modal window of its own above the main one (its position, size and font are remembered), terminal-like, for trying and learning the functions of the library and your own.
+
+- **Context**: *current file* — a document (header parameters with the values of Build → Document parameters…, `doc`, the project, styles, definitions of the code; the text is not evaluated), a fragment, a module, a styles module or the project file; *project*; *library only*. Changing the context and **Restart** begin a new session.
+- An input is Primula code: `x = …`, `def`, expressions; the value of the last expression is shown, `debug(…)` prints, errors come with their place. The names of the inputs stay until a restart; a name may be defined again (only in the console). `math` (`std/math`) is always available in the console; in a document write `|import("std/math")`.
+- **Enter** runs the input; **Shift+Enter** breaks the line; a block (`def …:`, `for …:`) and an open bracket continue, a block ends with an empty line. **Ctrl+↑/↓** — the input history (kept in `.primula-studio/`). Hints and completion of functions work as in the editor.
+- **Interrupt** (or Ctrl+C in the input without a selection) stops a long evaluation; the names stay. **Clear** clears the transcript.
+- Two tabs on the right. **Functions** — the functions with a search and their description; double click puts the example into the input; the context menu: put the example, insert the name, `:help`, open the section of the library or the specification, copy the name. **Names** — the names visible to the next input: those of the inputs first (bold), then those of the context, with type and value (names of the context not evaluated yet are not evaluated for the list); a search; double click inserts the name, the context menu inserts, shows the value, copies. Console commands: `:help NAME`, `:functions TEXT`, `:vars` (names of the console and the context), `:reset` (forget the names of the console), `:context`.
+- **Window font**: `Ctrl+wheel` over the transcript or the input, `Ctrl++`, `Ctrl+-`, `Ctrl+0`.
+
+## Editor
+
+| Keys | Action |
+|---|---|
+| `Ctrl+S` / `Ctrl+Shift+S` | save the file / all files |
+| `Ctrl+F`, `F3`, `Shift+F3` | find, next, previous |
+| `Ctrl+H` | replace |
+| `Ctrl+wheel`, `Ctrl++`, `Ctrl+-`, `Ctrl+0` | editor font size |
+
+`.prml` files are highlighted by the Primula syntax: the YAML header, commands, short forms, styles, references, expressions, code in `|code:`; invalid forms (`|` before a space or a digit, the reserved `|$ |[ |]`) get a red wavy underline. In styles modules and project files the text after the header is highlighted as code.
+
+## Settings
+
+**File → Settings**: the path of the `primula` translator (empty — from `PATH`, or the source-tree launcher next to the Studio build) the AI tool (Codex CLI or Claude CLI) and the paths of both programs. **View → Interface language**: English, Ukrainian, Russian (after a restart).
+
+**Help → Command cheat sheet (PDF)** opens a four-page summary of the Primula commands (the fourth page: how Primula code differs from Python) in the interface language in the system PDF viewer (a draft, until the extended help is ready). **Help → Author guide (PDF)** opens the author guide as one document — all pages, the appendices (constructs, functions, header keys, messages, styles) and the glossary — in the interface language; easy to read and search. The file is part of the installation package (`guide/<language>/`); when it is missing, Studio names where it looked.

@@ -1,0 +1,53 @@
+---
+kind: styles
+defaults: {font: Liberation Sans, size: 11pt, language: uk-UA}
+# Unicode style names with hyphens (spec 3.3, 11.2). The YAML section is
+# static: Studio and other programs read it without running code.
+paragraphs:
+  Гриф:           {parent: Body, align: left, size: 10pt, space_after: 0mm, line_height: "100%"}
+  Назва:          {parent: Body, bold: true, size: 14pt, align: center, space_before: 6mm, space_after: 6mm,
+                   keep_with_next: true}
+  Небезпека:      {parent: Body, bold: true, color: "#A00000", align: left, keep_together: true,
+                   left: 4mm, space_before: 2mm, space_after: 2mm}
+  Зразок:         {parent: Body, font: Liberation Mono, size: 9pt, align: left, line_height: "100%",
+                   left: 6mm, background: "#F2F2F2"}
+  Колонтитул-праворуч: {parent: Footer, align: right}
+  Колонтитул-ліворуч:  {parent: Footer, align: left}
+characters:
+  Термін:         {bold: true, italic: true}
+  Важливо:        {bold: true, color: "#A00000"}
+lists:
+  # Ukrainian letters «а), б)»: format "а" (Cyrillic, spec 11.3, decision 115);
+  # the whole alphabet of the document language, without skipping letters.
+  Список-дужка:
+    levels:
+      1: {type: number, format: "а", suffix: ")", left: 6mm, hanging: 6mm}
+      2: {type: bullet, bullet: "–", left: 12mm, hanging: 5mm}
+tables:
+  Таблиця-ЗІЗ:    {parent: TableGrid, padding: 1mm, header_background: "#DDE6F0", header_align: center,
+                   rules: rows}
+blocks:
+  Група-підписів: {keep_together: true, space_before: 8mm}
+pages:
+  Portrait:       {mirror: true, margin: [20mm, 15mm, 20mm, 25mm]}
+  Титульна:       {parent: Portrait, next: Portrait}
+---
+# Code section of the styles module: profile, a parametric style function,
+# styles generated in a loop, page parts.
+structure_profile("business")
+
+# A parametric style (spec 11.4): returns the name of a derived style; the
+# style is written to the ODT only when the text applies it.
+def Відступ(base, n=1):
+    return derive(base, left=n * indent_step)
+
+# Named variants of the body with the spacing scale of std/styles/default:
+# Абзац-після-мал, Абзац-після-вел (shown in Writer's style list).  The
+# names are Cyrillic only: a name mixing alphabets gets lint warning P2502.
+for назва, крок in [("мал", "s"), ("вел", "l")]:
+    paragraph_style(f"Абзац-після-{назва}", parent="Body", space_after=spacing[крок])
+
+# Mirrored pages (mirror: true): the page number is on the outer edge.
+footer("Portrait", markup("|.Колонтитул-праворуч: ІОП-07-2026 · стор. |field.page"), which="right")
+footer("Portrait", markup("|.Колонтитул-ліворуч: стор. |field.page · ІОП-07-2026"), which="left")
+footer("Титульна", markup(""))

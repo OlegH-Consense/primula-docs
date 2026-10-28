@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="40mm" height="12mm" viewBox="0 0 400 120">
+  <!-- Example logo drawn for this example: a flame in a circle and the company name. -->
+  <circle cx="60" cy="60" r="50" fill="#C0392B"/>
+  <path d="M60 25 C75 50 85 60 75 85 C70 97 50 97 45 85 C38 70 52 62 55 48 C62 60 66 66 64 78 C72 66 70 45 60 25 Z" fill="#F9E79F"/>
+  <text x="125" y="72" font-family="Liberation Sans, sans-serif" font-size="40" font-weight="bold" fill="#2C3E50">Тепло-Сервіс</text>
+</svg>

@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+build/
+dist/
+# Studio build directories
+studio/build/
+studio/build-*/
+# Results of examples and documents
+examples/out/
+*.odt
+*.pdf
+!studio/help/primula-cheatsheet.*.pdf
+!docs/author/*/primula-author-guide-*.pdf
+# Studio state of projects (session, AI history, console history)
+.primula-studio/

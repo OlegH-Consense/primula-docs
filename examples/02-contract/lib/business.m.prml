@@ -1,0 +1,13 @@
+|% Macros shared by business documents: signature lines and requisites.
+|% The kind 'module' comes from the sub-extension .m.prml (spec 2.2).
+|def sign(role, name):
+|.Signature: |(role) ____________ |(name)
+|enddef
+|def requisites(p):
+|.Requisites:
+|*{|(p.name)}|\
+Код ЄДРПОУ |(p.code)|\
+|(p.address)|\
+IBAN |(p.iban)
+|end.Requisites
+|enddef

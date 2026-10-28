@@ -1,0 +1,98 @@
+---
+doc:
+  title: "Обчислювальне ядро Primula: діалект Python у прикладах"
+  identifier: "PRML-CODE"
+  language: uk-UA
+params:
+  # Header parameters are global names of the document (10.4).  YAML is read
+  # by the rules of Primula (12.6): 120.50 is a decimal with two digits after
+  # the point, 2026-10-12 is a datetime, a mapping is a record (r.field),
+  # a list of mappings is a list of records.
+  сторона: {назва: "ТОВ «Альфа»", код: "12345678"}
+  дата_договору: 2026-10-12
+  позиції:
+    - {назва: "Папір офісний А4", кількість: 20, ціна: 120.50}
+    - {назва: "Ручка кулькова", кількість: 100, ціна: 15.00}
+styles: [std/styles/technical, styles/code.s.prml]
+---
+|% Example 10: the computing core — the Python dialect of Primula (spec 12,
+|% also 3.7, 4.2, 10.4).  The document is a set of thematic fragments
+|% (fragments/*.f.prml); each fragment shows expressions next to their values
+|% in Primula and in Python 3, and its source comments explain the points
+|% where the dialect differs from Python.
+|%
+|% How to read the tables: the first column is the expression as written, the
+|% second is computed by this build (|(показ(…)) — the value and its type), the
+|% third is what CPython 3.11+ gives for the same expression.  A cell
+|% "помилка Pxxxx" is an error of the translator; mistakes.prml and
+|% forbidden.prml next to this file reproduce every such error.
+|%
+|% The expression in the first column is written twice in the source: as
+|% literal code |`{…} and as the evaluated |(…).  Primula has no eval(), so a
+|% table cannot compute a string of code; keep both copies equal when editing.
+
+|% A module of the example: its public names are visible as ціни.name in this
+|% document and in every fragment it includes (topic 9).
+|import("lib/ціни")
+
+|code:
+def показ(x):
+    """The value and its type for the tables: '3.5 · decimal'.
+
+    repr() writes a value as code (strings in quotes, a date as
+    date("…")); type() returns the name of the type as a string,
+    not a class as in Python (12.3).
+    """
+    return repr(x) + " · " + type(x)
+
+# Columns of the comparison tables: the expression, the value in Primula,
+# the value in Python 3.  A list of col() values is an ordinary global name:
+# every fragment reads it (a fragment sees the names of the root document).
+колонки = [col("34%", paragraph="TableValue"), col("36%", paragraph="TableValue"),
+           col("*", paragraph="TableValue")]
+|end
+
+|<(number=False) Обчислювальне ядро Primula: діалект Python у прикладах
+|!("notice"):
+|*{Цей документ — супровід до вихідного тексту, а не самостійний посібник.} Приклад показує саме вихідний текст Primula: блоки коду (|`{||code:}), визначення (|`{||let}, |`{||def}) і коментарі (|`{||%}) у вихідному документі не друкуються — у PDF видно лише результати їхнього обчислення. Тому текст посилається на імена й функції, яких у PDF не видно вище. Читайте документ поруч із вихідним текстом: |`{examples/10-code/code.prml} і фрагменти |`{fragments/*.f.prml}; детальні пояснення відмінностей від Python — у коментарях вихідного тексту. Файли |`{forbidden.prml} і |`{mistakes.prml} навмисно містять помилки, про які йдеться в таблицях.
+|end
+|toc(title="ЗМІСТ", max_level=1)
+
+|< Де пишеться код
+Код Primula — підмножина Python: розбирається граматикою Python 3.11 (|`{ast.parse}), але виконується власним інтерпретатором, який знає лише дозволені конструкції. Орієнтир семантики — Starlark (мова конфігурацій Bazel): ввід-вивід, імпорт і класи відсутні, глобальні імена незмінні. Код з'являється в таких місцях:
+
+|table(cols=["45%", "*"], style="TableGrid"):
+|: Запис |& Призначення
+|: |`{||(сума * 2)} |& вивести значення в текст
+|: |`{||<(id="ціна")}, |`{||table(cols=["*", "30mm"])} |& аргументи команд — вирази
+|: |`{||if(n == 1){день}||else{дні}} |& умова, тіло — розмітка
+|: |`{||for(p in позиції){…}} |& цикл, тіло — розмітка
+|: |`{||code:} … |`{||end} |& визначення, функції, розрахунки
+|: |`{||let(n=5)} |& визначення посеред тексту
+|: |`{||def підпис(роль):} … |`{||enddef} |& макрос: функція, тіло якої — розмітка
+|end table
+
+|< Найважливіші відмінності від Python
+|table(cols=["17%", "38%", "*"], style="TableGrid"):
+|: Тема |& Python 3 |& Primula
+|: числа |& |`{int} і двійковий |`{float}; |`{0.1 + 0.2 != 0.3} |& десятковий |`{decimal} (до 64 значущих цифр) для цілих і дробових літералів; |`{float} — лише з експонентою: |`{1.5e3}
+|: округлення |& банківське: |`{round(2.5) == 2} |& половина від нуля: |`{round(2.5) == 3}
+|: глобальні імена |& змінні, виконуються зверху вниз |& ліниві, незмінні, видимі у всьому документі; порядок у тексті неважливий
+|: накопичення |& |`{rows.append(x)} у циклі |& у функції або генератором списку; заморожене значення змінити не можна
+|: типи |& класи, |`{type(x)} — клас |& фіксований набір; |`{type(x)} — рядок |`{"decimal"}; нові типи: |`{record}, |`{datetime}, |`{length}, |`{content}
+|: заборонено |& — |& |`{import}, |`{class}, |`{try}, |`{lambda}, |`{with}, |`{del}, |`{global}, множини, |`{else} у циклах
+|: ввід-вивід |& |`{print}, |`{open} |& немає; дані — |`{load_csv}, |`{load_yaml}, |`{load_json}; налагодження — |`{debug(x)} у звіт збирання
+|: вставка в текст |& будь-що через |`{str()} |& лише рядок, число, дата, розмітка; |`{None}, |`{bool}, список — помилка
+|end table
+
+|include("fragments/01-numbers")
+|include("fragments/02-strings")
+|include("fragments/03-collections")
+|include("fragments/04-records")
+|include("fragments/05-dates-lengths")
+|include("fragments/06-functions")
+|include("fragments/07-globals")
+|include("fragments/08-text")
+|include("fragments/09-modules")
+Після підключення фрагмента документ бачить лише те, що фрагмент експортував: |`{знижка(1000.00, 5)} = |(num(знижка(1000.00, 5), 2)), а макрос |`{||рядок_позиції(позиції[1])} дає: |рядок_позиції(позиції[1]). Внутрішні імена фрагмента (|`{_ціна_рядка}, |`{з_пдв} без префікса) тут невидимі.
+|include("fragments/10-forbidden")

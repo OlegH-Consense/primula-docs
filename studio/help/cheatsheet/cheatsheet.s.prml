@@ -1,0 +1,38 @@
+---
+kind: styles
+# The cheat sheet: four dense A4 pages in two columns (formerly an HTML page printed to PDF).
+# Sizes and colours follow that page: text 6.9pt, code 6.1pt, accent #0b5563, lines #c3cbd1.
+defaults: {font: Liberation Sans, size: 6.9pt, language: ru-RU}
+paragraphs:
+  CsBody: {parent: Body, font: Liberation Sans, size: 6.9pt, line_height: "116%", align: left,
+           space_before: 0.4mm, space_after: 0.4mm, first_line: 0mm}
+  CsCell: {parent: CsBody, space_before: 0mm, space_after: 0mm}
+  CsItem: {parent: CsBody, space_before: 0.1mm, space_after: 0.1mm}
+  CsH2: {parent: CsBody, size: 7.4pt, bold: true, color: "#0b5563", space_before: 1.8mm, space_after: 0.8mm,
+         keep_with_next: true,
+         odf: {"fo:text-transform": "uppercase", "fo:border-bottom": "0.6pt solid #c3cbd1",
+               "fo:padding-bottom": "0.4mm"}}
+  CsPre: {parent: CsBody, font: DejaVu Sans Mono, size: 6.1pt, line_height: "120%", background: "#f8fafb",
+          space_before: 0mm, space_after: 0mm,
+          odf: {"fo:border-left": "1.2pt solid #0b5563", "fo:border-top": "0.4pt solid #c3cbd1",
+                "fo:border-right": "0.4pt solid #c3cbd1", "fo:border-bottom": "0.4pt solid #c3cbd1",
+                "fo:padding-left": "1.4mm", "fo:padding-right": "1.4mm", "fo:padding-top": "0.3mm",
+                "fo:padding-bottom": "0.3mm"}}
+  CsTopTitle: {parent: CsBody, size: 11pt, bold: true, space_before: 0mm, space_after: 0.8mm}
+  CsTopNote: {parent: CsBody, size: 7.5pt, color: "#4a5560", align: right, space_before: 0mm, space_after: 0.8mm}
+  CsFoot: {parent: CsBody, size: 6.5pt, color: "#4a5560", space_before: 0mm, space_after: 0mm}
+  CsFootRight: {parent: CsFoot, align: right}
+characters:
+  Code: {font: DejaVu Sans Mono, size: 6.1pt, background: "#e8f1f3"}
+tables:
+  CsTable: {parent: TableGrid, frame: "0.4pt solid #c3cbd1", rules: all, border: "0.4pt solid #c3cbd1",
+            padding: ["0.15mm", "0.8mm", "0.15mm", "0.8mm"], header_background: "#f1f3f4", header_bold: true,
+            paragraph: CsCell, space_before: 0.6mm, space_after: 0.6mm}
+  CsBar: {parent: TableGrid, frame: none, rules: none, border: none, padding: 0mm, paragraph: CsBody,
+          space_before: 0mm, space_after: 1.5mm}
+lists:
+  CsList: {parent: BulletList, paragraph: CsItem,
+           levels: {1: {type: bullet, bullet: "•", left: 3.2mm, hanging: 2.4mm}}}
+---
+page_style("Portrait", margin=("8mm", "10mm", "6mm", "10mm"), footer_gap="2mm")
+structure_styles(paragraph="CsBody", list="CsList", table="CsTable")

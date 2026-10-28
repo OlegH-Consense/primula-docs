@@ -1,0 +1,68 @@
+---
+doc: {language: uk-UA}
+---
+|% Example 10, deliberate errors (1/2): Python constructs that the core does not
+|% have (spec 12.2).  `primula check forbidden.prml` reports each of them with
+|% its position; they are found when the code is parsed, before anything is
+|% evaluated, so the evaluation errors of mistakes.prml would not show here.
+|% The reason for each prohibition and what to write instead is in the
+|% comment above the line.
+|code:
+# Modules come in through the markup: |import("std/math"), |import("lib/x.m.prml").
+import math
+from datetime import date
+# No classes: a record(…) holds data, functions work on it.
+class Сторона:
+    pass
+# No exceptions: an error stops the build with its position; fail("…") raises
+# one on purpose, getattr(r, "f", default) and d.get(k, default) avoid them.
+try:
+    x = 1
+except ValueError:
+    pass
+# No lambda: a small def (sorted(xs, key=мінус)).
+ключ = lambda x: -x
+# No with, del, global, nonlocal, yield, async: no resources, no rebinding of
+# global names, no generators.
+def генератор():
+    yield 1
+def змінити():
+    global лічильник
+    with open("f") as f:
+        del f
+# The only decorator is @export, on a def at the top level of a fragment's
+# code (decision 135): another decorator is P2101, @export on a nested def P2106.
+@cache
+def кешована(x):
+    return x
+def зовнішня():
+    @export
+    def вкладена():
+        return 1
+    return вкладена
+# No set literals: a dict or a list with "not in".
+унікальні = {1, 2, 3}
+# No bit operators and no dict merge with |: {**a, **b}.
+обʼєднання = {"a": 1} | {"b": 2}
+# "is" only with None: x == 5, x is None.
+перевірка = 5 is 5
+# No type annotations.
+сума: int = 5
+# No else on loops: a flag or any().
+def знайти(xs):
+    for x in xs:
+        if x > 2:
+            break
+    else:
+        return None
+    return x
+# No names with leading underscores of Python internals.
+клас = "x".__class__
+# Not at the top level: x += … redefines a global name (definitions are
+# immutable, topic 7); write a new name: y = x + 1.
+лічильник = 0
+лічильник += 1
+|end
+|% f-strings follow Python 3.11: a quote of the same kind inside the braces
+|% is an error (Python 3.12 allows it); write f"{d['k']}".
+|(f"{"a"}")

@@ -1,0 +1,14 @@
+---
+kind: project
+name: "{{title_yaml}}"
+language: {{lang}}
+styles: [std/styles/business]
+params:
+  contract_id: "1/{{year}}"
+  supplier: "{{s.supplier}}"
+targets:
+  - {source: {{name}}.prml, output: build/{{name}}.odt, pdf: true}
+  - {source: order-form.prml, output: build/order-form.odt, pdf: true}
+---
+# {{s.comment}}
+order = load_yaml("orders/sample.yaml")

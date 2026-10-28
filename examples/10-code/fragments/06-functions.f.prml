@@ -1,0 +1,130 @@
+---
+kind: fragment
+---
+|% Topic 6: functions (spec 12.2, 12.7, 12.8).
+|%
+|% As in Python: def with defaults, *args, **kwargs, keyword-only parameters
+|% after *, recursion, nested functions and closures (a nested def reads the
+|% names of the enclosing function), while, break, continue, return.
+|% Inside a function variables are mutable: x += 1, lst.append(…).
+|%
+|% Differences from Python:
+|%   * no lambda, no decorators, no generators (yield), no annotations;
+|%   * no global / nonlocal: a function READS the global names of its file
+|%     but cannot rebind them, and a nested function cannot rebind a name of
+|%     the enclosing one;
+|%   * default values are computed once, when the function is defined, and
+|%     FROZEN.  Python's famous trap "def f(x, acc=[])" — the list grows from
+|%     call to call — is an error here (P2318) at the first append;
+|%   * a global value passed as an argument stays frozen: f(some_global_list)
+|%     cannot append to it.  Build a new list instead;
+|%   * limits instead of Python's recursion limit: depth 500 (P2402), 20 s for
+|%     one evaluation (P2406), 10 000 000 elements or characters in a value
+|%     (P2401); a project changes them with the key "limits" (10.6);
+|%   * a number above 64 significant digits is an error (P2309) — 50! has 65.
+|% The source of the functions is shown in the document by |verbatim, which
+|% prints text as is; |code below has the same text and defines them.
+|< Функції
+Функції пишуться як у Python: значення за замовчуванням, |`{*args}, |`{**kwargs}, параметри лише за іменем після |`{*}, рекурсія, вкладені функції й замикання, |`{while}. Усередині функції змінні змінювані. Немає |`{lambda}, декораторів, генераторів (|`{yield}), |`{global} і |`{nonlocal}.
+
+|.Preformatted:
+|verbatim:
+def з_роздільником(*частини, sep="-"):
+    return sep.join([str(x) for x in частини])
+
+def площа(a, *, b):                 # b — лише за іменем
+    return a * b
+
+def факторіал(n):
+    return 1 if n <= 1 else n * факторіал(n - 1)
+
+def глибина(n):
+    return 0 if n == 0 else 1 + глибина(n - 1)
+
+def кроки_колаца(n):                # while і змінні локальні імена
+    кроків = 0
+    while n != 1:
+        n = n // 2 if n % 2 == 0 else 3 * n + 1
+        кроків += 1
+    return кроків
+
+def множник(k):                     # замикання
+    def помножити(x):
+        return x * k
+    return помножити
+
+потроїти = множник(3)
+
+def додати(x, acc=[]):              # пастка Python: тут — помилка
+    acc.append(x)
+    return acc
+
+def рядки_таблиці(позиції):         # список будується у функції
+    рядки = []
+    for i, p in enumerate(позиції, 1):
+        рядки.append(record(n=i, назва=p.назва, сума=p.кількість * p.ціна))
+    return рядки
+|end
+|end.Preformatted
+
+|code:
+def з_роздільником(*частини, sep="-"):
+    return sep.join([str(x) for x in частини])
+
+def площа(a, *, b):                 # b — лише за іменем
+    return a * b
+
+def факторіал(n):
+    return 1 if n <= 1 else n * факторіал(n - 1)
+
+def глибина(n):
+    return 0 if n == 0 else 1 + глибина(n - 1)
+
+def кроки_колаца(n):                # while і змінні локальні імена
+    кроків = 0
+    while n != 1:
+        n = n // 2 if n % 2 == 0 else 3 * n + 1
+        кроків += 1
+    return кроків
+
+def множник(k):                     # замикання
+    def помножити(x):
+        return x * k
+    return помножити
+
+потроїти = множник(3)
+
+def додати(x, acc=[]):              # пастка Python: тут — помилка
+    acc.append(x)
+    return acc
+
+def рядки_таблиці(позиції):         # список будується у функції
+    рядки = []
+    for i, p in enumerate(позиції, 1):
+        рядки.append(record(n=i, назва=p.назва, сума=p.кількість * p.ціна))
+    return рядки
+|end
+
+|table(cols=колонки, style="TableGrid"):
+|: Вираз |& Primula |& Python 3
+|: |`{з_роздільником(1, 2, 3, sep="+")} |& |(показ(з_роздільником(1, 2, 3, sep="+"))) |& '1+2+3' · str
+|: |`{площа(2, b=3)} |& |(показ(площа(2, b=3))) |& 6 · int
+|: |`{площа(2, 3)} |& помилка P2321 |& TypeError
+|: |`{факторіал(40)} |& |(показ(факторіал(40))) |& 815915283247897734345611269596115894272000000000 · int
+|: |`{факторіал(50)} |& помилка P2309 (65 цифр) |& 30414093201713378043612608166064768844377641568960512000000000000 · int
+|: |`{глибина(400)} |& |(показ(глибина(400))) |& 400 · int
+|: |`{глибина(600)} |& помилка P2402 (глибина понад 500) |& 600 · int
+|: |`{кроки_колаца(27)} |& |(показ(кроки_колаца(27))) |& 111 · int
+|: |`{потроїти(14)} |& |(показ(потроїти(14))) |& 42 · int
+|: |`{додати(1)} |& помилка P2318 (заморожене значення за замовчуванням) |& [1] · list, а наступний виклик — [1, 1]
+|end table
+
+Функція, що будує список, — основний спосіб накопичити значення: глобальне ім'я змінювати не можна (розділ «Глобальні імена»), а всередині функції список звичайний. Результат |`{рядки_таблиці(позиції)} — список записів, з якого рядки таблиці виводить |`{||for}:
+
+|table(cols=["10mm", "*", "35mm"], style="TableGrid"):
+|: № |& Найменування |& Сума, грн
+|for(р in рядки_таблиці(позиції)):
+|: |(р.n) |& |(р.назва) |& |(num(р.сума, 2))
+|endfor
+|: |& Разом |& |(num(sum(р.сума for р in рядки_таблиці(позиції)), 2))
+|end table
