@@ -57,6 +57,17 @@ keeps the Python environment. The Studio settings and the examples stay.
 the cache, the copies of the examples with your changes: it lists them first and asks
 for a confirmation (`--yes` does not ask). Your projects elsewhere are never touched.
 
+### System packages (.deb, .rpm)
+
+If you were given `primula-docs_VERSION-1_amd64.deb` or `primula-docs-VERSION-1.x86_64.rpm`, install it with the package manager instead of `install.sh`:
+
+```sh
+sudo apt install ./primula-docs_VERSION-1_amd64.deb          # Debian, Ubuntu
+sudo zypper install ./primula-docs-VERSION-1.x86_64.rpm      # openSUSE
+```
+
+The package puts everything under `/usr` (commands `primula`, `primula-view`, `primula-studio`, the menu entry, the manuals and examples in `/usr/share/primula-docs`) and takes Python, PyYAML and Qt 6 from the system packages it depends on; LibreOffice Writer (for PDF) is recommended. A package is for the family of systems it was built on (the description tells which). The examples are not copied to your home: `cp -r /usr/share/primula-docs/examples ~/Primula/examples`. Removal: `sudo apt remove primula-docs` / `sudo zypper remove primula-docs`.
+
 ## Use
 
 ```sh

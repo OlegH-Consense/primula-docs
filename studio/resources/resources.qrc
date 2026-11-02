@@ -1,10 +1,19 @@
 <RCC>
   <qresource prefix="/icons">
     <file alias="primula-studio.svg">primula-studio.svg</file>
+    <file alias="ai.svg">icons/ai.svg</file>
+    <file alias="backup-create.svg">icons/backup-create.svg</file>
+    <file alias="backup-history.svg">icons/backup-history.svg</file>
+    <file alias="console.svg">icons/console.svg</file>
   </qresource>
   <qresource prefix="/config">
     <file alias="file-types.json">file-types.json</file>
     <file alias="file-types.user.json">file-types.user.json</file>
+    <file alias="agents.json">agents.json</file>
+  </qresource>
+  <qresource prefix="/ai">
+    <file alias="primula-docs-skill.md">../../skills/primula-docs/SKILL.md</file>
+    <file alias="ai-recipes.json">ai-recipes.json</file>
   </qresource>
   <qresource prefix="/help">
     <file alias="studio-user-guide.en.md">../help/studio-user-guide.en.md</file>

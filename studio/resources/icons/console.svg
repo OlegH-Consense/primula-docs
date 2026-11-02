@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Primula Studio toolbar icon: «console» — a terminal window with the prompt «>_». -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <rect x="2.5" y="4" width="19" height="16" rx="2" fill="#3b4655"/>
+  <path d="M6.5 9.5 L10 12.2 L6.5 14.9" stroke="#7fd18b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M12 15.5 H17.5" stroke="#dfe6ee" stroke-width="2" stroke-linecap="round" fill="none"/>
+</svg>

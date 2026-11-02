@@ -116,6 +116,17 @@ QString AiContext::sections(const QStringList &references)
     return parts.join(QStringLiteral("\n\n"));
 }
 
+QString AiContext::rules()
+{
+    const QString skill = resourceText(QStringLiteral(":/ai/primula-docs-skill.md"));
+    QStringList parts;
+    for (const QString &number : {QStringLiteral("4"), QStringLiteral("5"), QStringLiteral("7")}) {
+        const QString text = section(skill, number);
+        if (!text.isEmpty()) parts << text;
+    }
+    return parts.join(QStringLiteral("\n\n"));
+}
+
 QString AiContext::fullSpecification()
 {
     return QStringLiteral("## Language specification\n\n") + specificationText()

@@ -22,7 +22,7 @@ class CommandCatalog;
 namespace AiContext {
 
 /// How much of the language the request carries (the AI dialog, settings.json "ai"/"context").
-enum class Level { None, Reference, Full };
+enum class Level { None, Reference, Full, Skill };
 
 /// The catalogue as text: constructs by category ("|label — summary [§ section]"), then the
 /// functions ("signature — summary [§ section]"); empty for an unloaded catalogue.
@@ -39,6 +39,11 @@ QStringList parseSections(const QString &text);
 /// The texts of references, each under a "## Specification, section N" heading (the label
 /// of CommandCatalog::sectionLabel); a missing section is named as missing.
 QString sections(const QStringList &references);
+
+/// The writing rules of Primula for a request (decision D5): the sections «Writing rules that matter
+/// most», «Editing an existing document: what you must not change» and «Frequent mistakes» of the
+/// skill `skills/primula-docs/SKILL.md` built into Studio, in its own words (the same source as the skill).
+QString rules();
 
 /// The specification and the standard library built into Studio, whole.
 QString fullSpecification();

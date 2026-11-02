@@ -1,108 +1,12 @@
 #include "AiController.h"
 
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QSettings>
-
-CodexExecBackend::CodexExecBackend(QObject *parent) : IAiBackend(parent)
-{
-    m_process.setProcessChannelMode(QProcess::SeparateChannels);
-    connect(&m_process, &QProcess::readyReadStandardOutput, this, &CodexExecBackend::consumeOutput);
-    connect(&m_process, &QProcess::readyReadStandardError, this, [this] {
-        const QString text = QString::fromUtf8(m_process.readAllStandardError());
-        m_errors += text;
-        emit progress(text);
-    });
-    connect(&m_process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
-        if (error == QProcess::FailedToStart)
-            emit finished(false, {}, tr("Cannot start Codex: %1").arg(m_process.errorString()));
-    });
-    connect(&m_process, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
-            this, [this](int exitCode, QProcess::ExitStatus status) {
-        consumeOutput();
-        if (!m_stdoutBuffer.trimmed().isEmpty()) {
-            m_stdoutBuffer.append('\n');
-            consumeOutput();
-        }
-        const bool success = status == QProcess::NormalExit && exitCode == 0 && !m_lastAgentMessage.isEmpty();
-        QString error = m_errors.trimmed();
-        if (!success && error.isEmpty())
-            error = tr("Codex finished without a usable response (exit code %1).").arg(exitCode);
-        emit finished(success, m_lastAgentMessage, error);
-    });
-}
-
-void CodexExecBackend::start(const AiRequest &request)
-{
-    if (isRunning())
-        return;
-    m_stdoutBuffer.clear();
-    m_lastAgentMessage.clear();
-    m_errors.clear();
-
-    QSettings settings;
-    const QString executable = settings.value(QStringLiteral("tools/codex"), QStringLiteral("codex")).toString();
-    const QStringList arguments = {
-        QStringLiteral("exec"), QStringLiteral("--ephemeral"), QStringLiteral("--json"),
-        QStringLiteral("--sandbox"), QStringLiteral("read-only"),
-        QStringLiteral("--skip-git-repo-check"), QStringLiteral("-")
-    };
-    m_process.setWorkingDirectory(request.projectDirectory);
-    m_process.start(executable, arguments);
-    if (!m_process.waitForStarted(3000))
-        return;
-    m_process.write(AiController::makePrompt(request));
-    m_process.closeWriteChannel();
-    emit progress(tr("AI request started.\n"));
-}
-
-void CodexExecBackend::cancel()
-{
-    if (!isRunning())
-        return;
-    m_process.terminate();
-    if (!m_process.waitForFinished(1500))
-        m_process.kill();
-}
-
-bool CodexExecBackend::isRunning() const
-{
-    return m_process.state() != QProcess::NotRunning;
-}
-
-void CodexExecBackend::consumeOutput()
-{
-    m_stdoutBuffer += m_process.readAllStandardOutput();
-    while (true) {
-        const qsizetype newline = m_stdoutBuffer.indexOf('\n');
-        if (newline < 0)
-            break;
-        const QByteArray line = m_stdoutBuffer.left(newline).trimmed();
-        m_stdoutBuffer.remove(0, newline + 1);
-        if (line.isEmpty())
-            continue;
-
-        QJsonParseError parseError;
-        const QJsonDocument json = QJsonDocument::fromJson(line, &parseError);
-        if (parseError.error != QJsonParseError::NoError || !json.isObject())
-            continue;
-        const QJsonObject object = json.object();
-        const QString type = object.value(QStringLiteral("type")).toString();
-        if (type == QStringLiteral("item.completed")) {
-            const QJsonObject item = object.value(QStringLiteral("item")).toObject();
-            if (item.value(QStringLiteral("type")).toString() == QStringLiteral("agent_message"))
-                m_lastAgentMessage = item.value(QStringLiteral("text")).toString();
-        } else if (type == QStringLiteral("error")) {
-            m_errors += object.value(QStringLiteral("message")).toString() + QLatin1Char('\n');
-        }
-    }
-}
+#include "AiEdits.h"
 
 // ----------------------------------------------------------------------
-// Claude Code (print mode)
+// The agent process
 // ----------------------------------------------------------------------
 
-ClaudePrintBackend::ClaudePrintBackend(QObject *parent) : IAiBackend(parent)
+CliAgentBackend::CliAgentBackend(QObject *parent) : IAiBackend(parent)
 {
     m_process.setProcessChannelMode(QProcess::SeparateChannels);
     connect(&m_process, &QProcess::readyReadStandardOutput, this, [this] { m_stdout += m_process.readAllStandardOutput(); });
@@ -113,49 +17,48 @@ ClaudePrintBackend::ClaudePrintBackend(QObject *parent) : IAiBackend(parent)
     });
     connect(&m_process, &QProcess::errorOccurred, this, [this](QProcess::ProcessError error) {
         if (error == QProcess::FailedToStart)
-            emit finished(false, {}, tr("Cannot start Claude CLI: %1").arg(m_process.errorString()));
+            emit finished(false, {}, tr("Cannot start %1: %2").arg(m_agent.name, m_process.errorString()));
     });
     connect(&m_process, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
             this, [this](int exitCode, QProcess::ExitStatus status) {
         m_stdout += m_process.readAllStandardOutput();
         QString response;
         QString error;
-        const bool parsed = parseOutput(m_stdout, &response, &error);
+        const bool parsed = AiAgents::parseOutput(m_agent, m_stdout, &response, &error);
         const bool success = status == QProcess::NormalExit && exitCode == 0 && parsed;
         if (!success) {
             error = QStringList{error, m_errors.trimmed()}.join(QLatin1Char('\n')).trimmed();
-            if (error.isEmpty()) error = tr("Claude CLI finished without a usable response (exit code %1).").arg(exitCode);
+            if (error.isEmpty())
+                error = tr("%1 finished without a usable response (exit code %2).").arg(m_agent.name).arg(exitCode);
         }
         emit finished(success, response, success ? QString() : error);
     });
 }
 
-void ClaudePrintBackend::start(const AiRequest &request)
+void CliAgentBackend::start(const AiRequest &request)
+{
+    start(request, AiAgents::current());
+}
+
+void CliAgentBackend::start(const AiRequest &request, const AiAgent &agent)
 {
     if (isRunning())
         return;
     m_stdout.clear();
     m_errors.clear();
-    const QString executable = QSettings().value(QStringLiteral("tools/claude"), QStringLiteral("claude")).toString();
-    // Print mode without a saved session; only the tools that read the project, and no
-    // permission prompts: anything else is refused (dontAsk). The prompt comes on stdin.
-    // See https://docs.claude.com/en/docs/claude-code/cli-reference
-    const QStringList arguments = {
-        QStringLiteral("-p"), QStringLiteral("--output-format"), QStringLiteral("json"),
-        QStringLiteral("--no-session-persistence"),
-        QStringLiteral("--tools"), QStringLiteral("Read,Grep,Glob"),
-        QStringLiteral("--permission-mode"), QStringLiteral("dontAsk")
-    };
+    m_agent = agent;
+    const QByteArray prompt = AiController::makePrompt(request);
     m_process.setWorkingDirectory(request.projectDirectory);
-    m_process.start(executable, arguments);
+    m_process.start(AiAgents::program(m_agent), AiAgents::commandArguments(m_agent, QString::fromUtf8(prompt), request.useSkill));
     if (!m_process.waitForStarted(3000))
         return;
-    m_process.write(AiController::makePrompt(request));
+    if (m_agent.prompt == QStringLiteral("stdin"))
+        m_process.write(prompt);
     m_process.closeWriteChannel();
     emit progress(tr("AI request started.\n"));
 }
 
-void ClaudePrintBackend::cancel()
+void CliAgentBackend::cancel()
 {
     if (!isRunning())
         return;
@@ -164,34 +67,9 @@ void ClaudePrintBackend::cancel()
         m_process.kill();
 }
 
-bool ClaudePrintBackend::isRunning() const
+bool CliAgentBackend::isRunning() const
 {
     return m_process.state() != QProcess::NotRunning;
-}
-
-bool ClaudePrintBackend::parseOutput(const QByteArray &output, QString *response, QString *error)
-{
-    const QByteArray trimmed = output.trimmed();
-    if (trimmed.isEmpty()) return false;
-    QJsonParseError parseError;
-    QJsonDocument json = QJsonDocument::fromJson(trimmed, &parseError);
-    if (parseError.error != QJsonParseError::NoError) {
-        // Lines of events (stream-json): the last one is the result.
-        const QList<QByteArray> lines = trimmed.split('\n');
-        json = QJsonDocument::fromJson(lines.last().trimmed(), &parseError);
-    }
-    if (parseError.error != QJsonParseError::NoError || !json.isObject()) {
-        *response = QString::fromUtf8(trimmed);   // --output-format text of an older CLI
-        return true;
-    }
-    const QJsonObject object = json.object();
-    const QString result = object.value(QStringLiteral("result")).toString();
-    if (object.value(QStringLiteral("is_error")).toBool() || result.trimmed().isEmpty()) {
-        *error = result.trimmed().isEmpty() ? object.value(QStringLiteral("subtype")).toString() : result;
-        return false;
-    }
-    *response = result;
-    return true;
 }
 
 // ----------------------------------------------------------------------
@@ -211,7 +89,15 @@ QByteArray AiController::makePrompt(const AiRequest &request)
         "in the language of the user task. Write only Primula constructs and functions that the PRIMULA "
         "REFERENCE or the SPECIFICATION below define; when unsure, name the specification section to check. "
         "Preserve Primula constructs (commands |name(...), short forms such as |> |< |*{...}, environments "
-        "closed by |end) unless the user explicitly asks to change them.\n\nUSER TASK:\n");
+        "closed by |end) unless the user explicitly asks to change them.");
+    if (request.useSkill)
+        prompt += QStringLiteral(
+            "\n\nSKILL. Load and follow the skill \"primula-docs\" (rules and syntax of Primula) before you answer; it "
+            "replaces the reference, which is not attached. If you cannot load it, write \"Skill: not loaded\" on the "
+            "first line of the answer; otherwise write \"Skill: loaded\".");
+    if (request.proposeEdits)
+        prompt += QStringLiteral("\n\n") + AiEdits::instructions();
+    prompt += QStringLiteral("\n\nUSER TASK:\n");
     prompt += request.task.trimmed();
     prompt += block(QStringLiteral("PROJECT CONTEXT (notes of the author)"), request.projectContext);
     prompt += block(QStringLiteral("DOCUMENT OR SELECTED TEXT"), request.document);
@@ -226,34 +112,73 @@ QByteArray AiController::makePrompt(const AiRequest &request)
     return (prompt + QLatin1Char('\n')).toUtf8();
 }
 
-AiController::AiController(QObject *parent) : QObject(parent)
+AiController::AiController(QObject *parent) : QObject(parent) {}
+
+QString AiController::tool() { return AiAgents::current().id; }
+
+QString AiController::toolName() { return AiAgents::current().name; }
+
+QString AiController::backendName(const QString &tool) { return AiAgents::byId(tool).label; }
+
+CliAgentBackend *AiController::backendFor(const QString &agentId)
 {
-    m_codex = new CodexExecBackend(this);
-    m_claude = new ClaudePrintBackend(this);
-    m_backend = m_codex;
-    for (IAiBackend *backend : {static_cast<IAiBackend *>(m_codex), static_cast<IAiBackend *>(m_claude)}) {
-        connect(backend, &IAiBackend::progress, this, &AiController::progress);
-        connect(backend, &IAiBackend::finished, this, &AiController::finished);
+    CliAgentBackend *&backend = m_pool[agentId];
+    if (!backend) {
+        backend = new CliAgentBackend(this);
+        connect(backend, &IAiBackend::progress, this, [this, agentId](const QString &text) {
+            // With several tools the lines of the log say whose they are.
+            emit progress(!m_many ? text : QStringLiteral("[%1] ").arg(AiAgents::byId(agentId).name) + text);
+        });
+        connect(backend, &IAiBackend::finished, this, [this, agentId](bool success, const QString &response, const QString &error) {
+            agentDone(agentId, success, response, error);
+        });
     }
+    return backend;
 }
 
-QString AiController::tool()
+void AiController::agentDone(const QString &agentId, bool success, const QString &response, const QString &errorMessage)
 {
-    return QSettings().value(QStringLiteral("ai/tool")).toString() == QStringLiteral("claude") ? QStringLiteral("claude")
-                                                                                              : QStringLiteral("codex");
-}
-
-QString AiController::backendName(const QString &tool)
-{
-    return tool == QStringLiteral("claude") ? QStringLiteral("claude-print") : QStringLiteral("codex-exec");
+    if (!m_waiting.contains(agentId)) return;
+    m_waiting.removeAll(agentId);
+    if (m_single) {
+        emit finished(success, response, errorMessage);
+        return;
+    }
+    emit agentFinished(agentId, success, response, errorMessage);
+    if (m_waiting.isEmpty()) emit allFinished();
 }
 
 void AiController::start(const AiRequest &request)
 {
     if (isRunning()) return;
-    m_backend = tool() == QStringLiteral("claude") ? static_cast<IAiBackend *>(m_claude) : m_codex;
-    m_backend->start(request);
+    const QString id = tool();
+    m_single = true;
+    m_many = false;
+    m_waiting = {id};
+    backendFor(id)->start(request, AiAgents::byId(id));
 }
 
-void AiController::cancel() { m_backend->cancel(); }
-bool AiController::isRunning() const { return m_codex->isRunning() || m_claude->isRunning(); }
+void AiController::startAgents(const AiRequest &request, const QStringList &agentIds)
+{
+    if (isRunning() || agentIds.isEmpty()) return;
+    m_single = false;
+    m_waiting.clear();
+    for (const QString &id : agentIds)
+        if (!m_waiting.contains(id)) m_waiting << id;
+    m_many = m_waiting.size() > 1;
+    // A tool that cannot start answers at once: the list is complete before the first start.
+    const QStringList ids = m_waiting;
+    for (const QString &id : ids)
+        backendFor(id)->start(request, AiAgents::byId(id));
+}
+
+void AiController::cancel()
+{
+    for (CliAgentBackend *backend : std::as_const(m_pool))
+        backend->cancel();
+}
+
+bool AiController::isRunning() const
+{
+    return !m_waiting.isEmpty();
+}

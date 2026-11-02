@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "description": "Ready tasks for «Ask AI» (stage 22.4). Built in; the user file (~/.config/primula-docs/ai-recipes.json, the same format) adds recipes or replaces one with the same id. Fields: id; title and task - texts by language code (en, uk, ru; a missing language falls back to en); edits - ask for edits that can be checked and applied; scope - selection (the selected text), document (the whole file) or any (what is available); sections - sections of the specification sent in full (as the field «Sections in full»).",
+  "recipes": [
+    {
+      "id": "proofread",
+      "title": {"en": "Proofread spelling and punctuation", "uk": "Вичитка: орфографія і пунктуація", "ru": "Вычитка: орфография и пунктуация"},
+      "task": {
+        "en": "Proofread the text: spelling, punctuation, typography. Change only what is wrong, word by word; do not rewrite sentences and do not change the meaning. Keep every Primula construct, style name, identifier and parameter name exactly as it is.",
+        "uk": "Вичитай текст: орфографія, пунктуація, типографіка. Змінюй лише те, що хибне, по слову; не переписуй речення й не змінюй змісту. Усі конструкції Primula, назви стилів, ідентифікатори й імена параметрів залиш точно як є.",
+        "ru": "Вычитай текст: орфография, пунктуация, типографика. Меняй только то, что неверно, по слову; не переписывай предложения и не меняй смысл. Все конструкции Primula, названия стилей, идентификаторы и имена параметров оставь точно как есть."
+      },
+      "edits": true,
+      "scope": "any"
+    },
+    {
+      "id": "terms",
+      "title": {"en": "Check the terms of a contract", "uk": "Перевірка термінів договору", "ru": "Проверка терминов договора"},
+      "task": {
+        "en": "Check the terms of the document for consistency: the same thing must be called the same way everywhere, defined terms must be used as defined, nothing may be used without a definition. List the contradictions and the undefined terms with the places. Do not rewrite the text.",
+        "uk": "Перевір терміни документа на єдність: одне й те саме має називатися однаково всюди, визначені терміни вживаються як визначено, нічого не вживається без визначення. Наведи суперечності й невизначені терміни з місцями. Текст не переписуй.",
+        "ru": "Проверь термины документа на единообразие: одно и то же называется одинаково везде, определённые термины используются как определено, ничего не используется без определения. Приведи противоречия и неопределённые термины с местами. Текст не переписывай."
+      },
+      "edits": false,
+      "scope": "document"
+    },
+    {
+      "id": "apostrophes",
+      "title": {"en": "Unify apostrophes and quotation marks", "uk": "Єдині апострофи й лапки", "ru": "Единые апострофы и кавычки"},
+      "task": {
+        "en": "Make the apostrophes of the Ukrainian words and the quotation marks uniform: one apostrophe form for the whole text (the one used most; if unclear, U+02BC ʼ) and one kind of quotation marks. Do not touch apostrophes and quotes inside Primula expressions |( … ), names, identifiers, code blocks and string arguments of commands.",
+        "uk": "Зроби апострофи в українських словах і лапки єдиними: одна форма апострофа на весь текст (найуживаніша; якщо неясно — U+02BC ʼ) і один вид лапок. Не чіпай апострофи й лапки всередині виразів Primula |( … ), імен, ідентифікаторів, блоків коду й рядкових аргументів команд.",
+        "ru": "Сделай апострофы в украинских словах и кавычки единообразными: одна форма апострофа на весь текст (самая частая; если неясно — U+02BC ʼ) и один вид кавычек. Не трогай апострофы и кавычки внутри выражений Primula |( … ), имён, идентификаторов, блоков кода и строковых аргументов команд."
+      },
+      "edits": true,
+      "scope": "any"
+    },
+    {
+      "id": "translate-uk",
+      "title": {"en": "Translate the selection into Ukrainian", "uk": "Переклад виділеного українською", "ru": "Перевод выделенного на украинский"},
+      "task": {
+        "en": "Translate the selected text into Ukrainian (a business style, the terms of Ukrainian law where it is a legal text). Replace the text by its translation in one edit per paragraph. Keep every Primula construct, style name, identifier, number and date format exactly as it is.",
+        "uk": "Переклади виділений текст українською (діловий стиль, терміни українського законодавства для юридичного тексту). Заміни текст його перекладом одним блоком на абзац. Усі конструкції Primula, назви стилів, ідентифікатори, числа й формати дат залиш точно як є.",
+        "ru": "Переведи выделенный текст на украинский (деловой стиль, термины украинского законодательства для юридического текста). Замени текст его переводом одним блоком на абзац. Все конструкции Primula, названия стилей, идентификаторы, числа и форматы дат оставь точно как есть."
+      },
+      "edits": true,
+      "scope": "selection"
+    },
+    {
+      "id": "translate-en",
+      "title": {"en": "Translate the selection into English", "uk": "Переклад виділеного англійською", "ru": "Перевод выделенного на английский"},
+      "task": {
+        "en": "Translate the selected text into English (a business style). Replace the text by its translation in one edit per paragraph. Keep every Primula construct, style name, identifier, number and date format exactly as it is.",
+        "uk": "Переклади виділений текст англійською (діловий стиль). Заміни текст його перекладом одним блоком на абзац. Усі конструкції Primula, назви стилів, ідентифікатори, числа й формати дат залиш точно як є.",
+        "ru": "Переведи выделенный текст на английский (деловой стиль). Замени текст его переводом одним блоком на абзац. Все конструкции Primula, названия стилей, идентификаторы, числа и форматы дат оставь точно как есть."
+      },
+      "edits": true,
+      "scope": "selection"
+    },
+    {
+      "id": "translate-ru",
+      "title": {"en": "Translate the selection into Russian", "uk": "Переклад виділеного російською", "ru": "Перевод выделенного на русский"},
+      "task": {
+        "en": "Translate the selected text into Russian (a business style). Replace the text by its translation in one edit per paragraph. Keep every Primula construct, style name, identifier, number and date format exactly as it is.",
+        "uk": "Переклади виділений текст російською (діловий стиль). Заміни текст його перекладом одним блоком на абзац. Усі конструкції Primula, назви стилів, ідентифікатори, числа й формати дат залиш точно як є.",
+        "ru": "Переведи выделенный текст на русский (деловой стиль). Замени текст его переводом одним блоком на абзац. Все конструкции Primula, названия стилей, идентификаторы, числа и форматы дат оставь точно как есть."
+      },
+      "edits": true,
+      "scope": "selection"
+    },
+    {
+      "id": "parallel-track",
+      "title": {"en": "Complete a translation track of |parallel", "uk": "Дописати потік перекладу в |parallel", "ru": "Дописать поток перевода в |parallel"},
+      "task": {
+        "en": "The selected text (or the document) has an environment |parallel with tracks. Complete and correct the segments of the translation track(s) by the segments of the main track: translate what is missing, fix what no longer matches the main track. Keep the structure of the environment, the track and segment markers, ids, rev= and status= exactly as they are; change only the text of the translation segments.",
+        "uk": "У виділеному тексті (або в документі) є середовище |parallel із потоками. Допиши й виправ сегменти потоку (потоків) перекладу за сегментами основного потоку: переклади те, чого бракує, виправ те, що вже не відповідає основному потоку. Структуру середовища, позначки потоків і сегментів, id, rev= і status= залиш точно як є; змінюй лише текст сегментів перекладу.",
+        "ru": "В выделенном тексте (или в документе) есть окружение |parallel с потоками. Допиши и исправь сегменты потока (потоков) перевода по сегментам основного потока: переведи то, чего не хватает, исправь то, что уже не соответствует основному потоку. Структуру окружения, пометки потоков и сегментов, id, rev= и status= оставь точно как есть; меняй только текст сегментов перевода."
+      },
+      "edits": true,
+      "scope": "any",
+      "sections": "7.7"
+    },
+    {
+      "id": "explain",
+      "title": {"en": "Explain what the fragment does", "uk": "Пояснити, що робить фрагмент", "ru": "Объяснить, что делает фрагмент"},
+      "task": {
+        "en": "Explain what this fragment does: which constructs and functions it uses, what the translator will output, and what may go wrong. Short and to the point.",
+        "uk": "Поясни, що робить цей фрагмент: які конструкції та функції в ньому, що виведе транслятор і що може піти не так. Коротко й по суті.",
+        "ru": "Объясни, что делает этот фрагмент: какие конструкции и функции в нём, что выведет транслятор и что может пойти не так. Коротко и по существу."
+      },
+      "edits": false,
+      "scope": "any"
+    }
+  ]
+}

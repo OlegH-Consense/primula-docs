@@ -1,4 +1,4 @@
-<!-- translation: source=primula-spec-v1.1-draft.ru.md sections=1f60b6f5 505324eb a2308543 684dfb65 cf123f98 2807bbcf e73d946e f3134f6d 5412bed4 b0a8c9aa 9737aa74 d933012b 655eea51 04af28c7 40c8ec5c 0db714ba 857c4563 f3787e61 83c45290 80276b2c 78ee5e9c 02f325bb f5155d41 -->
+<!-- translation: source=primula-spec-v1.1-draft.ru.md sections=1f60b6f5 505324eb a2308543 684dfb65 cf123f98 2807bbcf e73d946e 93a53c09 5412bed4 b0a8c9aa 9737aa74 d933012b 655eea51 04af28c7 40c8ec5c 0db714ba 857c4563 f3787e61 83c45290 80276b2c 78ee5e9c c2d79cdf f5155d41 -->
 # Primula — a document markup language: specification v1.1-draft
 
 14.10.2026 · name: Primula Documenting System (`primula-docs`), the language is Primula, file extension `.prml` (with sub-extensions `.f`, `.m`, `.s`, `.p`); ngml is the internal working name · English translation of the Russian original `primula-spec-v1.1-draft.ru.md` (where they differ, the original is normative); examples of business documents are in Ukrainian
@@ -541,6 +541,7 @@ ref_labels("uk",
 - The label and the number are separated by a non-breaking space (U+00A0): «п. 1.2» is not broken between lines.
 - If there is no dictionary for the document language, the `label` mode is an error at its first use; the number, `title` and `page` modes work.
 - `|@(id)` outputs `{n}` without the numbering format: «1.2»; the reference format is set by `numbering(ref_format="{n}")`.
+- `|@(…)` has no body: braces placed right after `)` do not belong to the reference and are output as text (`|@("a"){text}` gives «1{text}»); the translator warns (P1245, decision 141). Braces after a space are ordinary text without a warning. The text of a reference, if needed, is given by `|link(…){text}` (an external address) or by the mode `"title"`.
 - Inside a `|parallel` track a short ID is looked up in that track, then in the primary one, then among the document IDs; the label is in the language of the track (section 7.7).
 - A target removed by a condition is recognized by the literal `id="…"` of the removed block (`when=` or an `|if` branch): error "target removed by a condition" with a note about the condition; a reference to a computed ID of a removed block is "unknown target". In `--review` mode removed blocks stay in the document, and a reference to them is resolved with a warning.
 
@@ -2682,6 +2683,7 @@ The converter `primula convert file.md` translates a Kit document into Primula b
 | 138 | ODS and XLSX spreadsheets (direction 21, item 21.1; the user's decision of 26.10.2026) | `load_ods`, `load_xlsx`: sheet `sheet`, range `range`, `header`, `types` as in `load_csv`; formula values are those stored in the file, a formula without a result is an error; numbers are `decimal` up to 15 significant digits, dates `datetime`; errors name the sheet and cell; XLS is not supported (10.5) |
 | 139 | export through pandoc (direction 19, item 19.1; the user's decision of 26.10.2026) | the command `primula export FILE --to FORMAT`: the evaluated document → pandoc JSON AST (`--to json` without pandoc), other formats through pandoc; the mapping of constructs is in 14.1; page layout is not exported; import from other formats later (a pandoc writer in Lua, `docs/dev/pandoc.md`) |
 | 140 | reading a text file (the user's remark of 27.10.2026) | `load_text(path)`: the whole file as one string — UTF-8 without BOM, line ends LF, NFC; no parsing; paths and hash in the build report as for the other `load_*` (10.5) |
+| 141 | warning for a body of `\|@` (a finding of AI proofreading, 02.11.2026) | `\|@(…){text}`: a reference has no body, a brace right after `)` is text, the translator warns (P1245, a parse warning); a brace after a space is ordinary text without a warning (5.7) |
 
 ### 4.3. Open questions
 

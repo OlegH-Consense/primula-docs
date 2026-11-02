@@ -17,10 +17,13 @@
 #include <QJsonObject>
 #include <QList>
 #include <QMainWindow>
+#include <QMap>
 #include <QPointer>
 #include <QProcess>
 
 #include "AiContext.h"
+#include "AiEditsPanel.h"
+#include "Backups.h"
 #include "AiHistory.h"
 #include "BuildController.h"
 #include "DocumentInspector.h"
@@ -144,6 +147,9 @@ private:
     AiExchange m_pendingAiExchange;
     QString m_pendingAiProject;
     bool m_hasPendingAi = false;
+    struct AiAgentResult { bool success = false; QString response; QString error; };
+    QStringList m_aiAgentOrder;                 ///< the tools of the running request, as chosen
+    QMap<QString, AiAgentResult> m_aiResults;   ///< their answers as they arrive
     QProgressDialog *m_aiProgress = nullptr;
     HelpDialog *m_helpDialog = nullptr;
     HelpDialog *m_specDialog = nullptr;
@@ -173,6 +179,9 @@ private:
     QAction *m_tabbedAction = nullptr;
     QAction *m_togglePdfAction = nullptr;
     QAction *m_aiAction = nullptr;
+    QAction *m_backupNowAction = nullptr;
+    QAction *m_backupsAction = nullptr;
+    QAction *m_backupBeforeSaveAction = nullptr;
     QAction *m_aiHistoryAction = nullptr;
     QAction *m_aiContextAction = nullptr;
     QAction *m_newOrderAction = nullptr;
@@ -293,7 +302,12 @@ private:
 
     // AI
     void showAiDialog();
-    void startAiRequest(const AiRequest &request, const QString &scope);
+    void startAiRequest(const AiRequest &request, const QString &scope, const QStringList &agents);
+    void closeAiProgress();
+    void aiAgentFinished(const QString &agentId, bool success, const QString &response, const QString &errorMessage);
+    /// Save the answer of one tool to the history and open it as a tab; null when it has no tab.
+    AiHistoryPane *storeAiResult(AiExchange exchange, const QString &response);
+    void showAiResults();
     /// The text of path: the open editor's, else the file's (empty when unreadable).
     QString fileText(const QString &path);
     /// Primula context of an AI request (stage 14.10): the project file, the messages of the
@@ -303,6 +317,25 @@ private:
                            bool messages, bool projectFile);
     void showAiResult(bool success, const QString &response, const QString &errorMessage);
     void loadAiHistory();
+    /// The AI context of the project edited in a dialog (from the request window); saved on «Save».
+    void editAiContextInDialog(QWidget *parent);
+    /// Give the edits of an answer their document, the check and the way to apply (stage 22.3).
+    void connectAiEdits(AiHistoryPane *pane, const QString &documentPath);
+    /// `primula check` of the text of a file (as the file's text) with the unsaved buffers of the open files.
+    AiEditsPanel::CheckReport checkTextForAi(const QString &path, const QString &text);
+    /// Apply the edits of the rows to the editor of the file as one undo step.
+    void applyAiEdits(AiEditsPanel *panel, const QString &path, const QList<int> &rows, const QString &note = QString());
+
+    // Backup copies (stage 25.1).
+    /// Make a snapshot of the files: from the editors' buffers (those that are open) or from the disk.
+    /// @return false with error when it could not be made; a snapshot equal to the last one counts as made.
+    bool backupFiles(const QStringList &paths, const QString &reason, const QString &note, bool fromBuffers, QString *error = nullptr);
+    void backupProjectNow();
+    void showBackups();
+    void compareWithBackup(const BackupInfo &info, const BackupFile &file);
+    /// Put the copy back: into the open editor (as an edit that Undo takes back), else onto the disk.
+    /// The current state is saved as a backup first.
+    bool restoreBackup(const BackupInfo &info, const BackupFile &file, bool confirm = true);
     AiHistoryPane *addAiHistory(const AiExchange &exchange, const QString &path);
     void showAiHistory();
     void closeAiHistory();

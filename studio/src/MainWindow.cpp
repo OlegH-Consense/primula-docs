@@ -1,8 +1,11 @@
 #include "MainWindow.h"
 
+#include "AiAgents.h"
 #include "AiContext.h"
 #include "AiController.h"
 #include "AiHistoryPane.h"
+#include "AiRecipes.h"
+#include "BackupsDialog.h"
 #include "AiWorkspace.h"
 #include "ConsolePanel.h"
 #include "EditorPane.h"
@@ -48,8 +51,11 @@
 #include <QInputDialog>
 #include <QJsonDocument>
 #include <QTableWidget>
+#include <QTemporaryDir>
+#include <QTextCursor>
 #include <QDate>
 #include <QKeySequence>
+#include <QMap>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
@@ -241,7 +247,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         m_output->moveCursor(QTextCursor::End);
         m_output->insertPlainText(text);
     });
-    connect(m_aiController, &AiController::finished, this, &MainWindow::showAiResult);
+    connect(m_aiController, &AiController::agentFinished, this, &MainWindow::aiAgentFinished);
+    connect(m_aiController, &AiController::allFinished, this, &MainWindow::showAiResults);
     connect(m_fileMonitor, &FileMonitor::checkRequested, this, &MainWindow::checkExternalFiles);
 
     const QString layout = QSettings().value(QStringLiteral("ui/layout"), QStringLiteral("split")).toString();
@@ -570,6 +577,17 @@ void MainWindow::createActions()
     m_saveAction->setShortcut(QKeySequence::Save);
     m_saveAllAction = fileMenu->addAction(tr("Save a&ll"), this, [this] { saveAll(); });
     m_saveAllAction->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_S));
+    QMenu *backupMenu = fileMenu->addMenu(tr("&Backups"));
+    m_backupNowAction = backupMenu->addAction(tr("Back up the project &now"), this, &MainWindow::backupProjectNow);
+    m_backupNowAction->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_B));
+    m_backupsAction = backupMenu->addAction(tr("&Show backups…"), this, &MainWindow::showBackups);
+    m_backupsAction->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::SHIFT | Qt::Key_B));
+    m_backupBeforeSaveAction = backupMenu->addAction(tr("Back up a file &before saving it"));
+    m_backupBeforeSaveAction->setCheckable(true);
+    m_backupBeforeSaveAction->setChecked(QSettings().value(QStringLiteral("backups/beforeSave"), false).toBool());
+    m_backupBeforeSaveAction->setToolTip(tr("The version on the disk is kept in .primula-studio/backups before a save replaces it."));
+    connect(m_backupBeforeSaveAction, &QAction::toggled, this,
+            [](bool on) { QSettings().setValue(QStringLiteral("backups/beforeSave"), on); });
     fileMenu->addSeparator();
     m_closeTabAction = fileMenu->addAction(tr("&Close tab"), this, [this] { if (auto *pane = currentEditor()) closeEditor(pane); });
     m_closeTabAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_W));
@@ -760,7 +778,25 @@ void MainWindow::createActions()
     icon(m_buildAction, QStringLiteral("run-build"), QStyle::SP_MediaPlay);
     icon(m_openOdtAction, QStringLiteral("x-office-document"), QStyle::SP_FileIcon);
     icon(m_togglePdfAction, QStringLiteral("application-pdf"), QStyle::SP_FileDialogContentsView);
-    icon(m_aiAction, QStringLiteral("help-contextual"), QStyle::SP_MessageBoxQuestion);
+    // Icons of the stages 22 and 25: a theme icon if the theme has one, else an icon of Studio.
+    auto themed = [](QAction *action, const QStringList &names, const QString &resource) {
+        QIcon fallback(resource);
+        QIcon found;
+        for (const QString &name : names)
+            if (found.isNull() && QIcon::hasThemeIcon(name)) found = QIcon::fromTheme(name);
+        action->setIcon(found.isNull() ? fallback : found);
+        QString tip = action->text();
+        tip.remove(QLatin1Char('&'));
+        tip.remove(QStringLiteral("…"));
+        if (!action->shortcut().isEmpty())
+            tip += QStringLiteral(" (") + action->shortcut().toString(QKeySequence::NativeText) + QLatin1Char(')');
+        action->setToolTip(tip);
+    };
+    // «Ask AI»: a spark (the sign of an assistant) instead of the question mark that read as «information».
+    themed(m_aiAction, {QStringLiteral("tools-wizard")}, QStringLiteral(":/icons/ai.svg"));
+    themed(m_backupNowAction, {QStringLiteral("archive-insert")}, QStringLiteral(":/icons/backup-create.svg"));
+    themed(m_backupsAction, {QStringLiteral("view-history")}, QStringLiteral(":/icons/backup-history.svg"));
+    themed(m_consoleAction, {QStringLiteral("utilities-terminal")}, QStringLiteral(":/icons/console.svg"));
     for (QAction *action : {openProjectAction, m_saveAllAction})
         toolbar->addAction(action);
     toolbar->addSeparator();
@@ -775,6 +811,11 @@ void MainWindow::createActions()
     toggleLayout->setToolTip(tr("Switch between source and PDF side by side and PDF as a tab"));
     toolbar->addSeparator();
     toolbar->addAction(m_aiAction);
+    toolbar->addSeparator();
+    toolbar->addAction(m_backupNowAction);
+    toolbar->addAction(m_backupsAction);
+    toolbar->addSeparator();
+    toolbar->addAction(m_consoleAction);
     toolbar->addSeparator();
     toolbar->addWidget(new QLabel(tr("Editor font:"), toolbar));
     m_fontCombo = new QFontComboBox(toolbar);
@@ -1072,33 +1113,47 @@ void MainWindow::showSettings()
     row->addWidget(translator, 1);
     row->addWidget(browse);
     form->addRow(tr("Primula translator:"), row);
-    // AI tool (stage 14.10): Codex CLI or Claude CLI, each with its program (name in PATH or a path).
-    auto *aiTool = new QComboBox(&dialog);
-    aiTool->setObjectName(QStringLiteral("aiTool"));
-    aiTool->addItem(tr("Codex CLI"), QStringLiteral("codex"));
-    aiTool->addItem(tr("Claude CLI"), QStringLiteral("claude"));
-    aiTool->setCurrentIndex(qMax(0, aiTool->findData(AiController::tool())));
-    form->addRow(tr("AI tool:"), aiTool);
-    auto *codex = new QLineEdit(QSettings().value(QStringLiteral("tools/codex"), QStringLiteral("codex")).toString(), &dialog);
-    form->addRow(tr("Codex CLI for AI:"), codex);
-    auto *claude = new QLineEdit(QSettings().value(QStringLiteral("tools/claude"), QStringLiteral("claude")).toString(), &dialog);
-    claude->setToolTip(tr("Claude Code; it is run as 'claude -p' with the read-only tools only."));
-    form->addRow(tr("Claude CLI for AI:"), claude);
-    auto *found = new QLabel(&dialog);
-    found->setObjectName(QStringLiteral("aiToolFound"));
-    found->setTextFormat(Qt::PlainText);
-    auto updateFound = [found, aiTool, codex, claude] {
-        const QString program = (aiTool->currentData().toString() == QStringLiteral("claude") ? claude : codex)->text().trimmed();
-        const QString path = program.isEmpty() ? QString()
-                             : QFileInfo(program).isAbsolute() ? (QFileInfo(program).isExecutable() ? program : QString())
-                                                               : QStandardPaths::findExecutable(program);
-        found->setText(path.isEmpty() ? tr("The program is not found.") : tr("Found: %1").arg(path));
-    };
-    connect(aiTool, &QComboBox::currentIndexChanged, &dialog, updateFound);
-    connect(codex, &QLineEdit::textChanged, &dialog, updateFound);
-    connect(claude, &QLineEdit::textChanged, &dialog, updateFound);
-    updateFound();
-    form->addRow(QString(), found);
+    // AI tools (stages 14.10, 22.1, 22.6): the program of each tool of agents.json. Which tools a request goes to
+    // is chosen in the request window.
+    QStringList agentWarnings;
+    const QList<AiAgent> agents = AiAgents::all(&agentWarnings);
+    QMap<QString, QLineEdit *> programEdits;
+    for (const AiAgent &agent : agents) {
+        auto *edit = new QLineEdit(AiAgents::program(agent), &dialog);
+        edit->setObjectName(QStringLiteral("aiProgram-") + agent.id);
+        edit->setToolTip(tr("A name in PATH or a path. The tool is run read-only: see its description in agents.json."));
+        auto *found = new QLabel(&dialog);
+        found->setObjectName(QStringLiteral("aiProgramFound-") + agent.id);
+        found->setTextFormat(Qt::PlainText);
+        found->setMinimumWidth(160);
+        auto update = [found, edit] {
+            const QString program = edit->text().trimmed();
+            const QString path = program.isEmpty() ? QString()
+                                 : QFileInfo(program).isAbsolute() ? (QFileInfo(program).isExecutable() ? program : QString())
+                                                                   : QStandardPaths::findExecutable(program);
+            found->setText(path.isEmpty() ? tr("not found") : tr("found: %1").arg(path));
+        };
+        connect(edit, &QLineEdit::textChanged, &dialog, update);
+        update();
+        auto *row = new QHBoxLayout;
+        row->addWidget(edit, 1);
+        row->addWidget(found, 1);
+        form->addRow(tr("%1:").arg(agent.name), row);
+        programEdits.insert(agent.id, edit);
+    }
+    auto *agentFile = new QLabel(tr("More tools: %1").arg(AiAgents::userFile()), &dialog);
+    agentFile->setObjectName(QStringLiteral("aiAgentFile"));
+    agentFile->setTextFormat(Qt::PlainText);
+    agentFile->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    agentFile->setWordWrap(true);
+    form->addRow(QString(), agentFile);
+    if (!agentWarnings.isEmpty()) {
+        auto *problems = new QLabel(tr("Skipped in agents.json:\n%1").arg(agentWarnings.join(QLatin1Char('\n'))), &dialog);
+        problems->setObjectName(QStringLiteral("aiAgentProblems"));
+        problems->setTextFormat(Qt::PlainText);
+        problems->setWordWrap(true);
+        form->addRow(QString(), problems);
+    }
     auto *version = new QLabel(Translator::version(), &dialog);
     form->addRow(tr("Translator version:"), version);
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
@@ -1107,16 +1162,58 @@ void MainWindow::showSettings()
     auto *layout = new QVBoxLayout(&dialog);
     layout->addLayout(form);
     layout->addWidget(buttons);
+    // The default size of a form is too small for the paths and the messages under the AI tool.
+    dialog.resize(qMax(900, dialog.sizeHint().width() * 2), qMax(380, dialog.sizeHint().height() * 14 / 10));
     if (dialog.exec() != QDialog::Accepted)
         return;
     QSettings settings;
     settings.setValue(QStringLiteral("tools/primula"), translator->text().trimmed());
-    settings.setValue(QStringLiteral("tools/codex"), codex->text().trimmed().isEmpty()
-                                                     ? QStringLiteral("codex") : codex->text().trimmed());
-    settings.setValue(QStringLiteral("tools/claude"), claude->text().trimmed().isEmpty()
-                                                      ? QStringLiteral("claude") : claude->text().trimmed());
-    settings.setValue(QStringLiteral("ai/tool"), aiTool->currentData().toString());
+    for (const AiAgent &agent : agents) {
+        const QString program = programEdits.value(agent.id)->text().trimmed();
+        // Only a program that differs from the default is kept, so a new default of the tool applies.
+        if (program.isEmpty() || program == agent.program) settings.remove(QStringLiteral("tools/") + agent.id);
+        else settings.setValue(QStringLiteral("tools/") + agent.id, program);
+    }
     updateUiState();
+}
+
+void MainWindow::editAiContextInDialog(QWidget *parent)
+{
+    QString error;
+    if (!hasProject() || !m_project.ensureAiContext(&error)) {
+        QMessageBox::warning(parent, tr("Cannot create the AI context"), error);
+        return;
+    }
+    const QString path = m_project.aiContextPath();
+    EditorPane *open = editorFor(path);
+    QDialog dialog(parent);
+    dialog.setWindowTitle(tr("AI context of the project"));
+    dialog.resize(720, 460);
+    auto *text = new QPlainTextEdit(fileText(path), &dialog);
+    text->setObjectName(QStringLiteral("aiContextEditor"));
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel, &dialog);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    auto *layout = new QVBoxLayout(&dialog);
+    layout->addWidget(new QLabel(tr("What AI should know about the documents: purpose, parties, terms, style of language. "
+                                    "The text is added to every request."), &dialog));
+    layout->addWidget(text, 1);
+    layout->addWidget(new QLabel(path, &dialog));
+    layout->addWidget(buttons);
+    if (dialog.exec() != QDialog::Accepted) return;
+    if (open) {
+        // The file is open in a tab: its buffer takes the text (one Undo step) and is saved.
+        QTextCursor cursor(open->editor()->document());
+        cursor.beginEditBlock();
+        cursor.select(QTextCursor::Document);
+        cursor.insertText(text->toPlainText());
+        cursor.endEditBlock();
+        saveEditor(open);
+        return;
+    }
+    QSaveFile file(path);
+    if (!file.open(QIODevice::WriteOnly) || file.write(text->toPlainText().toUtf8()) < 0 || !file.commit())
+        QMessageBox::warning(parent, tr("AI context of the project"), tr("The file could not be saved: %1").arg(path));
 }
 
 void MainWindow::editAiContext()
@@ -1278,6 +1375,10 @@ void MainWindow::closeOtherEditors(EditorPane *keep)
 bool MainWindow::saveEditor(EditorPane *pane)
 {
     QString error;
+    // An option: the version on the disk is kept before it is replaced (the same version is not kept twice).
+    if (hasProject() && pane->isModified() && QFileInfo::exists(pane->filePath())
+        && QSettings().value(QStringLiteral("backups/beforeSave"), false).toBool())
+        backupFiles({pane->filePath()}, QStringLiteral("before-save"), QString(), false);
     if (!pane->save(&error)) {
         QMessageBox::critical(this, tr("Cannot save file"), error);
         return false;
@@ -2350,8 +2451,11 @@ void MainWindow::showAiDialog()
     language->addItem(tr("Reference: constructs and functions"), QStringLiteral("reference"));
     language->addItem(tr("Whole specification and library (about 100k tokens)"), QStringLiteral("full"));
     language->addItem(tr("None"), QStringLiteral("none"));
+    language->addItem(tr("Local skill primula-docs (the agent loads it; to compare with the reference)"), QStringLiteral("skill"));
     language->setToolTip(tr("What AI receives about the Primula language. The reference is the catalogue of the "
-                            "translator: every construct and function with its summary and section."));
+                            "translator: every construct and function with its summary and section. With the skill "
+                            "the agent loads its own installed skill primula-docs (skills/README.md tells how to install it); "
+                            "it should write «Skill: loaded» on the first line, else the skill is not available to it."));
     language->setCurrentIndex(qMax(0, language->findData(saved.value(QStringLiteral("context")).toString())));
     auto *sections = new QLineEdit(&dialog);
     sections->setObjectName(QStringLiteral("aiSections"));
@@ -2371,33 +2475,115 @@ void MainWindow::showAiDialog()
     auto *project = new QCheckBox(tr("Include the project file"), &dialog);
     project->setEnabled(projectFile);
     project->setChecked(projectFile);
+    auto *rules = new QCheckBox(tr("Writing rules of Primula (from the skill: what not to change, frequent mistakes)"), &dialog);
+    rules->setObjectName(QStringLiteral("aiRules"));
+    rules->setToolTip(tr("About 6 thousand characters from the skill primula-docs built into Studio; not sent with the skill level."));
+    rules->setChecked(saved.value(QStringLiteral("rules")).toBool(true));
+    auto *propose = new QCheckBox(tr("Ask for edits that can be checked and applied (tab «Edits» of the answer)"), &dialog);
+    propose->setObjectName(QStringLiteral("aiProposeEdits"));
+    propose->setToolTip(tr("AI answers with blocks «was → now». Studio finds them in the document, checks the result "
+                           "with the translator and applies the chosen ones as one step of Undo."));
+    propose->setChecked(saved.value(QStringLiteral("edits")).toBool());
     auto *styles = new QCheckBox(tr("Include the styles modules of the project"), &dialog);
     auto *others = new QCheckBox(tr("Include the other open files"), &dialog);
     styles->setEnabled(!m_project.styleModules().isEmpty());
     styles->setChecked(false);
     others->setChecked(true);
+    // The tools the request goes to (stage 22.6): one or several; the choice is remembered.
+    const QList<AiAgent> aiAgents = AiAgents::all();
+    const QStringList remembered = AiAgents::selected();
+    QList<QCheckBox *> agentChecks;
+    auto *agentRow = new QHBoxLayout;
+    for (const AiAgent &agent : aiAgents) {
+        const QString program = AiAgents::program(agent);
+        const bool found = !(QFileInfo(program).isAbsolute() ? (QFileInfo(program).isExecutable() ? program : QString())
+                                                             : QStandardPaths::findExecutable(program)).isEmpty();
+        auto *check = new QCheckBox(found ? agent.name : tr("%1 (not found)").arg(agent.name), &dialog);
+        check->setObjectName(QStringLiteral("aiAgent-") + agent.id);
+        check->setProperty("agentId", agent.id);
+        check->setEnabled(found);
+        check->setChecked(found && remembered.contains(agent.id));
+        check->setToolTip(found ? tr("The request goes to this tool. With several tools, every one answers in its own tab.")
+                                : tr("The program «%1» is not found: set it in File → Settings.").arg(program));
+        agentChecks.append(check);
+        agentRow->addWidget(check);
+    }
+    agentRow->addStretch();
+    auto selectedAgents = [&agentChecks] {
+        QStringList ids;
+        for (QCheckBox *check : agentChecks)
+            if (check->isChecked()) ids << check->property("agentId").toString();
+        return ids;
+    };
     auto *buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     buttons->button(QDialogButtonBox::Ok)->setText(tr("Send"));
-    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, [&dialog, selectedAgents, this] {
+        if (selectedAgents().isEmpty()) {
+            QMessageBox::warning(&dialog, tr("Ask AI"), tr("Choose at least one AI tool."));
+            return;
+        }
+        dialog.accept();
+    });
     connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    // Ready tasks (stage 22.4): the text of a recipe goes into the task, which stays editable.
+    QStringList recipeProblems;
+    const QList<AiRecipe> recipes = AiRecipes::load(interfaceLanguage(), AiRecipes::userFile(), &recipeProblems);
+    auto *recipe = new QComboBox(&dialog);
+    recipe->setObjectName(QStringLiteral("aiRecipe"));
+    recipe->addItem(tr("(own task)"), QString());
+    for (const AiRecipe &item : recipes) recipe->addItem(item.title, item.id);
+    recipe->setToolTip(recipeProblems.isEmpty() ? tr("A ready task; you can edit its text. More recipes: %1").arg(AiRecipes::userFile())
+                                                : tr("Skipped in ai-recipes.json:\n%1").arg(recipeProblems.join(QLatin1Char('\n'))));
+    connect(recipe, &QComboBox::currentIndexChanged, &dialog, [&, recipes] {
+        for (const AiRecipe &item : recipes) {
+            if (item.id != recipe->currentData().toString()) continue;
+            task->setPlainText(item.task);
+            propose->setChecked(item.edits);
+            if (item.scope != QStringLiteral("any")) scope->setCurrentIndex(scope->findData(item.scope == QStringLiteral("selection") ? QStringLiteral("selection") : QStringLiteral("document")));
+            if (!item.sections.isEmpty()) sections->setText(item.sections);
+        }
+    });
     auto *layout = new QVBoxLayout(&dialog);
+    layout->addWidget(new QLabel(tr("Recipe:"), &dialog));
+    layout->addWidget(recipe);
     layout->addWidget(new QLabel(tr("Task:"), &dialog));
     layout->addWidget(task, 1);
-    if (QFileInfo::exists(m_project.aiContextPath()))
-        layout->addWidget(new QLabel(tr("The AI context of the project is included (AI → Edit AI context)."), &dialog));
+    // The AI context of the project is part of every request: shown here so that it is not forgotten.
+    auto *contextRow = new QHBoxLayout;
+    auto *contextLabel = new QLabel(&dialog);
+    contextLabel->setObjectName(QStringLiteral("aiContextState"));
+    auto *contextButton = new QPushButton(tr("Edit AI context…"), &dialog);
+    contextButton->setObjectName(QStringLiteral("aiContextButton"));
+    contextButton->setToolTip(tr("What AI should know about the documents of the project (purpose, parties, terms, style); "
+                                 "it is added to every request. The same file as AI → Edit AI context of the project."));
+    auto showContextState = [this, contextLabel] {
+        const QString text = QFileInfo::exists(m_project.aiContextPath()) ? fileText(m_project.aiContextPath()) : QString();
+        contextLabel->setText(text.trimmed().isEmpty()
+                                  ? tr("The AI context of the project is empty: nothing about the project is sent.")
+                                  : tr("The AI context of the project is included (%n character(s)).", nullptr, int(text.trimmed().size())));
+    };
+    showContextState();
+    connect(contextButton, &QPushButton::clicked, &dialog, [this, &dialog, showContextState] {
+        editAiContextInDialog(&dialog);
+        showContextState();
+    });
+    contextRow->addWidget(contextLabel, 1);
+    contextRow->addWidget(contextButton);
+    layout->addLayout(contextRow);
     auto *form = new QFormLayout;
     form->addRow(tr("Text scope:"), scope);
     form->addRow(tr("Primula language:"), language);
     form->addRow(tr("Sections in full:"), sections);
     layout->addLayout(form);
+    layout->addWidget(rules);
+    layout->addWidget(propose);
     layout->addWidget(messages);
     layout->addWidget(project);
     layout->addWidget(styles);
     layout->addWidget(others);
-    layout->addWidget(new QLabel(tr("Tool: %1 (File → Settings). AI receives the text in read-only mode; "
-                                    "it cannot change project files.")
-                                     .arg(AiController::tool() == QStringLiteral("claude") ? tr("Claude CLI") : tr("Codex CLI")),
-                                 &dialog));
+    layout->addWidget(new QLabel(tr("AI tools (programs: File → Settings):"), &dialog));
+    layout->addLayout(agentRow);
+    layout->addWidget(new QLabel(tr("AI receives the text in read-only mode; it cannot change project files."), &dialog));
     layout->addWidget(buttons);
     if (dialog.exec() != QDialog::Accepted)
         return;
@@ -2405,12 +2591,26 @@ void MainWindow::showAiDialog()
         QMessageBox::warning(this, tr("Empty task"), tr("Enter a task for AI."));
         return;
     }
+    const QStringList agentIds = selectedAgents();
+    QSettings().setValue(QStringLiteral("ai/tools"), agentIds);
+    if (agentIds.size() > 1) {
+        // The text of the document and the context go to several services: asked before it is sent.
+        QStringList names;
+        for (const QString &id : agentIds) names << AiAgents::byId(id).name;
+        if (QMessageBox::question(this, tr("Ask AI"),
+                tr("The request, with the text of the document and the context of the project, will be sent to %n service(s): %1.\n\n"
+                   "Send it?", nullptr, int(agentIds.size())).arg(names.join(QStringLiteral(", ")))) != QMessageBox::Yes)
+            return;
+    }
     QJsonObject choices = saved;
     choices.insert(QStringLiteral("context"), language->currentData().toString());
+    choices.insert(QStringLiteral("edits"), propose->isChecked());
+    choices.insert(QStringLiteral("rules"), rules->isChecked());
     m_project.setGroup(QStringLiteral("ai"), choices);
     m_project.saveSettings();
     AiRequest request;
     request.task = task->toPlainText();
+    request.proposeEdits = propose->isChecked();
     request.document = scope->currentData().toString() == QStringLiteral("selection") ? pane->selectedText() : pane->text();
     if (styles->isChecked())
         for (const QString &module : m_project.styleModules())
@@ -2422,12 +2622,14 @@ void MainWindow::showAiDialog()
                 request.fragments += QStringLiteral("\n### %1\n").arg(m_project.relative(open->filePath())) + open->text();
     const QString level = language->currentData().toString();
     addPrimulaContext(&request, level == QStringLiteral("full") ? AiContext::Level::Full
-                                : level == QStringLiteral("none") ? AiContext::Level::None : AiContext::Level::Reference,
+                                : level == QStringLiteral("none") ? AiContext::Level::None
+                                : level == QStringLiteral("skill") ? AiContext::Level::Skill : AiContext::Level::Reference,
                       AiContext::parseSections(sections->text()), messages->isChecked(), project->isChecked());
     request.projectDirectory = m_project.root();
+    if (rules->isChecked() && !request.useSkill) request.rules = AiContext::rules();
     m_pendingAiExchange = AiExchange();
     m_pendingAiExchange.documentPath = pane->filePath();
-    startAiRequest(request, scope->currentData().toString());
+    startAiRequest(request, scope->currentData().toString(), agentIds);
 }
 
 QString MainWindow::fileText(const QString &path)
@@ -2451,12 +2653,14 @@ void MainWindow::addPrimulaContext(AiRequest *request, AiContext::Level level, c
         if (ensureCatalog()) request->reference = AiContext::reference(m_catalog);
         return;
     }
+    if (level == AiContext::Level::Skill)
+        request->useSkill = true;   // the agent loads the local skill; no reference is attached
     if (level == AiContext::Level::Reference && ensureCatalog())
         request->reference = AiContext::reference(m_catalog);
     request->specification = AiContext::sections(sections);
 }
 
-void MainWindow::startAiRequest(const AiRequest &request, const QString &scope)
+void MainWindow::startAiRequest(const AiRequest &request, const QString &scope, const QStringList &agents)
 {
     AiRequest contextual = request;
     if (QFileInfo::exists(m_project.aiContextPath())) {
@@ -2468,25 +2672,66 @@ void MainWindow::startAiRequest(const AiRequest &request, const QString &scope)
     m_pendingAiExchange.task = request.task;
     m_pendingAiExchange.prompt = QString::fromUtf8(AiController::makePrompt(contextual));
     m_pendingAiExchange.scope = scope;
-    m_pendingAiExchange.backend = AiController::backendName(AiController::tool());
+    m_pendingAiExchange.backend = AiController::backendName(agents.value(0));
     m_pendingAiProject = m_project.openedPath();
     m_hasPendingAi = true;
-    m_aiProgress = new QProgressDialog(tr("Waiting for AI response…"), tr("Cancel"), 0, 0, this);
+    m_aiAgentOrder = agents;
+    m_aiResults.clear();
+    QStringList names;
+    for (const QString &id : agents) names << AiAgents::byId(id).name;
+    m_aiProgress = new QProgressDialog(agents.size() > 1 ? tr("Waiting for the answers of %1…").arg(names.join(QStringLiteral(", ")))
+                                                         : tr("Waiting for AI response…"),
+                                       tr("Cancel"), 0, 0, this);
     m_aiProgress->setWindowModality(Qt::WindowModal);
     m_aiProgress->setMinimumDuration(0);
     connect(m_aiProgress, &QProgressDialog::canceled, m_aiController, &AiController::cancel);
     m_aiProgress->show();
-    m_aiController->start(contextual);
+    m_aiController->startAgents(contextual, agents);
     updateUiState();
+}
+
+void MainWindow::closeAiProgress()
+{
+    if (!m_aiProgress) return;
+    m_aiProgress->close();
+    m_aiProgress->deleteLater();
+    m_aiProgress = nullptr;
+}
+
+void MainWindow::aiAgentFinished(const QString &agentId, bool success, const QString &response, const QString &errorMessage)
+{
+    m_aiResults.insert(agentId, {success, response, errorMessage});
+    if (m_aiProgress && m_aiAgentOrder.size() > 1) {
+        QStringList waiting;
+        for (const QString &id : m_aiAgentOrder)
+            if (!m_aiResults.contains(id)) waiting << AiAgents::byId(id).name;
+        if (!waiting.isEmpty())
+            m_aiProgress->setLabelText(tr("Received %1 of %2. Waiting for: %3…").arg(m_aiResults.size()).arg(m_aiAgentOrder.size())
+                                           .arg(waiting.join(QStringLiteral(", "))));
+    }
+}
+
+AiHistoryPane *MainWindow::storeAiResult(AiExchange exchange, const QString &response)
+{
+    exchange.response = response;
+    exchange.receivedAt = QDateTime::currentDateTime();
+    QString error;
+    const bool sameProject = hasProject() && m_project.openedPath() == m_pendingAiProject;
+    const QString path = AiHistory::save(exchange, sameProject ? m_project.aiHistoryDirectory() : QString(), &error);
+    AiHistoryPane *pane = nullptr;
+    if (path.isEmpty() || sameProject)
+        pane = addAiHistory(exchange, path);
+    if (path.isEmpty())
+        QMessageBox::warning(this, tr("AI result was not saved"),
+            tr("The response remains in its tab. Use Save copy to choose another location.\n%1").arg(error));
+    else
+        statusBar()->showMessage(tr("AI request and response saved: %1").arg(path), 10000);
+    return pane;
 }
 
 void MainWindow::showAiResult(bool success, const QString &response, const QString &errorMessage)
 {
-    if (m_aiProgress) {
-        m_aiProgress->close();
-        m_aiProgress->deleteLater();
-        m_aiProgress = nullptr;
-    }
+    closeAiProgress();
     updateUiState();
     if (!success) {
         m_hasPendingAi = false;
@@ -2494,23 +2739,192 @@ void MainWindow::showAiResult(bool success, const QString &response, const QStri
         return;
     }
     if (!m_hasPendingAi) return;
-    AiExchange exchange = m_pendingAiExchange;
-    exchange.response = response;
-    exchange.receivedAt = QDateTime::currentDateTime();
     m_hasPendingAi = false;
-    QString error;
-    const bool sameProject = hasProject() && m_project.openedPath() == m_pendingAiProject;
-    const QString path = AiHistory::save(exchange, sameProject ? m_project.aiHistoryDirectory() : QString(), &error);
-    if (path.isEmpty() || sameProject) {
-        auto *pane = addAiHistory(exchange, path);
+    if (AiHistoryPane *pane = storeAiResult(m_pendingAiExchange, response)) {
         m_aiWorkspace->selectPane(pane);
         showAiHistory();
     }
-    if (path.isEmpty())
-        QMessageBox::warning(this, tr("AI result was not saved"),
-            tr("The response remains in its tab. Use Save copy to choose another location.\n%1").arg(error));
-    else
-        statusBar()->showMessage(tr("AI request and response saved: %1").arg(path), 10000);
+}
+
+void MainWindow::showAiResults()
+{
+    closeAiProgress();
+    updateUiState();
+    if (!m_hasPendingAi) return;
+    m_hasPendingAi = false;
+    // Every answer is a tab of its own, in the order the tools were chosen; the failures are told together.
+    QStringList failures;
+    AiHistoryPane *first = nullptr;
+    for (const QString &id : m_aiAgentOrder) {
+        const AiAgentResult result = m_aiResults.value(id);
+        const AiAgent agent = AiAgents::byId(id);
+        if (!result.success) {
+            failures << QStringLiteral("%1:\n%2").arg(agent.name, result.error.isEmpty() ? tr("no answer") : result.error);
+            continue;
+        }
+        AiExchange exchange = m_pendingAiExchange;
+        exchange.backend = agent.label;
+        AiHistoryPane *pane = storeAiResult(exchange, result.response);
+        if (pane && !first) first = pane;
+    }
+    if (first) {
+        m_aiWorkspace->selectPane(first);
+        showAiHistory();
+    }
+    if (!failures.isEmpty())
+        QMessageBox::warning(this, tr("AI request failed"),
+                             first ? tr("Some tools gave no answer:\n\n%1").arg(failures.join(QStringLiteral("\n\n")))
+                                   : failures.join(QStringLiteral("\n\n")));
+}
+
+// ----------------------------------------------------------------------
+// Backup copies (stage 25.1)
+// ----------------------------------------------------------------------
+
+bool MainWindow::backupFiles(const QStringList &paths, const QString &reason, const QString &note, bool fromBuffers,
+                             QString *error)
+{
+    if (!hasProject()) {
+        if (error) *error = tr("No project is open.");
+        return false;
+    }
+    QList<Backups::Item> items;
+    for (const QString &path : paths) {
+        QByteArray data;
+        if (fromBuffers && editorFor(path)) {
+            data = editorFor(path)->text().toUtf8();
+        } else {
+            QFile file(path);
+            if (!file.open(QIODevice::ReadOnly)) continue;   // a file that does not exist yet has nothing to keep
+            data = file.readAll();
+        }
+        items.append({path, data});
+    }
+    if (items.isEmpty()) return true;
+    QString failure;
+    bool duplicate = false;
+    const QString snapshot = Backups::create(m_project.root(), items, reason, note, &failure, &duplicate);
+    if (snapshot.isEmpty()) {
+        if (error) *error = failure;
+        return false;
+    }
+    if (!duplicate)
+        Backups::prune(m_project.root(), qMax(1, QSettings().value(QStringLiteral("backups/keep"), 100).toInt()));
+    return true;
+}
+
+void MainWindow::backupProjectNow()
+{
+    if (!hasProject()) return;
+    QStringList files = Backups::sourceFiles(m_project.root());
+    for (EditorPane *pane : editors())   // an open file outside the project is kept too
+        if (!pane->filePath().isEmpty() && !files.contains(pane->filePath()) && pane->isModified()) files << pane->filePath();
+    QString error;
+    if (files.isEmpty()) {
+        QMessageBox::information(this, tr("Backups"), tr("The project has no source files to back up."));
+        return;
+    }
+    if (!backupFiles(files, QStringLiteral("manual"), QString(), true, &error)) {
+        QMessageBox::warning(this, tr("Backups"), tr("The backup could not be made:\n%1").arg(error));
+        return;
+    }
+    statusBar()->showMessage(tr("Backed up %n file(s) of the project.", nullptr, int(files.size())), 6000);
+}
+
+void MainWindow::showBackups()
+{
+    if (!hasProject()) return;
+    BackupsDialog dialog(m_project.root(), this);
+    connect(&dialog, &BackupsDialog::backupNowRequested, this, [this, &dialog] {
+        backupProjectNow();
+        dialog.reload();
+    });
+    connect(&dialog, &BackupsDialog::compareRequested, this, &MainWindow::compareWithBackup);
+    connect(&dialog, &BackupsDialog::restoreRequested, this, [this, &dialog](const BackupInfo &info, const BackupFile &file) {
+        if (restoreBackup(info, file)) dialog.reload();
+    });
+    dialog.exec();
+}
+
+void MainWindow::compareWithBackup(const BackupInfo &info, const BackupFile &file)
+{
+    const QByteArray copy = Backups::read(info, file);
+    QByteArray current;
+    if (EditorPane *open = editorFor(file.source)) {
+        current = open->text().toUtf8();
+    } else {
+        QFile now(file.source);
+        if (!now.open(QIODevice::ReadOnly)) {
+            QMessageBox::information(this, tr("Compare with the backup"), tr("The file does not exist now: %1").arg(file.source));
+            return;
+        }
+        current = now.readAll();
+    }
+    QString error;
+    const QString label = QDir(m_project.root()).relativeFilePath(file.source);
+    const QString diff = Backups::unifiedDiff(copy, current, tr("backup %1: %2").arg(QLocale().toString(info.created, QLocale::ShortFormat), label),
+                                              tr("current: %1").arg(label), &error);
+    if (!error.isEmpty()) {
+        QMessageBox::warning(this, tr("Compare with the backup"), tr("The comparison could not be made: %1").arg(error));
+        return;
+    }
+    if (diff.isEmpty()) {
+        QMessageBox::information(this, tr("Compare with the backup"), tr("The file is the same as in the backup."));
+        return;
+    }
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("Backup and the current file"));
+    dialog.resize(900, 600);
+    auto *text = new QPlainTextEdit(&dialog);
+    text->setObjectName(QStringLiteral("backupDiff"));
+    text->setReadOnly(true);
+    text->setLineWrapMode(QPlainTextEdit::NoWrap);
+    text->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    text->setPlainText(diff);
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    auto *layout = new QVBoxLayout(&dialog);
+    layout->addWidget(new QLabel(tr("«-» is the backup, «+» is the current file."), &dialog));
+    layout->addWidget(text, 1);
+    layout->addWidget(buttons);
+    dialog.exec();
+}
+
+bool MainWindow::restoreBackup(const BackupInfo &info, const BackupFile &file, bool confirm)
+{
+    const QByteArray copy = Backups::read(info, file);
+    if (copy.isEmpty() && file.size > 0) {
+        QMessageBox::warning(this, tr("Restore"), tr("The copy is missing or unreadable: %1").arg(file.stored));
+        return false;
+    }
+    const QString label = QDir(m_project.root()).relativeFilePath(file.source);
+    if (confirm && QMessageBox::question(this, tr("Restore"),
+            tr("Restore %1 as it was at %2?\n\nThe current state is backed up first.")
+                .arg(label, QLocale().toString(info.created, QLocale::ShortFormat))) != QMessageBox::Yes)
+        return false;
+    QString error;
+    if (!backupFiles({file.source}, QStringLiteral("before-restore"), label, true, &error)
+        && QMessageBox::question(this, tr("Restore"), tr("A backup of the current file could not be made:\n%1\n\nRestore anyway?").arg(error))
+               != QMessageBox::Yes)
+        return false;
+    if (EditorPane *open = editorFor(file.source)) {
+        // As an edit of the open file: Undo takes the restore back; the file is saved by the user.
+        QTextCursor cursor(open->editor()->document());
+        cursor.beginEditBlock();
+        cursor.select(QTextCursor::Document);
+        cursor.insertText(QString::fromUtf8(copy));
+        cursor.endEditBlock();
+        statusBar()->showMessage(tr("Restored in the editor: %1 (not saved; Undo takes it back).").arg(label), 10000);
+        return true;
+    }
+    QSaveFile out(file.source);
+    QDir().mkpath(QFileInfo(file.source).absolutePath());
+    if (!out.open(QIODevice::WriteOnly) || out.write(copy) != copy.size() || !out.commit()) {
+        QMessageBox::warning(this, tr("Restore"), tr("The file could not be written: %1").arg(file.source));
+        return false;
+    }
+    statusBar()->showMessage(tr("Restored: %1").arg(label), 10000);
+    return true;
 }
 
 void MainWindow::loadAiHistory()
@@ -2531,7 +2945,126 @@ AiHistoryPane *MainWindow::addAiHistory(const AiExchange &exchange, const QStrin
     auto *pane = new AiHistoryPane(exchange, path, this);
     m_aiHistoryPanes.append(pane);
     m_aiWorkspace->addPane(pane);
+    connectAiEdits(pane, exchange.documentPath);
     return pane;
+}
+
+void MainWindow::connectAiEdits(AiHistoryPane *pane, const QString &documentPath)
+{
+    AiEditsPanel *panel = pane->editsPanel();
+    if (!panel) return;
+    const bool exists = !documentPath.isEmpty() && (editorFor(documentPath) || QFileInfo::exists(documentPath));
+    AiEditsPanel::TextProvider text;
+    AiEditsPanel::Checker check;
+    if (exists) {
+        text = [this, documentPath] { return fileText(documentPath); };
+        // The check needs the translator and a Primula file of the open project.
+        if (!Translator::program().isEmpty() && !primulaKind(documentPath).isEmpty())
+            check = [this, documentPath](const QString &changed) { return checkTextForAi(documentPath, changed); };
+    }
+    panel->setDocument(QFileInfo(documentPath).fileName(), text, check);
+    connect(panel, &AiEditsPanel::applyRequested, this,
+            [this, panel, pane, documentPath](const QList<int> &rows) {
+                applyAiEdits(panel, documentPath, rows, pane->exchange().task.section(QLatin1Char('\n'), 0, 0).left(120));
+            });
+}
+
+AiEditsPanel::CheckReport MainWindow::checkTextForAi(const QString &path, const QString &text)
+{
+    AiEditsPanel::CheckReport report;
+    if (!hasProject()) {
+        report.failure = tr("No project is open.");
+        return report;
+    }
+    // The document that contains the file: the file itself, or the document of the preview or the project.
+    const QString document = primulaKind(path) == QStringLiteral("document") ? path : currentDocument();
+    if (document.isEmpty()) {
+        report.failure = tr("There is no document to check this file in.");
+        return report;
+    }
+    QTemporaryDir directory(QDir::temp().filePath(QStringLiteral("primula-studio-XXXXXX")));
+    QStringList arguments{QStringLiteral("check"), m_project.relative(document), QStringLiteral("--format"), QStringLiteral("json")};
+    arguments << parameterArguments(document);
+    int index = 0;
+    auto overlay = [&](const QString &file, const QString &buffer) {
+        // A plain name without '=': the translator splits FILE=BUFFER at the last '='.
+        const QString name = QDir(directory.path()).filePath(QStringLiteral("buffer-%1.prml").arg(index++));
+        QFile out(name);
+        if (!out.open(QIODevice::WriteOnly | QIODevice::Truncate) || out.write(buffer.toUtf8()) < 0) return false;
+        arguments << QStringLiteral("--overlay") << QStringLiteral("%1=%2").arg(file, name);
+        return true;
+    };
+    if (!directory.isValid() || !overlay(path, text)) {
+        report.failure = tr("Cannot write a temporary file.");
+        return report;
+    }
+    for (EditorPane *open : editors())
+        if (open->isModified() && !samePath(open->filePath(), path)) overlay(open->filePath(), open->text());
+    QByteArray output;
+    QString errors;
+    const int code = Translator::run(arguments, m_project.root(), &output, &errors, 60000);
+    const QJsonDocument json = QJsonDocument::fromJson(output);
+    if ((code != 0 && code != 2) || !json.isArray()) {
+        report.failure = errors.trimmed().isEmpty() ? tr("The translator gave no result (exit code %1).").arg(code) : errors.trimmed();
+        return report;
+    }
+    report.ran = true;
+    for (const QJsonValue &value : json.array()) {
+        const QJsonObject message = value.toObject();
+        if (message.value(QStringLiteral("severity")).toString() == QStringLiteral("error"))
+            report.errors << message.value(QStringLiteral("code")).toString() + QLatin1Char(' ') + message.value(QStringLiteral("message")).toString();
+    }
+    return report;
+}
+
+void MainWindow::applyAiEdits(AiEditsPanel *panel, const QString &path, const QList<int> &rows, const QString &note)
+{
+    EditorPane *pane = openFile(path, true);
+    if (!pane || pane->isReadOnly() || pane->isUnavailable()) {
+        QMessageBox::warning(this, tr("Apply edits"), tr("The file cannot be edited: %1").arg(path));
+        return;
+    }
+    QList<AiEdit> chosen;
+    for (int row : rows) chosen.append(panel->editAt(row));
+    QList<AiEditStatus> statuses;
+    QList<AiEdits::Place> places;
+    AiEdits::apply(pane->text(), chosen, &statuses, &places);
+    QList<int> done;   // positions in `chosen` that are applied, last place first
+    for (int i = 0; i < chosen.size(); ++i)
+        if (statuses.at(i) == AiEditStatus::Ready) done.append(i);
+    if (done.isEmpty()) {
+        QMessageBox::information(this, tr("Apply edits"),
+                                 tr("None of the chosen edits can be applied now: the text of the document has changed."));
+        panel->refresh();
+        return;
+    }
+    std::sort(done.begin(), done.end(), [&](int a, int b) { return places.at(a).start > places.at(b).start; });
+    // The file is backed up first: Undo does not outlive the editor, a backup does.
+    QString backupError;
+    if (hasProject() && !backupFiles({path}, QStringLiteral("before-ai-apply"), note, true, &backupError)
+        && QMessageBox::question(this, tr("Apply edits"),
+                                 tr("A backup of the file could not be made:\n%1\n\nApply the edits anyway?").arg(backupError))
+               != QMessageBox::Yes)
+        return;
+    QTextCursor cursor(pane->editor()->document());
+    cursor.beginEditBlock();   // one step for Undo
+    for (int i : done) {
+        cursor.setPosition(places.at(i).start);
+        cursor.setPosition(places.at(i).start + places.at(i).length, QTextCursor::KeepAnchor);
+        cursor.insertText(chosen.at(i).replacement);
+    }
+    cursor.endEditBlock();
+    QTextCursor shown = pane->editor()->textCursor();
+    shown.setPosition(places.at(done.last()).start);
+    pane->editor()->setTextCursor(shown);
+    pane->editor()->centerCursor();
+    QList<int> appliedRows;
+    for (int i : done) appliedRows.append(rows.at(i));
+    panel->markApplied(appliedRows);
+    const int skipped = int(rows.size() - done.size());
+    statusBar()->showMessage(skipped ? tr("Applied %n edit(s), %1 skipped; the file is not saved (Undo takes the edits back).", nullptr, int(done.size())).arg(skipped)
+                                     : tr("Applied %n edit(s); the file is not saved (Undo takes the edits back).", nullptr, int(done.size())),
+                             15000);
 }
 
 void MainWindow::showAiHistory()
@@ -2586,6 +3119,9 @@ void MainWindow::updateUiState()
     m_aiAction->setEnabled(hasProject() && idle && (pane || m_lastEditor));
     m_aiHistoryAction->setEnabled(!m_aiHistoryPanes.isEmpty());
     m_aiContextAction->setEnabled(hasProject());
+    m_backupNowAction->setEnabled(hasProject());
+    m_backupsAction->setEnabled(hasProject());
+    m_backupBeforeSaveAction->setEnabled(hasProject());
     m_newOrderAction->setEnabled(hasProject() && QFileInfo(QDir(m_project.root()).filePath(QStringLiteral("project.p.prml"))).isFile());
     for (const char *name : {"findAction", "findNextAction", "findPreviousAction", "replaceAction"})
         if (auto *action = findChild<QAction *>(QString::fromLatin1(name))) action->setEnabled(pane && !pane->isUnavailable());

@@ -1,14 +1,16 @@
 #pragma once
 
-// Asynchronous AI transport. The CLI (Codex or Claude) manages credentials; Studio provides only
-// the explicit task and context and runs the tool without the right to change files.
+// Asynchronous AI transport. The CLI (Codex, Claude, Grok or one of the user file) manages
+// credentials; Studio provides only the explicit task and context and runs the tool without the
+// right to change files. The tools are described by data (AiAgents.h, agents.json): the program,
+// the arguments of a read-only run, how the prompt goes in and how the answer is read.
 //
-//   codex   codex exec --ephemeral --json --sandbox read-only -        (settings: tools/codex)
-//   claude  claude -p --output-format json --no-session-persistence
-//                  --tools Read,Grep,Glob --permission-mode dontAsk    (settings: tools/claude)
-//
-// The tool is chosen in File → Settings (settings "ai/tool"); the prompt is the same for both.
+// The tool is chosen in File → Settings (settings "ai/tool", the program "tools/<id>"); the
+// prompt is the same for all.
 
+#include "AiAgents.h"
+
+#include <QMap>
 #include <QObject>
 #include <QProcess>
 
@@ -26,6 +28,8 @@ struct AiRequest
     QString specification;  ///< chosen sections or the whole specification (AiContext)
     QString messages;       ///< messages of the last check or build (AiContext::messages)
     QString projectDirectory;
+    bool useSkill = false;       ///< the agent loads the local skill primula-docs instead of getting the reference
+    bool proposeEdits = false;   ///< ask for ORIGINAL/REPLACEMENT blocks that Studio can apply (AiEdits)
 };
 
 class IAiBackend : public QObject
@@ -44,45 +48,25 @@ signals:
     void finished(bool success, const QString &response, const QString &errorMessage);
 };
 
-class CodexExecBackend final : public IAiBackend
+/// Runs the agent of the settings (AiAgents::current(), read at the start): the prompt on stdin
+/// or in an argument, the answer parsed by the rules of the description.
+class CliAgentBackend final : public IAiBackend
 {
     Q_OBJECT
 
 public:
-    explicit CodexExecBackend(QObject *parent = nullptr);
+    explicit CliAgentBackend(QObject *parent = nullptr);
     void start(const AiRequest &request) override;
+    /// Start with this agent (not the one of the settings).
+    void start(const AiRequest &request, const AiAgent &agent);
     void cancel() override;
     bool isRunning() const override;
-
-private:
-    QProcess m_process;
-    QByteArray m_stdoutBuffer;
-    QString m_lastAgentMessage;
-    QString m_errors;
-
-    /// Parse incremental Codex JSON events, retaining complete lines between reads.
-    void consumeOutput();
-};
-
-/// Claude Code in print mode: the prompt on stdin, one JSON result on stdout
-/// ({"type":"result","is_error":false,"result":"…"}); only the read-only tools.
-class ClaudePrintBackend final : public IAiBackend
-{
-    Q_OBJECT
-
-public:
-    explicit ClaudePrintBackend(QObject *parent = nullptr);
-    void start(const AiRequest &request) override;
-    void cancel() override;
-    bool isRunning() const override;
-    /// The answer of the CLI output: "result" of the JSON object; plain text of an older CLI as is.
-    /// @return false with error when the CLI reports an error or gives nothing.
-    static bool parseOutput(const QByteArray &output, QString *response, QString *error);
 
 private:
     QProcess m_process;
     QByteArray m_stdout;
     QString m_errors;
+    AiAgent m_agent;
 };
 
 class AiController : public QObject
@@ -91,24 +75,37 @@ class AiController : public QObject
 
 public:
     explicit AiController(QObject *parent = nullptr);
-    /// The tool of the settings: "codex" (default) or "claude".
+    /// The id of the first tool chosen by default ("codex" when nothing is chosen).
     static QString tool();
-    /// The history label of a tool ("codex-exec", "claude-print").
+    /// The name of that tool, as File → Settings shows it.
+    static QString toolName();
+    /// The history label of a tool ("codex-exec", "claude-print", "grok-print").
     static QString backendName(const QString &tool);
-    /// The prompt both tools receive: rules, task, project and Primula context, files.
+    /// The prompt all tools receive: rules, task, project and Primula context, files.
     static QByteArray makePrompt(const AiRequest &request);
-    /// Start with the tool of the settings (read at each request).
+    /// Start one tool, the first one chosen by default; the result comes with `finished`.
     void start(const AiRequest &request);
+    /// Start the same request with several tools at once (stage 22.6): each has its own process; the
+    /// answers come with `agentFinished`, in the order they arrive, and `allFinished` ends the request.
+    void startAgents(const AiRequest &request, const QStringList &agentIds);
     void cancel();
     bool isRunning() const;
 
 signals:
     void progress(const QString &message);
+    /// The one tool of `start` is done.
     void finished(bool success, const QString &response, const QString &errorMessage);
+    /// A tool of `startAgents` is done.
+    void agentFinished(const QString &agentId, bool success, const QString &response, const QString &errorMessage);
+    /// Every tool of `startAgents` is done (or cancelled).
+    void allFinished();
 
 private:
-    CodexExecBackend *m_codex = nullptr;
-    ClaudePrintBackend *m_claude = nullptr;
-    IAiBackend *m_backend = nullptr;   ///< the one that runs or ran last
-};
+    QMap<QString, CliAgentBackend *> m_pool;   ///< a process runner per tool, kept between requests
+    QStringList m_waiting;                     ///< the tools of the running request that have not answered
+    bool m_single = false;                     ///< the request was started with `start`
+    bool m_many = false;                       ///< the request runs with more than one tool
 
+    CliAgentBackend *backendFor(const QString &agentId);
+    void agentDone(const QString &agentId, bool success, const QString &response, const QString &errorMessage);
+};

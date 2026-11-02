@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "primula-docs"
-version = "0.3.0"
+version = "0.4.8"
 description = "Primula Documenting System: translator of Primula markup (.prml) to ODT"
 readme = "README.md"
 requires-python = ">=3.11"

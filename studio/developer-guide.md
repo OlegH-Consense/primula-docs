@@ -82,9 +82,19 @@ Debian 12/13: `./build-debian.sh [--install-deps] [--run]` — проверка 
 
 ```
 python3 tests/test_distribution.py --build-dir build
+python3 tests/test_packages.py --build-dir build     # пакеты .deb и .rpm (26.1)
 ```
 
 (сборка пакета, состав, ссылки README, контрольные суммы, установка в каталог с пробелами и `%`/`$`, рабочая копия примеров и сборка примеров 01, 11, 12 в ней установленным транслятором, настройки Studio с примерами, запуск Studio, обновление с сохранением изменённой копии примеров и настроек, удаление; планы пакетов Debian 12/13 и openSUSE).
+
+**Системные пакеты `.deb` и `.rpm` (26.1).** `./make-packages.sh [--format deb|rpm|all] [--output КАТАЛОГ] [--skip-build] [--revision N] [--maintainer "Имя <адрес>"]` собирает пакет, как `make-distribution.sh`, и упаковывает его (`packaging/make_packages.py`) в `../dist/packages/`: `primula-docs_ВЕРСИЯ-1_amd64.deb`, `primula-docs-ВЕРСИЯ-1.x86_64.rpm`. Устройство:
+
+- Всё в `/usr`: `share/primula-docs/` — пакет без установщика (`install.sh`, `uninstall.sh`, `check-dependencies.sh`, `runtime/`, `bin/`, `MANIFEST.sha256`, значок и ярлык), `bin/` — лаунчеры (они берут префикс из своего места, поэтому работают из `/usr`), `libexec/primula-studio` — ссылка на двоичный файл в `share/primula-docs/libexec/`, ярлык и значок — в `share/applications` и `share/icons/hicolor/scalable/apps`, лицензия — в `share/doc/primula-docs/copyright`.
+- Транслятор работает на Python 3 системы (`python3 >= 3.11`, PyYAML); частного окружения нет. Studio связана с Qt 6 системы, поэтому пакет — для семейства систем, на котором собран (`distribution.json` внутри).
+- `.deb` пишет сам скрипт (ar + tar + xz из стандартной библиотеки, `dpkg-deb` не нужен): `Depends` — `python3`, `python3-yaml`, `libqt6widgets6`, `libqt6pdf6`, `libqt6pdfwidgets6`, `libqt6svg6` (>= 6.4), `libc6` не старше, чем требуют символы бинарника (`objdump -T`, сейчас 2.34); `Recommends` — LibreOffice Writer, `python3-uno`, `python3-fonttools`, шрифты Liberation, плагины Qt; `Suggests` — `pandoc`.
+- `.rpm` собирает `rpmbuild` по написанному скриптом spec-файлу (файлы готовит скрипт, `%install` только копирует); библиотеки Qt и glibc rpm находит в бинарнике сам; `Requires` — `python3 >= 3.11`, `python3dist(pyyaml)`; `Recommends` — LibreOffice, `libreoffice-pyuno`, fonttools, Liberation. Полезная нагрузка xz (`w9.xzdio`), чтобы пакет читали и не такие новые менеджеры.
+- Воспроизводимость: время файлов — `SOURCE_DATE_EPOCH`, владелец `root:root`.
+- Проверено: `tests/test_packages.py` (структура `.deb`, управляющий файл, суммы md5, ссылка, права; распакованные файлы запускают `primula` и `primula-studio --runtime-info` и собирают пример; `.rpm` — `rpm -qp` с отдельным `--dbpath`). **Не проверено:** установка на настоящей Debian/openSUSE (`apt install ./….deb`, `zypper install ./….rpm`) и lintian/rpmlint — делает пользователь при сборке на Debian 12/13 и openSUSE; имя пакета Qt PDF в Ubuntu и `python3dist(pyyaml)` в старых openSUSE не подтверждены.
 
 **Нештатный вариант — транслятор Nuitka.** `packaging/build-nuitka-translator.sh [--python ПУТЬ] [--archive]` — по желанию разработчика: автономный каталог `dist/primula-ВЕРСИЯ-nuitka-…` (`bin/primula` + `lib/primula-nuitka/`), работающий без Python. Нужны Nuitka и PyYAML в выбранном Python (или `PYTHONPATH`), компилятор C, `patchelf`, заголовки Python. Замер 15.10.2026 (Nuitka 4.3, CPython 3.13, договор на 30 страниц): медленнее CPython на 15–20 % (с явно включёнными ускорителями `_json`/`_bisect`, которые плагин anti-bloat иначе исключает), ~39 МБ, сборка ~11 мин; привязан к glibc системы сборки. Исполняемый файл не называется `primula` — иначе каталог данных пакета `primula/` с ним совпадает и Nuitka молча не кладёт данные; скрипт проверяет данные и делает пробный запуск. В штатный пакет не входит.
 

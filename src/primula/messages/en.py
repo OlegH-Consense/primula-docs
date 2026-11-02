@@ -82,6 +82,7 @@ MESSAGES: dict[str, str | tuple[str, ...]] = {
     'P1241': 'a list environment must start with a list item',
     'P1242': "expected {expected} after '{after}'",
     'P1243': "a table row '|:' is allowed only inside '|table'",
+    'P1245': "'|@(…)' has no body: the text in braces after it is printed as it is",
     "P1244": "'level=' cannot be combined with {count} '<': give the level either by the number of '<' or by level= with a single '<'",
 
     # P2xxx — computing core (stage 13.2)

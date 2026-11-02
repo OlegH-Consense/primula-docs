@@ -57,6 +57,17 @@ Primula — мова розмітки ділових і технічних до�
 спочатку показує перелік і питає підтвердження (`--yes` — без питання). Ваші проєкти
 в інших каталогах не зачіпаються ніколи.
 
+### Системні пакети (.deb, .rpm)
+
+Якщо вам дали `primula-docs_ВЕРСІЯ-1_amd64.deb` або `primula-docs-ВЕРСІЯ-1.x86_64.rpm`, встановлюйте його менеджером пакетів замість `install.sh`:
+
+```sh
+sudo apt install ./primula-docs_ВЕРСІЯ-1_amd64.deb          # Debian, Ubuntu
+sudo zypper install ./primula-docs-ВЕРСІЯ-1.x86_64.rpm      # openSUSE
+```
+
+Пакет кладе все в `/usr` (команди `primula`, `primula-view`, `primula-studio`, ярлик меню, посібники й приклади — у `/usr/share/primula-docs`) і бере Python, PyYAML та Qt 6 із системних пакетів, від яких залежить; LibreOffice Writer (для PDF) рекомендовано. Пакет призначений для родини систем, на якій його зібрано (в описі вказано, на якій). Приклади до домашньої теки не копіюються: `cp -r /usr/share/primula-docs/examples ~/Primula/examples`. Видалення: `sudo apt remove primula-docs` / `sudo zypper remove primula-docs`.
+
 ## Робота
 
 ```sh

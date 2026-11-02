@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Primula Studio toolbar icon: «backups» — a clock face with an arrow that goes back. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <path d="M4.2 12 A7.8 7.8 0 1 0 6.6 6.4" stroke="#5f7f9f" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <path d="M3.2 3.8 V8.6 H8" stroke="#5f7f9f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M12 7.5 V12.2 L15.2 14.2" stroke="#2f6fb2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

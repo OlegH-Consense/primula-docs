@@ -57,6 +57,17 @@ PyYAML через pip, `--offline --wheelhouse КАТАЛОГ` — из лока
 список и спрашивает подтверждение (`--yes` — без вопроса). Ваши проекты в других
 каталогах не затрагиваются никогда.
 
+### Системные пакеты (.deb, .rpm)
+
+Если вам дали `primula-docs_ВЕРСИЯ-1_amd64.deb` или `primula-docs-ВЕРСИЯ-1.x86_64.rpm`, ставьте его менеджером пакетов вместо `install.sh`:
+
+```sh
+sudo apt install ./primula-docs_ВЕРСИЯ-1_amd64.deb          # Debian, Ubuntu
+sudo zypper install ./primula-docs-ВЕРСИЯ-1.x86_64.rpm      # openSUSE
+```
+
+Пакет кладёт всё в `/usr` (команды `primula`, `primula-view`, `primula-studio`, ярлык меню, руководства и примеры — в `/usr/share/primula-docs`) и берёт Python, PyYAML и Qt 6 из системных пакетов, от которых зависит; LibreOffice Writer (для PDF) рекомендуется. Пакет предназначен для семейства систем, на котором он собран (в описании указано, на каком). Примеры в домашний каталог не копируются: `cp -r /usr/share/primula-docs/examples ~/Primula/examples`. Удаление: `sudo apt remove primula-docs` / `sudo zypper remove primula-docs`.
+
 ## Работа
 
 ```sh

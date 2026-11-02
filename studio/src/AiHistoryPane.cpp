@@ -1,4 +1,6 @@
 #include "AiHistoryPane.h"
+#include "AiEdits.h"
+#include "AiEditsPanel.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopServices>
@@ -42,6 +44,7 @@ AiHistoryPane::AiHistoryPane(const AiExchange &exchange, const QString &path, QW
     buttons->addWidget(task); buttons->addWidget(answer); buttons->addWidget(save); buttons->addStretch();
     layout->addLayout(buttons);
     auto *tabs = new QTabWidget(this);
+    const QList<AiEdit> edits = AiEdits::parse(exchange.response);
     m_preview = new QTextBrowser(tabs);
     m_preview->setObjectName(QStringLiteral("aiPreview"));
     m_preview->setReadOnly(true);
@@ -50,13 +53,20 @@ AiHistoryPane::AiHistoryPane(const AiExchange &exchange, const QString &path, QW
     font.setPointSize(qMax(11, QSettings().value(QStringLiteral("editor/fontSize"), 11).toInt()));
     m_preview->setFont(font);
     m_preview->setMarkdown(QStringLiteral("# ") + tr("Task") + QStringLiteral("\n\n") + AiHistory::fenced(exchange.task)
-        + QStringLiteral("\n\n# ") + tr("Response") + QStringLiteral("\n\n") + exchange.response);
+        + QStringLiteral("\n\n# ") + tr("Response") + QStringLiteral("\n\n")
+        + (edits.isEmpty() ? exchange.response : AiEdits::previewMarkdown(exchange.response)));
     connect(m_preview, &QTextBrowser::anchorClicked, this, [this](const QUrl &url) {
         if (url.scheme() == QStringLiteral("http") || url.scheme() == QStringLiteral("https"))
             QDesktopServices::openUrl(url);
         else if (url.scheme().isEmpty() && !url.fragment().isEmpty()) m_preview->scrollToAnchor(url.fragment());
     });
     tabs->addTab(m_preview, tr("Preview"));
+    if (!edits.isEmpty()) {
+        // Stage 22.3: the proposed edits can be checked and applied to the document of the request.
+        m_edits = new AiEditsPanel(edits, tabs);
+        tabs->addTab(m_edits, tr("Edits (%1)").arg(edits.size()));
+        tabs->setCurrentWidget(m_edits);
+    }
     auto raw = [tabs](const QString &name, const QString &text) {
         auto *editor = new QPlainTextEdit(tabs);
         editor->setObjectName(name); editor->setReadOnly(true); editor->setPlainText(text);
@@ -86,7 +96,7 @@ AiHistoryPane::AiHistoryPane(const AiExchange &exchange, const QString &path, QW
 
 QString AiHistoryPane::title() const
 {
-    return tr("AI %1 [RO]").arg(m_exchange.receivedAt.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss")));
+    return tr("AI %1 · %2 [RO]").arg(m_exchange.receivedAt.toString(QStringLiteral("yyyy-MM-dd HH:mm:ss")), m_exchange.backend);
 }
 
 void AiHistoryPane::findNext()

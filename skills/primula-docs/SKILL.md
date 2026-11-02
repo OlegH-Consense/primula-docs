@@ -154,6 +154,7 @@ editing, run the check: it must give no new diagnostics.
 - **`|end` does not close `|if`** — cause: control constructs; fix: `|endif`, `|endfor`, `|enddef`.
 - **warning on a number or date** — cause: raw value in `|(…)`; fix: `num()`, `money()`, `fmt_date()`.
 - **float in a money function** — cause: binary float; fix: `dec("…")` or a decimal literal.
+- **warning P1245 (a body after `|@`)** — cause: `|@("id"){text}`; the reference has no body and the braces are printed as text; fix: remove the braces (the text of a reference is the mode `"title"`), `|link("url"){text}` is for external addresses.
 - **level skipped** — cause: `|<<<` after `|<`; fix: go one level at a time (also for lists).
 
 ## 8. Images computed by code

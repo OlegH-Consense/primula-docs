@@ -73,7 +73,7 @@ EXAMPLE_ENTRIES = ('01-basics/basics.prml', '02-contract/contract.prml', '03-man
 
 
 def example_files(source):
-    """The examples without their build results (out/) and the source-tree runner.
+    """The examples without their build results (out/, build/) and the source-tree runner.
 
     Symbolic links of the examples (``lib`` of examples 11 and 12, decision 136) are
     followed: the package holds copies of the linked libraries, so the examples build
@@ -86,7 +86,7 @@ def example_files(source):
         for name in names:
             path = Path(directory)/name
             relative = path.relative_to(root)
-            if relative.parts[0] == 'out' or 'out' in relative.parts[1:2]:
+            if relative.parts[0] == 'out' or 'out' in relative.parts[1:2] or 'build' in relative.parts[:-1]:
                 continue
             if relative.name in ('.gitignore', 'run.sh') or '__pycache__' in relative.parts:
                 continue

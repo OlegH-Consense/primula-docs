@@ -48,7 +48,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
-from primula.diagnostics import Diagnostic, DiagnosticSink, error
+from primula.diagnostics import Diagnostic, DiagnosticSink, error, warning
 from primula.i18n import Key
 from primula.source import SourceFile, Span
 from primula.syntax import lines as L
@@ -361,6 +361,10 @@ class InlineParser:
                 self.emit(error("P1242", self.span(start, start + 2), expected=Key("expect.paren"), after="|@"))
                 return None
             args = self.parse_args_at(self.pos)
+            if args is not None and self.peek() == "{":
+                # A reference has no body (5.7, decision 141): the braces are printed as text, which is
+                # usually a body that was meant for |link or a leftover of an edit.
+                self.emit(warning("P1245", self.span(self.pos, self.pos + 1)))
             return Reference(self.span(start, self.pos), args) if args is not None else None
         if char == ".":
             return self._parse_style_span(context, start)

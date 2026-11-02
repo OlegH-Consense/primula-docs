@@ -23,13 +23,15 @@ This package is the prototype of stage 13 of the project plan
 * :mod:`primula.odf` — ODT generator (13.5 MVP, extended in later stages).
 """
 
-#: Version of the translator (PEP 440).  0.2.0 is the first public release
-#: (GitHub, 26.10.2026); 0.2.x — fixes, 0.3.0 — the next iteration, ``.devN`` —
-#: builds between releases.  The stage is recorded in the build report.
-__version__ = "0.3.0"
+#: Version of the translator (PEP 440, no ``.dev`` suffix).  The minor number
+#: is an iteration (0.3 released 02.11.2026, 0.4 in progress); the third number
+#: grows with every version that is committed, published or not.  A release is a
+#: git tag and an entry of the CHANGELOG, so numbers may be skipped.  The stage
+#: is recorded in the build report.
+__version__ = "0.4.8"
 
 #: Prototype stage of the project plan implemented by this version.
-PROTOTYPE_STAGE = "19.2"
+PROTOTYPE_STAGE = "22.6"
 
 #: Version of the Primula language implemented by the translator
 #: (specification section 0.1).

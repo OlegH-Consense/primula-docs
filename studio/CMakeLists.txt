@@ -32,6 +32,18 @@ qt_standard_project_setup()
 set(STUDIO_SOURCES
     src/AiContext.cpp
     src/AiContext.h
+    src/Backups.cpp
+    src/Backups.h
+    src/BackupsDialog.cpp
+    src/BackupsDialog.h
+    src/AiRecipes.cpp
+    src/AiRecipes.h
+    src/AiAgents.cpp
+    src/AiAgents.h
+    src/AiEdits.cpp
+    src/AiEdits.h
+    src/AiEditsPanel.cpp
+    src/AiEditsPanel.h
     src/AiController.cpp
     src/AiController.h
     src/AiHistory.cpp

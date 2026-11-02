@@ -2,79 +2,264 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ru_RU">
 <context>
+    <name>AiAgents</name>
+    <message>
+        <location filename="../src/AiAgents.cpp" line="226"/>
+        <source>The output of the tool is not JSON.</source>
+        <translation>Вывод программы не является JSON.</translation>
+    </message>
+</context>
+<context>
+    <name>AiEditsPanel</name>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="37"/>
+        <source>Edits proposed by AI. Choose the ones to apply; they are applied to the editor as one step that Undo takes back.</source>
+        <translation>Правки, предложенные AI. Отметьте те, что нужно применить; они применяются к редактору одним шагом, который отменяет Undo.</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="55"/>
+        <source>Check the chosen edits</source>
+        <translation>Проверить отмеченные правки</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="57"/>
+        <source>Runs the translator check on the document with each chosen edit, and with all of them: an edit that brings new errors is marked.</source>
+        <translation>Запускает проверку транслятором для документа с каждой отмеченной правкой отдельно и со всеми вместе: правка, вносящая новые ошибки, будет помечена.</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="59"/>
+        <source>Apply the chosen edits</source>
+        <translation>Применить отмеченные правки</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="92"/>
+        <source>applied</source>
+        <translation>применено</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/AiEditsPanel.cpp" line="95"/>
+        <source>brings %n new error(s)</source>
+        <translation>
+            <numerusform>вносит %n новую ошибку</numerusform>
+            <numerusform>вносит %n новые ошибки</numerusform>
+            <numerusform>вносит %n новых ошибок</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="96"/>
+        <source>checked, no new errors</source>
+        <translation>проверено, новых ошибок нет</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="97"/>
+        <source>ready</source>
+        <translation>готова</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="98"/>
+        <source>not found in the document</source>
+        <translation>в документе не найдено</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="99"/>
+        <source>occurs several times</source>
+        <translation>встречается несколько раз</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="100"/>
+        <source>changes nothing</source>
+        <translation>ничего не меняет</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="101"/>
+        <source>overlaps another edit</source>
+        <translation>пересекается с другой правкой</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/AiEditsPanel.cpp" line="167"/>
+        <source>%n edit(s): %1 ready, %2 applied; chosen %3.</source>
+        <translation>
+            <numerusform>%n правка: готово %1, применено %2; отмечено %3.</numerusform>
+            <numerusform>%n правки: готово %1, применено %2; отмечено %3.</numerusform>
+            <numerusform>%n правок: готово %1, применено %2; отмечено %3.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="168"/>
+        <source>The document is not available, so the edits cannot be applied.</source>
+        <translation>Документ недоступен, поэтому правки нельзя применить.</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="169"/>
+        <source>The check is not available (the translator or the file type).</source>
+        <translation>Проверка недоступна (транслятор или тип файла).</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="228"/>
+        <source>Nothing is checked: choose at least one ready edit.</source>
+        <translation>Ничего не проверено: отметьте хотя бы одну готовую правку.</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="236"/>
+        <location filename="../src/AiEditsPanel.cpp" line="296"/>
+        <source>The check did not run: %1</source>
+        <translation>Проверка не запустилась: %1</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/AiEditsPanel.cpp" line="247"/>
+        <source>Checked %n edit(s): %1 bring new errors. All chosen together: %2 new error(s).</source>
+        <translation>
+            <numerusform>Проверено правок: %n. Вносят новые ошибки: %1. Все отмеченные вместе: новых ошибок — %2.</numerusform>
+            <numerusform>Проверено правок: %n. Вносят новые ошибки: %1. Все отмеченные вместе: новых ошибок — %2.</numerusform>
+            <numerusform>Проверено правок: %n. Вносят новые ошибки: %1. Все отмеченные вместе: новых ошибок — %2.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="259"/>
+        <location filename="../src/AiEditsPanel.cpp" line="265"/>
+        <source>Apply edits</source>
+        <translation>Применение правок</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="259"/>
+        <source>No edit is chosen: nothing is applied.</source>
+        <translation>Ни одной правки не отмечено: ничего не применено.</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/AiEditsPanel.cpp" line="266"/>
+        <source>The chosen edits bring %n new error(s) to the document:
+
+%1
+
+Apply them anyway?</source>
+        <translation>
+            <numerusform>Отмеченные правки вносят в документ новых ошибок: %n:
+
+%1
+
+Применить всё равно?</numerusform>
+            <numerusform>Отмеченные правки вносят в документ новых ошибок: %n:
+
+%1
+
+Применить всё равно?</numerusform>
+            <numerusform>Отмеченные правки вносят в документ новых ошибок: %n:
+
+%1
+
+Применить всё равно?</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="276"/>
+        <source>Apply this edit</source>
+        <translation>Применить эту правку</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="278"/>
+        <source>Check this edit</source>
+        <translation>Проверить эту правку</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="281"/>
+        <source>Copy the replacement</source>
+        <translation>Копировать замену</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="283"/>
+        <source>Copy the original text</source>
+        <translation>Копировать исходный текст</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="286"/>
+        <source>Choose all</source>
+        <translation>Отметить все</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEditsPanel.cpp" line="287"/>
+        <source>Clear the choice</source>
+        <translation>Снять отметки</translation>
+    </message>
+</context>
+<context>
     <name>AiHistoryPane</name>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="29"/>
+        <location filename="../src/AiHistoryPane.cpp" line="31"/>
         <source>Not saved — use Save copy</source>
         <translation>Не сохранено — нажмите «Сохранить копию»</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="34"/>
+        <location filename="../src/AiHistoryPane.cpp" line="36"/>
         <source>Copy task</source>
         <translation>Копировать задание</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="36"/>
+        <location filename="../src/AiHistoryPane.cpp" line="38"/>
         <source>Copy answer (Markdown)</source>
         <translation>Копировать ответ (Markdown)</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="38"/>
+        <location filename="../src/AiHistoryPane.cpp" line="40"/>
         <source>Save copy…</source>
         <translation>Сохранить копию…</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="52"/>
+        <location filename="../src/AiHistoryPane.cpp" line="55"/>
         <source>Task</source>
         <translation>Задание</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="53"/>
+        <location filename="../src/AiHistoryPane.cpp" line="56"/>
         <source>Response</source>
         <translation>Ответ</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="59"/>
+        <location filename="../src/AiHistoryPane.cpp" line="63"/>
         <source>Preview</source>
         <translation>Просмотр</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="68"/>
+        <location filename="../src/AiHistoryPane.cpp" line="67"/>
+        <source>Edits (%1)</source>
+        <translation>Правки (%1)</translation>
+    </message>
+    <message>
+        <location filename="../src/AiHistoryPane.cpp" line="78"/>
         <source>Markdown</source>
         <translation>Markdown</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="69"/>
+        <location filename="../src/AiHistoryPane.cpp" line="79"/>
         <source>Complete request</source>
         <translation>Полный запрос</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="71"/>
+        <location filename="../src/AiHistoryPane.cpp" line="81"/>
         <source>Find in AI response…</source>
         <translation>Найти в ответе AI…</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="72"/>
+        <location filename="../src/AiHistoryPane.cpp" line="82"/>
         <source>Find next</source>
         <translation>Найти далее</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="89"/>
-        <source>AI %1 [RO]</source>
-        <translation>AI %1 [RO]</translation>
+        <location filename="../src/AiHistoryPane.cpp" line="99"/>
+        <source>AI %1 · %2 [RO]</source>
+        <translation>AI %1 · %2 [RO]</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="100"/>
+        <location filename="../src/AiHistoryPane.cpp" line="110"/>
         <source>Save AI exchange</source>
         <translation>Сохранить диалог AI</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="102"/>
+        <location filename="../src/AiHistoryPane.cpp" line="112"/>
         <source>Markdown files (*.md);;All files (*)</source>
         <translation>Файлы Markdown (*.md);;Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../src/AiHistoryPane.cpp" line="105"/>
+        <location filename="../src/AiHistoryPane.cpp" line="115"/>
         <source>Cannot save AI exchange</source>
         <translation>Не удалось сохранить диалог AI</translation>
     </message>
@@ -95,6 +280,121 @@
         <location filename="../src/AiWorkspace.cpp" line="25"/>
         <source>Close AI tab</source>
         <translation>Закрыть вкладку AI</translation>
+    </message>
+</context>
+<context>
+    <name>BackupsDialog</name>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="23"/>
+        <source>Backups of the project</source>
+        <translation>Резервные копии проекта</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="33"/>
+        <source>Time</source>
+        <translation>Время</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="33"/>
+        <source>Reason</source>
+        <translation>Причина</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="33"/>
+        <source>Note</source>
+        <translation>Примечание</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="33"/>
+        <source>Size</source>
+        <translation>Размер</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="41"/>
+        <location filename="../src/BackupsDialog.cpp" line="160"/>
+        <source>Back up the project now</source>
+        <translation>Сделать копию проекта сейчас</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="42"/>
+        <location filename="../src/BackupsDialog.cpp" line="155"/>
+        <source>Compare with the current file…</source>
+        <translation>Сравнить с текущим файлом…</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="43"/>
+        <location filename="../src/BackupsDialog.cpp" line="156"/>
+        <source>Restore this version</source>
+        <translation>Восстановить эту версию</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="44"/>
+        <location filename="../src/BackupsDialog.cpp" line="157"/>
+        <source>Delete the backup</source>
+        <translation>Удалить копию</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="45"/>
+        <source>Open the folder</source>
+        <translation>Открыть папку</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="46"/>
+        <source>Close</source>
+        <translation>Закрыть</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="73"/>
+        <source>Before applying AI edits</source>
+        <translation>Перед применением правок AI</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="74"/>
+        <source>Before saving</source>
+        <translation>Перед сохранением</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="75"/>
+        <source>Before a restore</source>
+        <translation>Перед восстановлением</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="76"/>
+        <source>Manual</source>
+        <translation>Вручную</translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="101"/>
+        <source>There are no backups yet. They are made before AI edits are applied and on request; «Back up the project now» copies the source files of the project.</source>
+        <translation>Копий ещё нет. Их создают перед применением правок AI и по требованию; «Сделать копию проекта сейчас» копирует исходные файлы проекта.</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/BackupsDialog.cpp" line="103"/>
+        <source>%n backup(s), %1 in all. Restoring a version first makes a backup of the current file.</source>
+        <translation>
+            <numerusform>Копий: %n, всего %1. Восстановление версии сначала делает копию текущего файла.</numerusform>
+            <numerusform>Копий: %n, всего %1. Восстановление версии сначала делает копию текущего файла.</numerusform>
+            <numerusform>Копий: %n, всего %1. Восстановление версии сначала делает копию текущего файла.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="113"/>
+        <source>Choose a backup in the list.</source>
+        <translation>Выберите копию в списке.</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/BackupsDialog.cpp" line="123"/>
+        <source>This backup holds %n file(s): choose one of them.</source>
+        <translation>
+            <numerusform>В этой копии файлов: %n. Выберите один из них.</numerusform>
+            <numerusform>В этой копии файлов: %n. Выберите один из них.</numerusform>
+            <numerusform>В этой копии файлов: %n. Выберите один из них.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/BackupsDialog.cpp" line="142"/>
+        <source>Delete the backup of %1?</source>
+        <translation>Удалить копию от %1?</translation>
     </message>
 </context>
 <context>
@@ -136,19 +436,19 @@
     </message>
 </context>
 <context>
-    <name>ClaudePrintBackend</name>
+    <name>CliAgentBackend</name>
     <message>
-        <location filename="../src/AiController.cpp" line="116"/>
-        <source>Cannot start Claude CLI: %1</source>
-        <translation>Не удалось запустить Claude CLI: %1</translation>
+        <location filename="../src/AiController.cpp" line="20"/>
+        <source>Cannot start %1: %2</source>
+        <translation>Не удаётся запустить %1: %2</translation>
     </message>
     <message>
-        <location filename="../src/AiController.cpp" line="127"/>
-        <source>Claude CLI finished without a usable response (exit code %1).</source>
-        <translation>Claude CLI завершился без пригодного ответа (код выхода %1).</translation>
+        <location filename="../src/AiController.cpp" line="32"/>
+        <source>%1 finished without a usable response (exit code %2).</source>
+        <translation>%1: работа завершена без пригодного ответа (код выхода %2).</translation>
     </message>
     <message>
-        <location filename="../src/AiController.cpp" line="155"/>
+        <location filename="../src/AiController.cpp" line="58"/>
         <source>AI request started.
 </source>
         <translation>AI-запрос запущен.
@@ -161,26 +461,6 @@
         <location filename="../src/CodeEditor.cpp" line="258"/>
         <source>Context of the open help window</source>
         <translation>Контекст открытого окна справки</translation>
-    </message>
-</context>
-<context>
-    <name>CodexExecBackend</name>
-    <message>
-        <location filename="../src/AiController.cpp" line="18"/>
-        <source>Cannot start Codex: %1</source>
-        <translation>Не удалось запустить Codex: %1</translation>
-    </message>
-    <message>
-        <location filename="../src/AiController.cpp" line="30"/>
-        <source>Codex finished without a usable response (exit code %1).</source>
-        <translation>Codex завершил работу без пригодного ответа (код %1).</translation>
-    </message>
-    <message>
-        <location filename="../src/AiController.cpp" line="56"/>
-        <source>AI request started.
-</source>
-        <translation>AI-запрос запущен.
-</translation>
     </message>
 </context>
 <context>
@@ -670,611 +950,678 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/MainWindow.cpp" line="328"/>
+        <location filename="../src/MainWindow.cpp" line="343"/>
         <source>Fit width</source>
         <translation>По ширине</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="326"/>
-        <location filename="../src/MainWindow.cpp" line="846"/>
+        <location filename="../src/MainWindow.cpp" line="341"/>
+        <location filename="../src/MainWindow.cpp" line="907"/>
         <source>PDF preview</source>
         <translation>Просмотр PDF</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="500"/>
-        <location filename="../src/MainWindow.cpp" line="502"/>
+        <location filename="../src/MainWindow.cpp" line="518"/>
+        <location filename="../src/MainWindow.cpp" line="520"/>
         <source>Messages</source>
         <translation>Панель сообщений</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2425"/>
+        <location filename="../src/MainWindow.cpp" line="2725"/>
         <source>AI result was not saved</source>
         <translation>Результат AI не сохранён</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2426"/>
+        <location filename="../src/MainWindow.cpp" line="2726"/>
         <source>The response remains in its tab. Use Save copy to choose another location.
 %1</source>
         <translation>Ответ остаётся во вкладке. Нажмите «Сохранить копию», чтобы выбрать другое место.
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2428"/>
+        <location filename="../src/MainWindow.cpp" line="2728"/>
         <source>AI request and response saved: %1</source>
         <translation>Запрос и ответ AI сохранены: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="536"/>
+        <location filename="../src/MainWindow.cpp" line="554"/>
         <source>&amp;File</source>
         <translation>&amp;Файл</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="488"/>
+        <location filename="../src/MainWindow.cpp" line="506"/>
         <source>Message</source>
         <translation>Сообщение</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="488"/>
+        <location filename="../src/MainWindow.cpp" line="506"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="488"/>
+        <location filename="../src/MainWindow.cpp" line="506"/>
         <source>Line</source>
         <translation>Строка</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="501"/>
+        <location filename="../src/MainWindow.cpp" line="519"/>
         <source>Log</source>
         <translation>Журнал</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="556"/>
+        <location filename="../src/MainWindow.cpp" line="574"/>
         <source>Recent projects</source>
         <translation>Недавние проекты</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="571"/>
+        <location filename="../src/MainWindow.cpp" line="601"/>
         <source>E&amp;xit</source>
         <translation>Вы&amp;ход</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="606"/>
+        <location filename="../src/MainWindow.cpp" line="636"/>
         <source>&amp;Build</source>
         <translation>С&amp;борка</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="607"/>
+        <location filename="../src/MainWindow.cpp" line="637"/>
         <source>&amp;Check document</source>
         <translation>&amp;Проверить документ</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="651"/>
+        <location filename="../src/MainWindow.cpp" line="687"/>
         <source>Open ODT in Writer</source>
         <translation>Открыть ODT в Writer</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="655"/>
+        <location filename="../src/MainWindow.cpp" line="691"/>
         <source>Open project directory</source>
         <translation>Открыть каталог проекта</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="706"/>
+        <location filename="../src/MainWindow.cpp" line="742"/>
         <source>&amp;AI</source>
         <translation>&amp;AI</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="707"/>
+        <location filename="../src/MainWindow.cpp" line="743"/>
         <source>Ask AI about the document…</source>
         <translation>Задать AI вопрос о документе…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="709"/>
+        <location filename="../src/MainWindow.cpp" line="745"/>
         <source>Show AI history</source>
         <translation>Показать историю AI</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="659"/>
+        <location filename="../src/MainWindow.cpp" line="695"/>
         <source>&amp;View</source>
         <translation>&amp;Вид</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="685"/>
+        <location filename="../src/MainWindow.cpp" line="721"/>
         <source>Layout</source>
         <translation>Компоновка</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="694"/>
+        <location filename="../src/MainWindow.cpp" line="730"/>
         <source>Increase editor font</source>
         <translation>Увеличить шрифт редактора</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="696"/>
+        <location filename="../src/MainWindow.cpp" line="732"/>
         <source>Decrease editor font</source>
         <translation>Уменьшить шрифт редактора</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="698"/>
+        <location filename="../src/MainWindow.cpp" line="734"/>
         <source>Reset editor font size</source>
         <translation>Вернуть размер шрифта редактора</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="700"/>
+        <location filename="../src/MainWindow.cpp" line="736"/>
         <source>Interface language</source>
         <translation>Язык интерфейса</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="701"/>
+        <location filename="../src/MainWindow.cpp" line="737"/>
         <source>System language</source>
         <translation>Язык системы</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="712"/>
+        <location filename="../src/MainWindow.cpp" line="748"/>
         <source>&amp;Help</source>
         <translation>&amp;Справка</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="713"/>
+        <location filename="../src/MainWindow.cpp" line="749"/>
         <source>Quick help</source>
         <translation>Краткая справка</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="718"/>
-        <location filename="../src/MainWindow.cpp" line="720"/>
+        <location filename="../src/MainWindow.cpp" line="755"/>
+        <location filename="../src/MainWindow.cpp" line="757"/>
         <source>About Primula Studio</source>
         <translation>О программе Primula Studio</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="726"/>
+        <location filename="../src/MainWindow.cpp" line="763"/>
         <source>Main toolbar</source>
         <translation>Главная панель</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="760"/>
+        <location filename="../src/MainWindow.cpp" line="820"/>
         <source>Editor font:</source>
         <translation>Шрифт редактора:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="768"/>
+        <location filename="../src/MainWindow.cpp" line="828"/>
         <source> pt</source>
         <translation> пт</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="230"/>
+        <location filename="../src/MainWindow.cpp" line="237"/>
         <source>Building…</source>
         <translation>Сборка…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1773"/>
+        <location filename="../src/MainWindow.cpp" line="1959"/>
         <source>Build completed</source>
         <translation>Сборка завершена</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1774"/>
+        <location filename="../src/MainWindow.cpp" line="1960"/>
         <source>Build failed</source>
         <translation>Ошибка сборки</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="794"/>
+        <location filename="../src/MainWindow.cpp" line="854"/>
         <source>Cannot open project</source>
         <translation>Не удалось открыть проект</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1258"/>
+        <location filename="../src/MainWindow.cpp" line="1406"/>
         <source>All files saved</source>
         <translation>Все файлы сохранены</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="886"/>
-        <location filename="../src/MainWindow.cpp" line="1213"/>
+        <location filename="../src/MainWindow.cpp" line="948"/>
+        <location filename="../src/MainWindow.cpp" line="1350"/>
         <source>Unsaved changes</source>
         <translation>Несохранённые изменения</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="887"/>
+        <location filename="../src/MainWindow.cpp" line="949"/>
         <source>Some AI results have not been saved. Save a copy before leaving this project.</source>
         <translation>Некоторые ответы AI не сохранены. Сохраните копию перед закрытием проекта.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="977"/>
+        <location filename="../src/MainWindow.cpp" line="1039"/>
         <source>Cannot restore project</source>
         <translation>Не удалось восстановить проект</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1566"/>
+        <location filename="../src/MainWindow.cpp" line="1714"/>
         <source>Build parameters of %1</source>
         <translation>Параметры сборки %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1570"/>
+        <location filename="../src/MainWindow.cpp" line="1718"/>
         <source>Default (declared in)</source>
         <translation>По умолчанию (где объявлен)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1570"/>
+        <location filename="../src/MainWindow.cpp" line="1718"/>
         <source>✎ Value for Check and Build</source>
         <translation>✎ Значение для проверки и сборки</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1598"/>
+        <location filename="../src/MainWindow.cpp" line="1746"/>
         <source>Empty — the default %1</source>
         <translation>Пусто — значение по умолчанию %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1624"/>
+        <location filename="../src/MainWindow.cpp" line="1772"/>
         <source>&lt;b&gt;What this is.&lt;/b&gt; The parameters (&lt;code&gt;params:&lt;/code&gt;) that the project and the document &lt;b&gt;%1&lt;/b&gt; declare, with their defaults. Here you give them other values for this document without editing any file — as &lt;code&gt;primula build %1 --param NAME=VALUE&lt;/code&gt; would.&lt;br&gt;&lt;b&gt;Where they act.&lt;/b&gt; Check, Build and the document inspection in Studio, and the console with the context «Current file». Building all targets of the project does not use them: a target sets its own &lt;code&gt;params&lt;/code&gt;.&lt;br&gt;&lt;b&gt;How.&lt;/b&gt; Click a cell of the last column and type; an empty cell keeps the default. Values are written as in &lt;code&gt;--param&lt;/code&gt;: text, &lt;code&gt;true&lt;/code&gt;/&lt;code&gt;false&lt;/code&gt;, numbers, dates &lt;code&gt;2026-10-16&lt;/code&gt;. They are kept in &lt;code&gt;.primula-studio/settings.json&lt;/code&gt; of the project; Reset clears them. «Default (declared in)» tells whether the project or the document declares the parameter; a document parameter overrides that of the project.</source>
         <translation>&lt;b&gt;Что это.&lt;/b&gt; Параметры (&lt;code&gt;params:&lt;/code&gt;), которые объявляют проект и документ &lt;b&gt;%1&lt;/b&gt;, со значениями по умолчанию. Здесь вы задаёте им другие значения для этого документа, не меняя ни одного файла, — как &lt;code&gt;primula build %1 --param ИМЯ=ЗНАЧЕНИЕ&lt;/code&gt;.&lt;br&gt;&lt;b&gt;Где действуют.&lt;/b&gt; Проверка, сборка и разбор документа в Studio, а также консоль с контекстом «Текущий файл». Сборка всех целей проекта их не использует: цель задаёт свои &lt;code&gt;params&lt;/code&gt;.&lt;br&gt;&lt;b&gt;Как.&lt;/b&gt; Щёлкните ячейку последнего столбца и введите значение; пустая ячейка — значение по умолчанию. Значения пишутся как в &lt;code&gt;--param&lt;/code&gt;: текст, &lt;code&gt;true&lt;/code&gt;/&lt;code&gt;false&lt;/code&gt;, числа, даты &lt;code&gt;2026-10-16&lt;/code&gt;. Они хранятся в &lt;code&gt;.primula-studio/settings.json&lt;/code&gt; проекта; «Сбросить» их очищает. «По умолчанию (где объявлен)» показывает, объявляет параметр проект или документ; параметр документа заменяет параметр проекта.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1636"/>
+        <location filename="../src/MainWindow.cpp" line="1784"/>
         <source>Neither the project nor the document &lt;b&gt;%1&lt;/b&gt; declares parameters (&lt;code&gt;params:&lt;/code&gt;): there is nothing to set here.</source>
         <translation>Ни проект, ни документ &lt;b&gt;%1&lt;/b&gt; не объявляют параметров (&lt;code&gt;params:&lt;/code&gt;): здесь нечего задавать.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1703"/>
+        <location filename="../src/MainWindow.cpp" line="1851"/>
         <source>%1 is a file of kind %2: document metadata belong to a document (doc:) or to a project file (doc_defaults:).</source>
         <translation>%1 — файл вида %2: метаданные документа относятся к документу (doc:) или к файлу проекта (doc_defaults:).</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1736"/>
+        <location filename="../src/MainWindow.cpp" line="1884"/>
         <source>Nothing to add: %1: in %2 already has %3.</source>
         <translation>Добавлять нечего: %1: в %2 уже содержит %3.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1738"/>
+        <location filename="../src/MainWindow.cpp" line="1886"/>
         <source>%1: in %2 is written as {…}; add the fields by hand.</source>
         <translation>%1: в %2 записан как {…}; добавьте поля вручную.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1749"/>
+        <location filename="../src/MainWindow.cpp" line="1897"/>
         <source>Added to %1, %2: %3.
 The values are proposals: Tab goes from one to the next.</source>
         <translation>Добавлено в %1, %2: %3.
 Значения — предложения: Tab переходит к следующему.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1802"/>
+        <location filename="../src/MainWindow.cpp" line="1988"/>
         <source>Error</source>
         <translation>Ошибка</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1803"/>
+        <location filename="../src/MainWindow.cpp" line="1989"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1843"/>
+        <location filename="../src/MainWindow.cpp" line="2029"/>
         <source>This works in a writable .prml editor.</source>
         <translation>Это работает в редакторе .prml, доступном для записи.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2254"/>
+        <location filename="../src/MainWindow.cpp" line="2440"/>
         <source>Ask AI about the document</source>
         <translation>Запрос к AI по документу</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2257"/>
+        <location filename="../src/MainWindow.cpp" line="2443"/>
         <source>Describe what should be checked, rewritten, or prepared…</source>
         <translation>Опишите, что нужно проверить, переписать или подготовить…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2259"/>
+        <location filename="../src/MainWindow.cpp" line="2445"/>
         <source>Selected text</source>
         <translation>Выделенный текст</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2295"/>
+        <location filename="../src/MainWindow.cpp" line="2519"/>
         <source>Send</source>
         <translation>Отправить</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2299"/>
+        <location filename="../src/MainWindow.cpp" line="2549"/>
         <source>Task:</source>
         <translation>Задание:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2304"/>
+        <location filename="../src/MainWindow.cpp" line="2574"/>
         <source>Text scope:</source>
         <translation>Объём текста:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2320"/>
+        <location filename="../src/MainWindow.cpp" line="2591"/>
         <source>Empty task</source>
         <translation>Пустое задание</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2320"/>
+        <location filename="../src/MainWindow.cpp" line="2591"/>
         <source>Enter a task for AI.</source>
         <translation>Введите задание для AI.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2389"/>
+        <location filename="../src/MainWindow.cpp" line="2683"/>
         <source>Waiting for AI response…</source>
         <translation>Ожидание ответа AI…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2389"/>
+        <location filename="../src/MainWindow.cpp" line="2684"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2408"/>
+        <location filename="../src/MainWindow.cpp" line="2738"/>
+        <location filename="../src/MainWindow.cpp" line="2775"/>
         <source>AI request failed</source>
         <translation>Ошибка AI-запроса</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1271"/>
+        <location filename="../src/MainWindow.cpp" line="1419"/>
         <source> [missing]</source>
         <translation> [нет файла]</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2260"/>
+        <location filename="../src/MainWindow.cpp" line="2446"/>
         <source>Entire file</source>
         <translation>Весь файл</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2289"/>
+        <location filename="../src/MainWindow.cpp" line="2487"/>
         <source>Include the styles modules of the project</source>
         <translation>Добавить модули стилей проекта</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2290"/>
+        <location filename="../src/MainWindow.cpp" line="2488"/>
         <source>Include the other open files</source>
         <translation>Добавить другие открытые файлы</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2302"/>
-        <source>The AI context of the project is included (AI → Edit AI context).</source>
-        <translation>Контекст AI проекта добавляется (AI → Редактировать контекст AI).</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="2457"/>
+        <location filename="../src/MainWindow.cpp" line="3075"/>
         <source>AI</source>
         <translation>AI</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2493"/>
+        <location filename="../src/MainWindow.cpp" line="3111"/>
         <source>Document &amp;parameters: %1 (%2 set)…</source>
         <translation>&amp;Параметры документа: %1 (задано %2)…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2494"/>
+        <location filename="../src/MainWindow.cpp" line="3112"/>
         <source>Document &amp;parameters: %1…</source>
         <translation>&amp;Параметры документа: %1…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2655"/>
+        <location filename="../src/MainWindow.cpp" line="3338"/>
         <source>Language changed</source>
         <translation>Язык изменён</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2655"/>
+        <location filename="../src/MainWindow.cpp" line="3338"/>
         <source>Restart Studio to apply the new interface language.</source>
         <translation>Перезапустите Studio, чтобы применить новый язык интерфейса.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1010"/>
+        <location filename="../src/MainWindow.cpp" line="1073"/>
         <source>No recent projects</source>
         <translation>Нет недавних проектов</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="231"/>
+        <location filename="../src/MainWindow.cpp" line="238"/>
         <source>Running primula parallel…</source>
         <translation>Выполняется primula parallel…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="366"/>
+        <location filename="../src/MainWindow.cpp" line="381"/>
         <source>Files changed outside Studio:</source>
         <translation>Файлы изменены вне Studio:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="371"/>
+        <location filename="../src/MainWindow.cpp" line="386"/>
         <source>Reload selected</source>
         <translation>Перечитать выбранный</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="372"/>
+        <location filename="../src/MainWindow.cpp" line="387"/>
         <source>Keep editor</source>
         <translation>Оставить текст</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="373"/>
+        <location filename="../src/MainWindow.cpp" line="388"/>
         <source>Keep the editor text; a later Save may overwrite the changed disk file.</source>
         <translation>Оставить текст редактора; последующее сохранение может перезаписать изменённый файл на диске.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="394"/>
+        <location filename="../src/MainWindow.cpp" line="409"/>
         <source>Structure</source>
         <translation>Структура</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="399"/>
+        <location filename="../src/MainWindow.cpp" line="414"/>
         <source>Styles</source>
         <translation>Стили</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="404"/>
+        <location filename="../src/MainWindow.cpp" line="419"/>
         <source>Palette</source>
         <translation>Палитра</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="449"/>
+        <location filename="../src/MainWindow.cpp" line="464"/>
         <source>Parallel tracks</source>
         <translation>Параллельные потоки</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="538"/>
+        <location filename="../src/MainWindow.cpp" line="556"/>
         <source>&amp;New</source>
         <translation>&amp;Создать</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="539"/>
+        <location filename="../src/MainWindow.cpp" line="557"/>
         <source>&amp;Document…</source>
         <translation>&amp;Документ…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="541"/>
+        <location filename="../src/MainWindow.cpp" line="559"/>
         <source>&amp;Fragment…</source>
         <translation>&amp;Фрагмент…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="542"/>
+        <location filename="../src/MainWindow.cpp" line="560"/>
         <source>&amp;Module of definitions…</source>
         <translation>&amp;Модуль определений…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="543"/>
+        <location filename="../src/MainWindow.cpp" line="561"/>
         <source>&amp;Styles module…</source>
         <translation>Модуль &amp;стилей…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="545"/>
+        <location filename="../src/MainWindow.cpp" line="563"/>
         <source>&amp;Project…</source>
         <translation>&amp;Проект…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="546"/>
+        <location filename="../src/MainWindow.cpp" line="564"/>
         <source>&amp;Order project…</source>
         <translation>Проект &amp;заказа…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="548"/>
+        <location filename="../src/MainWindow.cpp" line="566"/>
         <source>Open the folder of user templates</source>
         <translation>Открыть папку шаблонов пользователя</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="591"/>
+        <location filename="../src/MainWindow.cpp" line="621"/>
         <source>&amp;Insert</source>
         <translation>Вс&amp;тавка</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="597"/>
+        <location filename="../src/MainWindow.cpp" line="627"/>
         <source>F&amp;ormat</source>
         <translation>Ф&amp;ормат</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="598"/>
+        <location filename="../src/MainWindow.cpp" line="628"/>
         <source>&amp;Apply style…</source>
         <translation>&amp;Применить стиль…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="601"/>
+        <location filename="../src/MainWindow.cpp" line="631"/>
         <source>&amp;Remove style at the cursor</source>
         <translation>&amp;Снять стиль у курсора</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="609"/>
+        <location filename="../src/MainWindow.cpp" line="639"/>
         <source>&amp;Build document (ODT and PDF)</source>
         <translation>&amp;Собрать документ (ODT и PDF)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="611"/>
+        <location filename="../src/MainWindow.cpp" line="641"/>
         <source>Build all &amp;targets of the project</source>
         <translation>Собрать все &amp;цели проекта</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="613"/>
-        <location filename="../src/MainWindow.cpp" line="2492"/>
+        <location filename="../src/MainWindow.cpp" line="643"/>
+        <location filename="../src/MainWindow.cpp" line="3110"/>
         <source>Document &amp;parameters…</source>
         <translation>&amp;Параметры документа…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="616"/>
+        <location filename="../src/MainWindow.cpp" line="646"/>
         <source>Parallel &amp;tracks</source>
         <translation>Параллельные &amp;потоки</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="624"/>
+        <location filename="../src/MainWindow.cpp" line="660"/>
         <source>&amp;Strict: warnings are errors</source>
         <translation>&amp;Строго: предупреждения — ошибки</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="633"/>
+        <location filename="../src/MainWindow.cpp" line="669"/>
         <source>Show PDF after a successful build</source>
         <translation>Показывать PDF после успешной сборки</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="635"/>
+        <location filename="../src/MainWindow.cpp" line="671"/>
         <source>If the PDF was visible</source>
         <translation>Если PDF был виден</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="636"/>
+        <location filename="../src/MainWindow.cpp" line="672"/>
         <source>Always</source>
         <translation>Всегда</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="637"/>
+        <location filename="../src/MainWindow.cpp" line="673"/>
         <source>Never</source>
         <translation>Никогда</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="660"/>
+        <location filename="../src/MainWindow.cpp" line="696"/>
         <source>Switch source / PDF</source>
         <translation>Переключить исходник / PDF</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="662"/>
+        <location filename="../src/MainWindow.cpp" line="698"/>
         <source>Open files…</source>
         <translation>Открытые файлы…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="669"/>
+        <location filename="../src/MainWindow.cpp" line="705"/>
         <source>&amp;Console</source>
         <translation>&amp;Консоль</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="673"/>
+        <location filename="../src/MainWindow.cpp" line="709"/>
         <source>The evaluator console: a window of its own for trying code and functions</source>
         <translation>Консоль вычислителя: отдельное окно для проб кода и функций</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="687"/>
+        <location filename="../src/MainWindow.cpp" line="723"/>
         <source>Source and PDF side by side</source>
         <translation>Исходник и PDF рядом</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="690"/>
+        <location filename="../src/MainWindow.cpp" line="726"/>
         <source>PDF as a tab</source>
         <translation>PDF отдельной вкладкой</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="710"/>
+        <location filename="../src/MainWindow.cpp" line="746"/>
         <source>Edit AI context of the project</source>
         <translation>Редактировать контекст AI проекта</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="714"/>
+        <location filename="../src/MainWindow.cpp" line="750"/>
         <source>Help at the cursor</source>
         <translation>Справка по месту курсора</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="715"/>
+        <location filename="../src/MainWindow.cpp" line="751"/>
         <source>Language specification</source>
         <translation>Спецификация языка</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="716"/>
+        <location filename="../src/MainWindow.cpp" line="752"/>
         <source>Standard library</source>
         <translation>Стандартная библиотека</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="717"/>
+        <location filename="../src/MainWindow.cpp" line="753"/>
         <source>Command cheat sheet (PDF)</source>
         <translation>Шпаргалка команд (PDF)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="717"/>
+        <location filename="../src/MainWindow.cpp" line="754"/>
         <source>Author guide (PDF)</source>
         <translation>Руководство автора (PDF)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="717"/>
+        <location filename="../src/MainWindow.cpp" line="1124"/>
+        <source>A name in PATH or a path. The tool is run read-only: see its description in agents.json.</source>
+        <translation>Имя в PATH или путь. Инструмент запускается только для чтения: см. его описание в agents.json.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1134"/>
+        <source>found: %1</source>
+        <translation>найдено: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1141"/>
+        <source>%1:</source>
+        <translation>%1:</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2454"/>
+        <source>Local skill primula-docs (the agent loads it; to compare with the reference)</source>
+        <translation>Локальный skill primula-docs (агент загружает его сам; для сравнения со справочником)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2584"/>
+        <source>AI tools (programs: File → Settings):</source>
+        <translation>Инструменты AI (программы: Файл → Настройки):</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2586"/>
+        <source>AI receives the text in read-only mode; it cannot change project files.</source>
+        <translation>AI получает текст только для чтения; оно не может менять файлы проекта.</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/MainWindow.cpp" line="2601"/>
+        <source>The request, with the text of the document and the context of the project, will be sent to %n service(s): %1.
+
+Send it?</source>
+        <translation>
+            <numerusform>Запрос с текстом документа и контекстом проекта будет отправлен сервисам: %n (%1).
+
+Отправить?</numerusform>
+            <numerusform>Запрос с текстом документа и контекстом проекта будет отправлен сервисам: %n (%1).
+
+Отправить?</numerusform>
+            <numerusform>Запрос с текстом документа и контекстом проекта будет отправлен сервисам: %n (%1).
+
+Отправить?</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2682"/>
+        <source>Waiting for the answers of %1…</source>
+        <translation>Ожидание ответов: %1…</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2709"/>
+        <source>Received %1 of %2. Waiting for: %3…</source>
+        <translation>Получено %1 из %2. Ожидается: %3…</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2762"/>
+        <source>no answer</source>
+        <translation>ответа нет</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2776"/>
+        <source>Some tools gave no answer:
+
+%1</source>
+        <translation>Некоторые инструменты не дали ответа:
+
+%1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="3329"/>
         <source>Author guide</source>
         <translation>Руководство автора</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="717"/>
+        <location filename="../src/MainWindow.cpp" line="3330"/>
         <source>The PDF of the author guide is not found. It is part of the installation package (guide/&lt;language&gt;/) and of the source tree (docs/author/&lt;language&gt;/).
 
 Looked in:
@@ -1285,685 +1632,972 @@ Looked in:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="723"/>
+        <location filename="../src/MainWindow.cpp" line="760"/>
         <source>Translator: not found</source>
         <translation>Транслятор: не найден</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="752"/>
+        <location filename="../src/MainWindow.cpp" line="807"/>
         <source>Switch layout</source>
         <translation>Переключить раскладку</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="756"/>
+        <location filename="../src/MainWindow.cpp" line="811"/>
         <source>Switch between source and PDF side by side and PDF as a tab</source>
         <translation>Переключить: исходник и PDF рядом или PDF отдельной вкладкой</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="795"/>
+        <location filename="../src/MainWindow.cpp" line="855"/>
         <source>Cannot read the project of %1.</source>
         <translation>Не удаётся прочитать проект %1.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="827"/>
+        <location filename="../src/MainWindow.cpp" line="888"/>
         <source>Opened: %1</source>
         <translation>Открыто: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="888"/>
+        <location filename="../src/MainWindow.cpp" line="950"/>
         <source>Some files have unsaved changes.</source>
         <translation>В некоторых файлах есть несохранённые изменения.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="926"/>
+        <location filename="../src/MainWindow.cpp" line="988"/>
         <source>Cannot save the workspace: %1</source>
         <translation>Не удаётся сохранить рабочее место: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="978"/>
+        <location filename="../src/MainWindow.cpp" line="1040"/>
         <source>The file is unavailable: %1
 The saved path has been kept. Check the file or mount, then open it again.</source>
         <translation>Файл недоступен: %1
 Сохранённый путь оставлен. Проверьте файл или монтирование и откройте его снова.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1015"/>
+        <location filename="../src/MainWindow.cpp" line="1078"/>
         <source>Open project or document</source>
         <translation>Открыть проект или документ</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1017"/>
+        <location filename="../src/MainWindow.cpp" line="1080"/>
         <source>Primula projects and documents (*.prml);;All files (*)</source>
         <translation>Проекты и документы Primula (*.prml);;Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1024"/>
+        <location filename="../src/MainWindow.cpp" line="1087"/>
         <source>Open file</source>
         <translation>Открыть файл</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1026"/>
+        <location filename="../src/MainWindow.cpp" line="1089"/>
         <source>Text files (*.prml *.yaml *.yml *.csv *.json *.md *.txt);;PDF (*.pdf);;All files (*)</source>
         <translation>Текстовые файлы (*.prml *.yaml *.yml *.csv *.json *.md *.txt);;PDF (*.pdf);;Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1039"/>
+        <location filename="../src/MainWindow.cpp" line="1102"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1042"/>
+        <location filename="../src/MainWindow.cpp" line="1105"/>
+        <location filename="../src/MainWindow.cpp" line="1134"/>
         <source>not found</source>
         <translation>не найден</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1043"/>
+        <location filename="../src/MainWindow.cpp" line="1106"/>
         <source>Empty: &apos;primula&apos; from PATH, or the launcher of the source tree.</source>
         <translation>Пусто — &apos;primula&apos; из PATH или запускатель из дерева исходников.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1044"/>
+        <location filename="../src/MainWindow.cpp" line="1107"/>
         <source>Browse…</source>
         <translation>Обзор…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1052"/>
+        <location filename="../src/MainWindow.cpp" line="1115"/>
         <source>Primula translator:</source>
         <translation>Транслятор Primula:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1056"/>
-        <location filename="../src/MainWindow.cpp" line="2314"/>
-        <source>Codex CLI</source>
-        <translation>Codex CLI</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="1057"/>
-        <location filename="../src/MainWindow.cpp" line="2314"/>
-        <source>Claude CLI</source>
-        <translation>Claude CLI</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="1059"/>
-        <source>AI tool:</source>
-        <translation>Инструмент AI:</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="1061"/>
-        <source>Codex CLI for AI:</source>
-        <translation>Codex CLI для AI:</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="1063"/>
-        <source>Claude Code; it is run as &apos;claude -p&apos; with the read-only tools only.</source>
-        <translation>Claude Code; запускается как «claude -p» только с инструментами чтения.</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="1064"/>
-        <source>Claude CLI for AI:</source>
-        <translation>Claude CLI для AI:</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="1073"/>
-        <source>The program is not found.</source>
-        <translation>Программа не найдена.</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="1073"/>
-        <source>Found: %1</source>
-        <translation>Найдено: %1</translation>
-    </message>
-    <message>
-        <location filename="../src/MainWindow.cpp" line="1081"/>
+        <location filename="../src/MainWindow.cpp" line="1158"/>
         <source>Translator version:</source>
         <translation>Версия транслятора:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1105"/>
+        <location filename="../src/MainWindow.cpp" line="1184"/>
+        <location filename="../src/MainWindow.cpp" line="1224"/>
         <source>Cannot create the AI context</source>
         <translation>Не удаётся создать контекст AI</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1116"/>
+        <location filename="../src/MainWindow.cpp" line="1235"/>
         <source>The Primula translator is not found: Check and Build are unavailable. Install &apos;primula&apos; into PATH or set its path in File → Settings.</source>
         <translation>Транслятор Primula не найден: проверка и сборка недоступны. Установите &apos;primula&apos; в PATH или укажите путь в Файл → Настройки.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1178"/>
+        <location filename="../src/MainWindow.cpp" line="1315"/>
+        <location filename="../src/MainWindow.cpp" line="3609"/>
+        <location filename="../src/MainWindow.cpp" line="3614"/>
         <source>Cannot open file</source>
         <translation>Не удаётся открыть файл</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1214"/>
+        <location filename="../src/MainWindow.cpp" line="1351"/>
         <source>Save changes to %1?</source>
         <translation>Сохранить изменения в %1?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1242"/>
+        <location filename="../src/MainWindow.cpp" line="1383"/>
         <source>Cannot save file</source>
         <translation>Не удаётся сохранить файл</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1303"/>
+        <location filename="../src/MainWindow.cpp" line="1451"/>
         <source>PDF</source>
         <translation>PDF</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1423"/>
+        <location filename="../src/MainWindow.cpp" line="1571"/>
         <source>(do not change the status)</source>
         <translation>(не менять состояние)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1426"/>
+        <location filename="../src/MainWindow.cpp" line="1574"/>
         <source>Status to write (or type your own):</source>
         <translation>Состояние для записи (или введите своё):</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1427"/>
+        <location filename="../src/MainWindow.cpp" line="1575"/>
         <source>Expected status:</source>
         <translation>Ожидаемое состояние:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1440"/>
+        <location filename="../src/MainWindow.cpp" line="1588"/>
         <source>The document has no |parallel (or it is not inspected yet)</source>
         <translation>В документе нет |parallel (или он ещё не проверен)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1446"/>
+        <location filename="../src/MainWindow.cpp" line="1594"/>
         <source>Track:</source>
         <translation>Поток:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1452"/>
+        <location filename="../src/MainWindow.cpp" line="1600"/>
         <source>Confirm the translation of segment %1, track %2…</source>
         <translation>Подтвердить перевод сегмента %1, поток %2…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1453"/>
+        <location filename="../src/MainWindow.cpp" line="1601"/>
         <source>Confirm the translation of this segment (put the cursor into a block of a translation)</source>
         <translation>Подтвердить перевод этого сегмента (поставьте курсор в блок перевода)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1455"/>
+        <location filename="../src/MainWindow.cpp" line="1603"/>
         <source>Confirm the translation</source>
         <translation>Подтвердить перевод</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1463"/>
+        <location filename="../src/MainWindow.cpp" line="1611"/>
         <source>Confirm all blocks of a track…</source>
         <translation>Подтвердить все блоки потока…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1464"/>
+        <location filename="../src/MainWindow.cpp" line="1612"/>
         <source>Confirm all blocks of a track</source>
         <translation>Подтвердить все блоки потока</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1466"/>
+        <location filename="../src/MainWindow.cpp" line="1614"/>
         <source>Confirm all blocks of %1</source>
         <translation>Подтвердить все блоки %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1472"/>
+        <location filename="../src/MainWindow.cpp" line="1620"/>
         <source>Write blank blocks of a track…</source>
         <translation>Дописать заготовки блоков потока…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1473"/>
+        <location filename="../src/MainWindow.cpp" line="1621"/>
         <source>Write blank blocks</source>
         <translation>Дописать заготовки</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1477"/>
+        <location filename="../src/MainWindow.cpp" line="1625"/>
         <source>Check the status of the translations…</source>
         <translation>Проверить состояние переводов…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1478"/>
+        <location filename="../src/MainWindow.cpp" line="1626"/>
         <source>Check the status of the translations</source>
         <translation>Проверить состояние переводов</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1554"/>
+        <location filename="../src/MainWindow.cpp" line="1702"/>
         <source>The saved file is read; unsaved changes of the header are not taken into account.</source>
         <translation>Читается сохранённый файл; несохранённые изменения заголовка не учтены.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1558"/>
+        <location filename="../src/MainWindow.cpp" line="1706"/>
         <source>Document parameters</source>
         <translation>Параметры документа</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1559"/>
+        <location filename="../src/MainWindow.cpp" line="1707"/>
         <source>The translator did not report the parameters of the document.
 %1</source>
         <translation>Транслятор не сообщил параметры документа.
 %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1570"/>
+        <location filename="../src/MainWindow.cpp" line="1718"/>
         <source>Parameter</source>
         <translation>Параметр</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1570"/>
+        <location filename="../src/MainWindow.cpp" line="1718"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1594"/>
+        <location filename="../src/MainWindow.cpp" line="1742"/>
         <source>project</source>
         <translation>проект</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1594"/>
+        <location filename="../src/MainWindow.cpp" line="1742"/>
         <source>document</source>
         <translation>документ</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1669"/>
+        <location filename="../src/MainWindow.cpp" line="1817"/>
         <source>Console: the standard library</source>
         <translation>Консоль: стандартная библиотека</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1677"/>
+        <location filename="../src/MainWindow.cpp" line="1825"/>
         <source>Console: the project %1</source>
         <translation>Консоль: проект %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1684"/>
+        <location filename="../src/MainWindow.cpp" line="1832"/>
         <source>Console: %1 (%2)</source>
         <translation>Консоль: %1 (%2)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1721"/>
+        <location filename="../src/MainWindow.cpp" line="1869"/>
         <source>Author</source>
         <translation>Автор</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1722"/>
+        <location filename="../src/MainWindow.cpp" line="1870"/>
         <source>Organization</source>
         <translation>Организация</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1702"/>
-        <location filename="../src/MainWindow.cpp" line="1734"/>
-        <location filename="../src/MainWindow.cpp" line="1748"/>
+        <location filename="../src/MainWindow.cpp" line="1850"/>
+        <location filename="../src/MainWindow.cpp" line="1882"/>
+        <location filename="../src/MainWindow.cpp" line="1896"/>
         <source>Header fields</source>
         <translation>Поля заголовка</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1758"/>
+        <location filename="../src/MainWindow.cpp" line="580"/>
+        <source>&amp;Backups</source>
+        <translation>&amp;Резервные копии</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="581"/>
+        <source>Back up the project &amp;now</source>
+        <translation>Сделать копию проекта &amp;сейчас</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="583"/>
+        <source>&amp;Show backups…</source>
+        <translation>&amp;Показать копии…</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="585"/>
+        <source>Back up a file &amp;before saving it</source>
+        <translation>Копировать файл &amp;перед сохранением</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="588"/>
+        <source>The version on the disk is kept in .primula-studio/backups before a save replaces it.</source>
+        <translation>Версия на диске сохраняется в .primula-studio/backups, прежде чем сохранение её заменит.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1144"/>
+        <source>More tools: %1</source>
+        <translation>Другие инструменты: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1151"/>
+        <source>Skipped in agents.json:
+%1</source>
+        <translation>Пропущено в agents.json:
+%1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1190"/>
+        <location filename="../src/MainWindow.cpp" line="1216"/>
+        <source>AI context of the project</source>
+        <translation>Контекст AI проекта</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1198"/>
+        <source>What AI should know about the documents: purpose, parties, terms, style of language. The text is added to every request.</source>
+        <translation>Что AI должно знать о документах: назначение, стороны, термины, стиль языка. Текст добавляется к каждому запросу.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1216"/>
+        <source>The file could not be saved: %1</source>
+        <translation>Не удалось сохранить файл: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="1944"/>
         <source>primula parallel completed</source>
         <translation>primula parallel завершена</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1758"/>
+        <location filename="../src/MainWindow.cpp" line="1944"/>
         <source>primula parallel found problems</source>
         <translation>primula parallel нашла проблемы</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1773"/>
+        <location filename="../src/MainWindow.cpp" line="1959"/>
         <source>Check completed</source>
         <translation>Проверка завершена</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1774"/>
+        <location filename="../src/MainWindow.cpp" line="1960"/>
         <source>Check found errors</source>
         <translation>Проверка нашла ошибки</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1862"/>
+        <location filename="../src/MainWindow.cpp" line="2048"/>
         <source>Style %1 applied</source>
         <translation>Применён стиль %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1878"/>
+        <location filename="../src/MainWindow.cpp" line="2064"/>
         <source>Style removed</source>
         <translation>Стиль снят</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1878"/>
+        <location filename="../src/MainWindow.cpp" line="2064"/>
         <source>Style %1 removed</source>
         <translation>Стиль %1 снят</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1886"/>
+        <location filename="../src/MainWindow.cpp" line="2072"/>
         <source>No styles yet: the document has not been inspected.</source>
         <translation>Стилей пока нет: документ ещё не проверен.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1891"/>
+        <location filename="../src/MainWindow.cpp" line="2077"/>
         <source>Apply style</source>
         <translation>Применить стиль</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1893"/>
+        <location filename="../src/MainWindow.cpp" line="2079"/>
         <source>Style name</source>
         <translation>Имя стиля</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1897"/>
+        <location filename="../src/MainWindow.cpp" line="2083"/>
         <source>paragraph</source>
         <translation>абзацный</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1898"/>
+        <location filename="../src/MainWindow.cpp" line="2084"/>
         <source>character</source>
         <translation>символьный</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1899"/>
+        <location filename="../src/MainWindow.cpp" line="2085"/>
         <source>block</source>
         <translation>блочный</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1969"/>
+        <location filename="../src/MainWindow.cpp" line="2155"/>
         <source>&amp;Function</source>
         <translation>&amp;Функция</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1986"/>
+        <location filename="../src/MainWindow.cpp" line="2172"/>
         <source>The catalogue of constructs is not available</source>
         <translation>Справочник конструкций недоступен</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1989"/>
+        <location filename="../src/MainWindow.cpp" line="2175"/>
         <source>&amp;Header: add missing fields</source>
         <translation>&amp;Заголовок: добавить недостающие поля</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1991"/>
+        <location filename="../src/MainWindow.cpp" line="2177"/>
         <source>&amp;Image…</source>
         <translation>&amp;Изображение…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2032"/>
-        <location filename="../src/MainWindow.cpp" line="2037"/>
-        <location filename="../src/MainWindow.cpp" line="2048"/>
+        <location filename="../src/MainWindow.cpp" line="2218"/>
+        <location filename="../src/MainWindow.cpp" line="2223"/>
+        <location filename="../src/MainWindow.cpp" line="2234"/>
         <source>Insert image</source>
         <translation>Вставить изображение</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2033"/>
+        <location filename="../src/MainWindow.cpp" line="2219"/>
         <source>Images (*.png *.jpg *.jpeg *.svg *.gif *.bmp *.tif *.tiff);;All files (*)</source>
         <translation>Изображения (*.png *.jpg *.jpeg *.svg *.gif *.bmp *.tif *.tiff);;Все файлы (*)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2038"/>
+        <location filename="../src/MainWindow.cpp" line="2224"/>
         <source>The image is outside the project. Copy it into %1?</source>
         <translation>Изображение вне проекта. Скопировать его в %1?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2048"/>
+        <location filename="../src/MainWindow.cpp" line="2234"/>
         <source>Cannot copy the image to %1.</source>
         <translation>Не удалось скопировать изображение в %1.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2089"/>
+        <location filename="../src/MainWindow.cpp" line="2275"/>
         <source>%1 — no PDF yet (Build: F9)</source>
         <translation>%1 — PDF ещё нет (собрать: F9)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2225"/>
+        <location filename="../src/MainWindow.cpp" line="2411"/>
         <source>Reload changed file</source>
         <translation>Перечитать изменённый файл</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2226"/>
+        <location filename="../src/MainWindow.cpp" line="2412"/>
         <source>Reload %1 and discard its unsaved editor changes?</source>
         <translation>Перечитать %1, отбросив несохранённые изменения редактора?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2231"/>
+        <location filename="../src/MainWindow.cpp" line="2417"/>
         <source>Cannot reload file</source>
         <translation>Не удалось перечитать файл</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2265"/>
+        <location filename="../src/MainWindow.cpp" line="2451"/>
         <source>Reference: constructs and functions</source>
         <translation>Справочник: конструкции и функции</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2266"/>
+        <location filename="../src/MainWindow.cpp" line="2452"/>
         <source>Whole specification and library (about 100k tokens)</source>
         <translation>Вся спецификация и библиотека (около 100 тыс. токенов)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2267"/>
+        <location filename="../src/MainWindow.cpp" line="2453"/>
         <source>None</source>
         <translation>Ничего</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2268"/>
-        <source>What AI receives about the Primula language. The reference is the catalogue of the translator: every construct and function with its summary and section.</source>
-        <translation>Что AI получает о языке Primula. Справочник — это каталог транслятора: каждая конструкция и функция с описанием и разделом.</translation>
+        <location filename="../src/MainWindow.cpp" line="2455"/>
+        <source>What AI receives about the Primula language. The reference is the catalogue of the translator: every construct and function with its summary and section. With the skill the agent loads its own installed skill primula-docs (skills/README.md tells how to install it); it should write «Skill: loaded» on the first line, else the skill is not available to it.</source>
+        <translation>Что AI получает о языке Primula. Справочник — каталог транслятора: каждая конструкция и функция с кратким описанием и разделом. С skill агент загружает собственный установленный skill primula-docs (как его установить — в skills/README.md); в первой строке ответа он должен написать «Skill: loaded», иначе skill ему недоступен.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2273"/>
+        <location filename="../src/MainWindow.cpp" line="2462"/>
         <source>e.g. 6.8, 10.5, stdlib:3</source>
         <translation>напр. 6.8, 10.5, stdlib:3</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2274"/>
+        <location filename="../src/MainWindow.cpp" line="2463"/>
         <source>Sections of the specification (and of the standard library with &apos;stdlib:&apos;) sent in full; the section of the construct at the cursor is proposed.</source>
         <translation>Разделы спецификации (и стандартной библиотеки с «stdlib:»), отправляемые полностью; предлагается раздел конструкции под курсором.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2280"/>
+        <location filename="../src/MainWindow.cpp" line="2469"/>
         <source>Include the messages of the last check or build (%1)</source>
         <translation>Добавить сообщения последней проверки или сборки (%1)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2282"/>
+        <location filename="../src/MainWindow.cpp" line="2471"/>
         <source>Include the messages of the last check or build (none)</source>
         <translation>Добавить сообщения последней проверки или сборки (нет)</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2286"/>
+        <location filename="../src/MainWindow.cpp" line="2475"/>
         <source>Include the project file</source>
         <translation>Добавить файл проекта</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2305"/>
+        <location filename="../src/MainWindow.cpp" line="2478"/>
+        <source>Writing rules of Primula (from the skill: what not to change, frequent mistakes)</source>
+        <translation>Правила записи Primula (из skill: что нельзя менять, частые ошибки)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2480"/>
+        <source>About 6 thousand characters from the skill primula-docs built into Studio; not sent with the skill level.</source>
+        <translation>Около 6 тысяч знаков из skill primula-docs, встроенного в Studio; не отправляются с уровнем «skill».</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2482"/>
+        <source>Ask for edits that can be checked and applied (tab «Edits» of the answer)</source>
+        <translation>Просить правки, которые можно проверить и применить (вкладка «Правки» ответа)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2484"/>
+        <source>AI answers with blocks «was → now». Studio finds them in the document, checks the result with the translator and applies the chosen ones as one step of Undo.</source>
+        <translation>AI отвечает блоками «было → стало». Studio находит их в документе, проверяет результат транслятором и применяет отмеченные одним шагом Undo.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2501"/>
+        <source>%1 (not found)</source>
+        <translation>%1 (не найдено)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2506"/>
+        <source>The request goes to this tool. With several tools, every one answers in its own tab.</source>
+        <translation>Запрос идёт к этому инструменту. С несколькими инструментами каждый отвечает в своей вкладке.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2507"/>
+        <source>The program «%1» is not found: set it in File → Settings.</source>
+        <translation>Программа «%1» не найдена: укажите её в Файл → Настройки.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2522"/>
+        <location filename="../src/MainWindow.cpp" line="2600"/>
+        <source>Ask AI</source>
+        <translation>Запрос к AI</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2522"/>
+        <source>Choose at least one AI tool.</source>
+        <translation>Выберите хотя бы один инструмент AI.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2533"/>
+        <source>(own task)</source>
+        <translation>(своя задача)</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2535"/>
+        <source>A ready task; you can edit its text. More recipes: %1</source>
+        <translation>Готовая задача; её текст можно изменить. Другие рецепты: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2536"/>
+        <source>Skipped in ai-recipes.json:
+%1</source>
+        <translation>Пропущено в ai-recipes.json:
+%1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2547"/>
+        <source>Recipe:</source>
+        <translation>Рецепт:</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2555"/>
+        <source>Edit AI context…</source>
+        <translation>Редактировать контекст AI…</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2557"/>
+        <source>What AI should know about the documents of the project (purpose, parties, terms, style); it is added to every request. The same file as AI → Edit AI context of the project.</source>
+        <translation>Что AI должно знать о документах проекта (назначение, стороны, термины, стиль); добавляется к каждому запросу. Тот же файл, что и AI → Редактировать контекст AI проекта.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2562"/>
+        <source>The AI context of the project is empty: nothing about the project is sent.</source>
+        <translation>Контекст AI проекта пуст: ничего о проекте не отправляется.</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/MainWindow.cpp" line="2563"/>
+        <source>The AI context of the project is included (%n character(s)).</source>
+        <translation>
+            <numerusform>Контекст AI проекта добавляется (знаков: %n).</numerusform>
+            <numerusform>Контекст AI проекта добавляется (знаков: %n).</numerusform>
+            <numerusform>Контекст AI проекта добавляется (знаков: %n).</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2575"/>
         <source>Primula language:</source>
         <translation>Язык Primula:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2306"/>
+        <location filename="../src/MainWindow.cpp" line="2576"/>
         <source>Sections in full:</source>
         <translation>Разделы полностью:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2312"/>
-        <source>Tool: %1 (File → Settings). AI receives the text in read-only mode; it cannot change project files.</source>
-        <translation>Инструмент: %1 (Файл → Настройки). AI получает текст только для чтения и не может изменять файлы проекта.</translation>
+        <location filename="../src/MainWindow.cpp" line="2788"/>
+        <location filename="../src/MainWindow.cpp" line="2976"/>
+        <source>No project is open.</source>
+        <translation>Проект не открыт.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2561"/>
+        <location filename="../src/MainWindow.cpp" line="2824"/>
+        <location filename="../src/MainWindow.cpp" line="2828"/>
+        <source>Backups</source>
+        <translation>Резервные копии</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2824"/>
+        <source>The project has no source files to back up.</source>
+        <translation>В проекте нет исходных файлов для копирования.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2828"/>
+        <source>The backup could not be made:
+%1</source>
+        <translation>Не удалось создать копию:
+%1</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/MainWindow.cpp" line="2831"/>
+        <source>Backed up %n file(s) of the project.</source>
+        <translation>
+            <numerusform>Скопировано файлов проекта: %n.</numerusform>
+            <numerusform>Скопировано файлов проекта: %n.</numerusform>
+            <numerusform>Скопировано файлов проекта: %n.</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2858"/>
+        <location filename="../src/MainWindow.cpp" line="2868"/>
+        <location filename="../src/MainWindow.cpp" line="2872"/>
+        <source>Compare with the backup</source>
+        <translation>Сравнение с копией</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2858"/>
+        <source>The file does not exist now: %1</source>
+        <translation>Файла сейчас нет: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2865"/>
+        <source>backup %1: %2</source>
+        <translation>копия %1: %2</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2866"/>
+        <source>current: %1</source>
+        <translation>текущий: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2868"/>
+        <source>The comparison could not be made: %1</source>
+        <translation>Не удалось сравнить: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2872"/>
+        <source>The file is the same as in the backup.</source>
+        <translation>Файл такой же, как в копии.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2876"/>
+        <source>Backup and the current file</source>
+        <translation>Копия и текущий файл</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2887"/>
+        <source>«-» is the backup, «+» is the current file.</source>
+        <translation>«-» — копия, «+» — текущий файл.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2897"/>
+        <location filename="../src/MainWindow.cpp" line="2901"/>
+        <location filename="../src/MainWindow.cpp" line="2907"/>
+        <location filename="../src/MainWindow.cpp" line="2923"/>
+        <source>Restore</source>
+        <translation>Восстановление</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2897"/>
+        <source>The copy is missing or unreadable: %1</source>
+        <translation>Копии нет или её нельзя прочитать: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2902"/>
+        <source>Restore %1 as it was at %2?
+
+The current state is backed up first.</source>
+        <translation>Восстановить %1 в виде на %2?
+
+Текущее состояние сначала будет сохранено в копии.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2907"/>
+        <source>A backup of the current file could not be made:
+%1
+
+Restore anyway?</source>
+        <translation>Не удалось сделать копию текущего файла:
+%1
+
+Всё равно восстановить?</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2917"/>
+        <source>Restored in the editor: %1 (not saved; Undo takes it back).</source>
+        <translation>Восстановлено в редакторе: %1 (не сохранено; Undo вернёт).</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2923"/>
+        <source>The file could not be written: %1</source>
+        <translation>Не удалось записать файл: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2926"/>
+        <source>Restored: %1</source>
+        <translation>Восстановлено: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2982"/>
+        <source>There is no document to check this file in.</source>
+        <translation>Нет документа, в котором можно проверить этот файл.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="2998"/>
+        <source>Cannot write a temporary file.</source>
+        <translation>Не удаётся записать временный файл.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="3008"/>
+        <source>The translator gave no result (exit code %1).</source>
+        <translation>Транслятор не дал результата (код выхода %1).</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="3024"/>
+        <location filename="../src/MainWindow.cpp" line="3036"/>
+        <location filename="../src/MainWindow.cpp" line="3045"/>
+        <source>Apply edits</source>
+        <translation>Применение правок</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="3024"/>
+        <source>The file cannot be edited: %1</source>
+        <translation>Файл нельзя редактировать: %1</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="3037"/>
+        <source>None of the chosen edits can be applied now: the text of the document has changed.</source>
+        <translation>Ни одну из отмеченных правок сейчас нельзя применить: текст документа изменился.</translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="3046"/>
+        <source>A backup of the file could not be made:
+%1
+
+Apply the edits anyway?</source>
+        <translation>Не удалось сделать копию файла:
+%1
+
+Всё равно применить правки?</translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/MainWindow.cpp" line="3065"/>
+        <source>Applied %n edit(s), %1 skipped; the file is not saved (Undo takes the edits back).</source>
+        <translation>
+            <numerusform>Применено правок: %n, пропущено: %1; файл не сохранён (Undo вернёт правки).</numerusform>
+            <numerusform>Применено правок: %n, пропущено: %1; файл не сохранён (Undo вернёт правки).</numerusform>
+            <numerusform>Применено правок: %n, пропущено: %1; файл не сохранён (Undo вернёт правки).</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../src/MainWindow.cpp" line="3066"/>
+        <source>Applied %n edit(s); the file is not saved (Undo takes the edits back).</source>
+        <translation>
+            <numerusform>Применено правок: %n; файл не сохранён (Undo вернёт правки).</numerusform>
+            <numerusform>Применено правок: %n; файл не сохранён (Undo вернёт правки).</numerusform>
+            <numerusform>Применено правок: %n; файл не сохранён (Undo вернёт правки).</numerusform>
+        </translation>
+    </message>
+    <message>
+        <location filename="../src/MainWindow.cpp" line="3182"/>
         <source>No construct at the cursor: the quick help is open.</source>
         <translation>Под курсором нет конструкции: открыта краткая справка.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2570"/>
+        <location filename="../src/MainWindow.cpp" line="3191"/>
         <source>No construct here: there is no section to show.</source>
         <translation>Здесь нет конструкции: показывать нечего.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2585"/>
+        <location filename="../src/MainWindow.cpp" line="3206"/>
         <source>library section %1</source>
         <translation>раздел библиотеки %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2585"/>
+        <location filename="../src/MainWindow.cpp" line="3206"/>
         <source>section %1</source>
         <translation>раздел %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2587"/>
+        <location filename="../src/MainWindow.cpp" line="3208"/>
         <source>Shown: %1 for “%2” (line %3, marked in the editor). The quick help is Help → Quick help.</source>
         <translation>Показан: %1 для «%2» (строка %3, отмечено в редакторе). Краткая справка — Справка → Краткая справка.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2609"/>
+        <location filename="../src/MainWindow.cpp" line="3241"/>
         <source>Primula language specification</source>
         <translation>Спецификация языка Primula</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2624"/>
+        <location filename="../src/MainWindow.cpp" line="3258"/>
         <source>Primula standard library</source>
         <translation>Стандартная библиотека Primula</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2644"/>
+        <location filename="../src/MainWindow.cpp" line="3281"/>
         <source>Command cheat sheet</source>
         <translation>Шпаргалка команд</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2644"/>
+        <location filename="../src/MainWindow.cpp" line="3281"/>
         <source>Cannot write %1.</source>
         <translation>Не удалось записать %1.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2717"/>
+        <location filename="../src/MainWindow.cpp" line="3400"/>
         <source>Cannot create files</source>
         <translation>Не удаётся создать файлы</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2727"/>
+        <location filename="../src/MainWindow.cpp" line="3410"/>
         <source>Created: %1</source>
         <translation>Создано: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2734"/>
+        <location filename="../src/MainWindow.cpp" line="3417"/>
         <source>Order project created</source>
         <translation>Проект заказа создан</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2735"/>
+        <location filename="../src/MainWindow.cpp" line="3418"/>
         <source>Open the order project %1 now? Its targets are built with Shift+F9.</source>
         <translation>Открыть проект заказа %1 сейчас? Его цели собираются через Shift+F9.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2752"/>
+        <location filename="../src/MainWindow.cpp" line="3435"/>
         <source>New in this folder</source>
         <translation>Создать в этой папке</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2753"/>
+        <location filename="../src/MainWindow.cpp" line="3436"/>
         <source>Document…</source>
         <translation>Документ…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2754"/>
+        <location filename="../src/MainWindow.cpp" line="3437"/>
         <source>Fragment…</source>
         <translation>Фрагмент…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2755"/>
+        <location filename="../src/MainWindow.cpp" line="3438"/>
         <source>Module of definitions…</source>
         <translation>Модуль определений…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2756"/>
+        <location filename="../src/MainWindow.cpp" line="3439"/>
         <source>Styles module…</source>
         <translation>Модуль стилей…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2758"/>
+        <location filename="../src/MainWindow.cpp" line="3441"/>
         <source>Folder…</source>
         <translation>Папку…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2762"/>
+        <location filename="../src/MainWindow.cpp" line="3445"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2763"/>
+        <location filename="../src/MainWindow.cpp" line="3458"/>
         <source>Open in an external application</source>
         <translation>Открыть во внешней программе</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2767"/>
+        <location filename="../src/MainWindow.cpp" line="3462"/>
         <source>Copy under a new name…</source>
         <translation>Копировать под новым именем…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2768"/>
+        <location filename="../src/MainWindow.cpp" line="3463"/>
         <source>Rename…</source>
         <translation>Переименовать…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2769"/>
-        <location filename="../src/MainWindow.cpp" line="3001"/>
+        <location filename="../src/MainWindow.cpp" line="3464"/>
+        <location filename="../src/MainWindow.cpp" line="3846"/>
         <source>Move to trash</source>
         <translation>Переместить в корзину</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2772"/>
+        <location filename="../src/MainWindow.cpp" line="3467"/>
         <source>Open the folder in the file manager</source>
         <translation>Открыть папку в файловом менеджере</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2781"/>
+        <location filename="../src/MainWindow.cpp" line="3626"/>
         <source>New folder</source>
         <translation>Новая папка</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2781"/>
+        <location filename="../src/MainWindow.cpp" line="3626"/>
         <source>Name of the folder:</source>
         <translation>Имя папки:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2786"/>
+        <location filename="../src/MainWindow.cpp" line="3631"/>
         <source>Cannot create the folder</source>
         <translation>Не удаётся создать папку</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2806"/>
-        <location filename="../src/MainWindow.cpp" line="2928"/>
+        <location filename="../src/MainWindow.cpp" line="3651"/>
+        <location filename="../src/MainWindow.cpp" line="3773"/>
         <source>The name is empty, contains / or is taken: %1</source>
         <translation>Имя пустое, содержит / или уже занято: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2811"/>
-        <location filename="../src/MainWindow.cpp" line="2828"/>
+        <location filename="../src/MainWindow.cpp" line="3656"/>
+        <location filename="../src/MainWindow.cpp" line="3673"/>
         <source>Cannot copy %1 to %2</source>
         <translation>Не удаётся скопировать %1 в %2</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2819"/>
+        <location filename="../src/MainWindow.cpp" line="3595"/>
+        <location filename="../src/MainWindow.cpp" line="3664"/>
         <source>Cannot create %1</source>
         <translation>Не удаётся создать %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2882"/>
+        <location filename="../src/MainWindow.cpp" line="3727"/>
         <source>Copy under a new name</source>
         <translation>Копировать под новым именем</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2883"/>
+        <location filename="../src/MainWindow.cpp" line="3728"/>
         <source>New name of the copy of %1:</source>
         <translation>Новое имя копии %1:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2889"/>
+        <location filename="../src/MainWindow.cpp" line="3734"/>
         <source>Cannot copy</source>
         <translation>Не удаётся скопировать</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2902"/>
+        <location filename="../src/MainWindow.cpp" line="3747"/>
         <source>Replace the old name</source>
         <translation>Заменить старое имя</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2903"/>
+        <location filename="../src/MainWindow.cpp" line="3748"/>
         <source>Replace «%1» with «%2» in the files of the copy?</source>
         <translation>Заменить «%1» на «%2» в файлах копии?</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/MainWindow.cpp" line="2906"/>
+        <location filename="../src/MainWindow.cpp" line="3751"/>
         <source>%n file(s) contain the old name; see the details.</source>
         <translation>
             <numerusform>%n файл содержит старое имя; см. подробности.</numerusform>
@@ -1972,213 +2606,223 @@ The saved path has been kept. Check the file or mount, then open it again.</sour
         </translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2908"/>
+        <location filename="../src/MainWindow.cpp" line="3753"/>
         <source>Cannot replace</source>
         <translation>Не удаётся заменить</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2913"/>
+        <location filename="../src/MainWindow.cpp" line="3758"/>
         <source>Copied: %1</source>
         <translation>Скопировано: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2923"/>
-        <location filename="../src/MainWindow.cpp" line="2971"/>
+        <location filename="../src/MainWindow.cpp" line="3768"/>
+        <location filename="../src/MainWindow.cpp" line="3816"/>
         <source>Save or close %1 first.</source>
         <translation>Сначала сохраните или закройте %1.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2948"/>
+        <location filename="../src/MainWindow.cpp" line="3793"/>
         <source>Cannot rename %1 to %2</source>
         <translation>Не удаётся переименовать %1 в %2</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2957"/>
+        <location filename="../src/MainWindow.cpp" line="3802"/>
         <source>Rename</source>
         <translation>Переименовать</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2957"/>
+        <location filename="../src/MainWindow.cpp" line="3802"/>
         <source>New name of %1:</source>
         <translation>Новое имя %1:</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2963"/>
+        <location filename="../src/MainWindow.cpp" line="3808"/>
         <source>Cannot rename</source>
         <translation>Не удаётся переименовать</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2983"/>
+        <location filename="../src/MainWindow.cpp" line="3828"/>
         <source>Cannot move %1 to the trash.</source>
         <translation>Не удаётся переместить %1 в корзину.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="2983"/>
+        <location filename="../src/MainWindow.cpp" line="3828"/>
         <source>Cannot delete %1.</source>
         <translation>Не удаётся удалить %1.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3001"/>
+        <location filename="../src/MainWindow.cpp" line="3846"/>
         <source>Move %1 to the trash?</source>
         <translation>Переместить %1 в корзину?</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3009"/>
-        <location filename="../src/MainWindow.cpp" line="3013"/>
+        <location filename="../src/MainWindow.cpp" line="3854"/>
+        <location filename="../src/MainWindow.cpp" line="3858"/>
         <source>Cannot move to trash</source>
         <translation>Не удаётся переместить в корзину</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3014"/>
+        <location filename="../src/MainWindow.cpp" line="3859"/>
         <source>%1
 Delete %2 permanently? This cannot be undone.</source>
         <translation>%1
 Удалить %2 окончательно? Это нельзя отменить.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="3017"/>
+        <location filename="../src/MainWindow.cpp" line="3862"/>
         <source>Cannot delete</source>
         <translation>Не удаётся удалить</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="721"/>
+        <location filename="../src/MainWindow.cpp" line="758"/>
         <source>Primula Studio %1
 An editor and build interface for Primula documents.</source>
         <translation>Primula Studio %1
 Редактор и интерфейс сборки документов Primula.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="573"/>
+        <location filename="../src/MainWindow.cpp" line="603"/>
         <source>&amp;Edit</source>
         <translation>Пр&amp;авка</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="232"/>
+        <location filename="../src/MainWindow.cpp" line="240"/>
         <source>Checking…</source>
         <translation>Проверка…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="310"/>
+        <location filename="../src/MainWindow.cpp" line="319"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="311"/>
+        <location filename="../src/MainWindow.cpp" line="320"/>
         <source>Close other tabs</source>
         <translation>Закрыть другие вкладки</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="312"/>
+        <location filename="../src/MainWindow.cpp" line="321"/>
         <source>Copy path</source>
         <translation>Копировать путь</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="385"/>
+        <location filename="../src/MainWindow.cpp" line="400"/>
         <source>Files</source>
         <translation>Файлы</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="496"/>
+        <location filename="../src/MainWindow.cpp" line="514"/>
         <source>Double-click a message to open its source location.</source>
         <translation>Двойной щелчок по сообщению открывает место в исходнике.</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="552"/>
+        <location filename="../src/MainWindow.cpp" line="570"/>
         <source>&amp;Open project or document…</source>
         <translation>&amp;Открыть проект или документ…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="554"/>
+        <location filename="../src/MainWindow.cpp" line="572"/>
         <source>Open &amp;file…</source>
         <translation>Открыть &amp;файл…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="558"/>
+        <location filename="../src/MainWindow.cpp" line="576"/>
         <source>&amp;Save</source>
         <translation>&amp;Сохранить</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="560"/>
+        <location filename="../src/MainWindow.cpp" line="578"/>
         <source>Save a&amp;ll</source>
         <translation>Сохранить &amp;все</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="563"/>
+        <location filename="../src/MainWindow.cpp" line="592"/>
         <source>&amp;Close tab</source>
         <translation>&amp;Закрыть вкладку</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="565"/>
+        <location filename="../src/MainWindow.cpp" line="594"/>
         <source>Close &amp;other tabs</source>
         <translation>Закрыть &amp;другие вкладки</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="567"/>
+        <location filename="../src/MainWindow.cpp" line="596"/>
         <source>Close &amp;project</source>
         <translation>Закрыть &amp;проект</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="569"/>
+        <location filename="../src/MainWindow.cpp" line="598"/>
         <source>Se&amp;ttings…</source>
         <translation>&amp;Настройки…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="581"/>
+        <location filename="../src/MainWindow.cpp" line="611"/>
         <source>&amp;Find…</source>
         <translation>&amp;Найти…</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="583"/>
+        <location filename="../src/MainWindow.cpp" line="613"/>
         <source>Find &amp;next</source>
         <translation>Найти &amp;далее</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="585"/>
+        <location filename="../src/MainWindow.cpp" line="615"/>
         <source>Find &amp;previous</source>
         <translation>Найти &amp;предыдущее</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="587"/>
+        <location filename="../src/MainWindow.cpp" line="617"/>
         <source>&amp;Replace…</source>
         <translation>&amp;Заменить…</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3600"/>
         <source>Created %1 from the template: edit it and save</source>
         <translation>Создан %1 из шаблона: измените и сохраните</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="599"/>
         <source>File &amp;types…</source>
         <translation>&amp;Типы файлов…</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3595"/>
         <source>File types</source>
         <translation>Типы файлов</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="1393"/>
         <source>File types applied</source>
         <translation>Типы файлов применены</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="1394"/>
         <source>File types applied with problems (see the Log)</source>
         <translation>Типы файлов применены с проблемами (см. «Журнал»)</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3584"/>
         <source>File types: %1</source>
         <translation>Типы файлов: %1</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3453"/>
         <source>Open as text in the editor</source>
         <translation>Открыть как текст в редакторе</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3449"/>
         <source>Open with %1</source>
         <translation>Открыть с помощью %1</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3619"/>
         <source>Opened with %1: %2</source>
         <translation>Открыто с помощью %1: %2</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3615"/>
         <source>The command of the file type %1 did not start:
 %2
 
@@ -2189,50 +2833,68 @@ Check it in %3 (File → File types…).</source>
 Проверьте её в %3 (Файл → Типы файлов…).</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3609"/>
         <source>The file type %1 has no command.</source>
         <translation>У типа файлов %1 нет команды.</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3527"/>
         <source>&amp;DOCX (Word)</source>
         <translation>&amp;DOCX (Word)</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3526"/>
         <source>&amp;HTML (one file)</source>
         <translation>&amp;HTML (один файл)</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3525"/>
         <source>&amp;Markdown</source>
         <translation>&amp;Markdown</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3532"/>
         <source>Another &amp;format…</source>
         <translation>Другой &amp;формат…</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="654"/>
         <source>E&amp;xport</source>
         <translation>Э&amp;кспорт</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="324"/>
+        <location filename="../src/MainWindow.cpp" line="1914"/>
+        <location filename="../src/MainWindow.cpp" line="1926"/>
+        <location filename="../src/MainWindow.cpp" line="3455"/>
+        <location filename="../src/MainWindow.cpp" line="3537"/>
+        <location filename="../src/MainWindow.cpp" line="3551"/>
         <source>Export</source>
         <translation>Экспорт</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3542"/>
         <source>Export &amp;as…</source>
         <translation>Экспортировать &amp;как…</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3544"/>
+        <location filename="../src/MainWindow.cpp" line="3565"/>
         <source>Export as</source>
         <translation>Экспортировать как</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="1934"/>
         <source>Export failed</source>
         <translation>Экспорт не удался</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="1925"/>
         <source>Export needs pandoc</source>
         <translation>Для экспорта нужен pandoc</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="1927"/>
         <source>Export to this format needs pandoc, and it is not found.
 
 Install pandoc (https://pandoc.org; openSUSE: zypper install pandoc; Debian: apt install pandoc) and export again. The format JSON (the pandoc AST) needs no pandoc.</source>
@@ -2241,60 +2903,75 @@ Install pandoc (https://pandoc.org; openSUSE: zypper install pandoc; Debian: apt
 Установите pandoc (https://pandoc.org; openSUSE: zypper install pandoc; Debian: apt install pandoc) и повторите экспорт. Для формата JSON (AST pandoc) pandoc не нужен.</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3552"/>
         <source>Export writes the evaluated document through pandoc: numbers of clauses, references, footnotes, tables and captions are kept; page layout (headers, footers, columns, page numbers) is not. Paragraph and character styles go to DOCX by name. Markdown, HTML, DOCX and other formats need pandoc (https://pandoc.org); JSON is the pandoc AST itself.</source>
         <translation>Экспорт записывает вычисленный документ через pandoc: номера пунктов, ссылки, сноски, таблицы и подписи сохраняются, разметка страниц (колонтитулы, колонки, номера страниц) — нет. Стили абзацев и символов переходят в DOCX по именам. Для Markdown, HTML, DOCX и других форматов нужен pandoc (https://pandoc.org); JSON — это сам AST pandoc.</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="1913"/>
         <source>Exported: %1</source>
         <translation>Экспортировано: %1</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="239"/>
         <source>Exporting…</source>
         <translation>Экспорт…</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3538"/>
         <source>Format (a writer of pandoc; json — the pandoc AST, no pandoc needed):</source>
         <translation>Формат (writer pandoc; json — AST pandoc, pandoc не нужен):</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3544"/>
         <source>Format:</source>
         <translation>Формат:</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3521"/>
         <source>Open a document of the project to export it</source>
         <translation>Откройте документ проекта, чтобы его экспортировать</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="1917"/>
         <source>Open the file</source>
         <translation>Открыть файл</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="1918"/>
         <source>Open the folder</source>
         <translation>Открыть каталог</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="1914"/>
         <source>The document is exported to
 %1</source>
         <translation>Документ экспортирован в
 %1</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3550"/>
         <source>What is exported…</source>
         <translation>Что экспортируется…</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="327"/>
+        <location filename="../src/MainWindow.cpp" line="3457"/>
         <source>File summary…</source>
         <translation>Сводка о файле…</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3478"/>
         <source>File summary</source>
         <translation>Сводка о файле</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3483"/>
         <source>File summary — %1</source>
         <translation>Сводка о файле — %1</translation>
     </message>
     <message>
+        <location filename="../src/MainWindow.cpp" line="3479"/>
         <source>The translator could not describe %1:
 %2</source>
         <translation>Транслятор не смог описать %1:
@@ -2522,9 +3199,24 @@ Install pandoc (https://pandoc.org; openSUSE: zypper install pandoc; Debian: apt
         <translation>Некорректные метаданные истории AI: %1</translation>
     </message>
     <message>
-        <location filename="../src/MainWindow.cpp" line="1046"/>
+        <location filename="../src/MainWindow.cpp" line="1109"/>
         <source>Primula translator</source>
         <translation>Транслятор Primula</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEdits.cpp" line="170"/>
+        <source>Edit</source>
+        <translation>Правка</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEdits.cpp" line="171"/>
+        <source>Was:</source>
+        <translation>Было:</translation>
+    </message>
+    <message>
+        <location filename="../src/AiEdits.cpp" line="172"/>
+        <source>Now:</source>
+        <translation>Стало:</translation>
     </message>
 </context>
 <context>
@@ -2933,6 +3625,7 @@ What the AI should know about these documents: purpose, parties, terms, style of
         <translation>Транслятор не выдал описания проекта.</translation>
     </message>
     <message>
+        <location filename="../src/Translator.cpp" line="104"/>
         <source>The translator gave no summary of the file.</source>
         <translation>Транслятор не выдал сводку о файле.</translation>
     </message>

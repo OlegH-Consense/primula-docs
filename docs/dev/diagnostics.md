@@ -118,6 +118,7 @@
 | P1242 | error | 13.1 | `expected {expected} after '{after}'` | A |
 | P1243 | error | 13.1 | `a table row '\|:' is allowed only inside '\|table'` | 6.4, A 3.5 |
 | P1244 | error | 13.8a | `'level=' cannot be combined with {count} '<': give the level either by the number of '<' or by level= with a single '<'` | 3.3, 5.2, решения 105, 114 |
+| P1245 | warning | 2.1 | `'\|@(…)' has no body: the text in braces after it is printed as it is` | 5.7, решение 141 |
 | P2101 | error | 13.2 | `'{construct}' is not allowed in Primula code` | 12.2 |
 | P2102 | error | 13.2 | `the name '{name}' is not allowed: names with leading underscores reach Python internals` | 12.2, 12.7 |
 | P2103 | error | 13.2 | `'is' and 'is not' are allowed only with None` | 12.2 |
