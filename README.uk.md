@@ -1,6 +1,10 @@
-# Primula Documenting System
+<p align="center">
+  <img src="studio/resources/primula-studio.svg" width="96" alt="Primula">
+</p>
 
-[English](README.md)
+<h1 align="center">Primula Documenting System</h1>
+
+<p align="center"><a href="README.md">English</a></p>
 
 Primula — мова текстової розмітки для ділових і технічних документів (договорів, актів, рахунків, листів, настанов) і транслятор, який будує з неї редагований **ODT** для LibreOffice Writer, а через LibreOffice — **PDF**. **Primula Studio** — настільне робоче місце для написання, перевірки й збирання документів Primula.
 

@@ -1,6 +1,10 @@
-# Primula Documenting System
+<p align="center">
+  <img src="studio/resources/primula-studio.svg" width="96" alt="Primula">
+</p>
 
-[Українською](README.uk.md)
+<h1 align="center">Primula Documenting System</h1>
+
+<p align="center"><a href="README.uk.md">Українською</a></p>
 
 Primula is a plain-text markup language for business and technical documents — contracts, acts, invoices, letters, manuals — and a translator that builds an editable **ODT** for LibreOffice Writer from it, and a **PDF** through LibreOffice. **Primula Studio** is a desktop workplace for writing, checking and building Primula documents.
 
