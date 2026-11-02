@@ -21,6 +21,7 @@ system Qt 6 libraries. No compiler or development packages are needed.
 | [primula-spec-v1.1-draft.en.md](primula-spec-v1.1-draft.en.md) | the language specification (draft 1.1; a translation, the original is [ru](primula-spec-v1.1-draft.ru.md); also [uk](primula-spec-v1.1-draft.uk.md)) |
 | [primula-stdlib-v1.1-draft.en.md](primula-stdlib-v1.1-draft.en.md) | the standard library: styles, modules ([uk](primula-stdlib-v1.1-draft.uk.md), [ru](primula-stdlib-v1.1-draft.ru.md)) |
 | [examples/README.md](examples/README.md) | examples: from a simple document to a project with a contract and orders |
+| [editors/README.md](editors/README.md) | highlighting of `.prml` for Kate, mcedit, Geany and VS Code (`editors/install.sh`) |
 
 ## Requirements
 
@@ -75,7 +76,7 @@ Default locations (`--prefix`, `--examples-dir` and the `XDG_*_HOME` variables c
 | --- | --- | --- |
 | `~/.local/share/primula-docs/` | the installed package: translator, Studio, guides, specification, original examples and libraries, `uninstall.sh` | removes |
 | `~/.local/share/primula-python/` | Python environment of the translator (PyYAML) | removes (unless `--keep-python`) |
-| `~/.local/bin/primula`, `~/.local/bin/primula-studio` | commands | removes |
+| `~/.local/bin/primula`, `~/.local/bin/primula-view`, `~/.local/bin/primula-studio` | commands | removes |
 | `~/.local/libexec/primula-studio` | link to the Studio program in the package | removes |
 | `~/.local/share/applications/org.primula_docs.Studio.desktop`, `~/.local/share/icons/hicolor/scalable/apps/primula-studio.svg` | menu entry and icon | removes |
 | `~/Primula/examples/`, `~/Primula/examples.old-<time>/` | working copy of the examples and previous copies | `--purge` |

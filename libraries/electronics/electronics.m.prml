@@ -1,0 +1,411 @@
+---
+kind: module
+---
+|% electronics — E-series mantissas, a nearest nominal, and a few
+|% textbook calculations (divider, parallel, series, power, tolerance).
+|% Mantissas are data/series.yaml, copied from the Wikipedia page
+|% "E series of preferred numbers" on 2026-10-31. IEC 60063 was not
+|% opened. E192 is absent: that list was cut off in the fetch.
+|% There is no colour code: IEC 60062 was not opened.
+|code:
+VERSION = "0.1.0"
+
+# Quoted strings, so a YAML number cannot arrive as a float.
+_RAW = load_yaml("data/series.yaml")
+
+
+def _fail(reason):
+    """Stop with an electronics: message."""
+    fail(f"electronics: {reason}")
+
+
+def _dec(value):
+    """Decimal from a YAML string or an already decimal value."""
+    if type(value) == "str":
+        return dec(value)
+    return value
+
+
+def _e24():
+    """Official E24 mantissas in [1, 10)."""
+    return [_dec(item) for item in _RAW["e24"]]
+
+
+def _e96():
+    """Official E96 mantissas in [1, 10)."""
+    return [_dec(item) for item in _RAW["e96"]]
+
+
+def _stride(values, step):
+    """Every step-th value, starting at the first.
+
+    E12/E6/E3 are this stride of E24 (2, 4, 8). E48 is stride 2 of E96.
+    The page states those subset relations; the stride was checked against
+    the two lists before they were stored.
+    """
+    out = []
+    i = 0
+    count = len(values)
+    while i < count:
+        out.append(values[i])
+        i = i + step
+    return out
+
+
+def series_problem(name):
+    """Why name is not a series this version can return, or ""."""
+    if name == "E3" or name == "E6" or name == "E12" or name == "E24" or name == "E48" or name == "E96":
+        return ""
+    if name == "E192":
+        return "ряд E192 у 0.1.0 немає"
+    return "невідомий ряд"
+
+
+def series(name):
+    """Mantissas in [1, 10) for E3, E6, E12, E24, E48 or E96."""
+    reason = series_problem(name)
+    if reason != "":
+        _fail(reason)
+    if name == "E96":
+        return _e96()
+    if name == "E48":
+        return _stride(_e96(), 2)
+    row = _e24()
+    if name == "E24":
+        return row
+    if name == "E12":
+        return _stride(row, 2)
+    if name == "E6":
+        return _stride(row, 4)
+    return _stride(row, 8)
+
+
+def _scale(value):
+    """Mantissa in [1, 10) and the power of ten that restores value.
+
+    Dividing and multiplying by ten is exact for these decimals. value
+    is positive; the caller rejects zero and negatives.
+    """
+    v = value
+    exp = 0
+    while v >= 10:
+        v = v / 10
+        exp = exp + 1
+    while v < 1:
+        v = v * 10
+        exp = exp - 1
+    return {"m": v, "exp": exp}
+
+
+def _pow10(exp):
+    """10 raised to exp. exp is a small whole number, possibly negative."""
+    p = dec("1")
+    if exp >= 0:
+        i = 0
+        while i < exp:
+            p = p * 10
+            i = i + 1
+        return p
+    i = 0
+    n = 0 - exp
+    while i < n:
+        p = p / 10
+        i = i + 1
+    return p
+
+
+def _pick(mantissa, values, mode):
+    """A mantissa, or 10 when the nearest decade boundary is the next 1.0.
+
+    nearest compares squares, v*v against a*b, so the test is the
+    geometric distance. An exact tie (v*v == a*b) keeps the lower value.
+    """
+    last = len(values) - 1
+    if mode == "down":
+        best = values[0]
+        i = 0
+        while i <= last:
+            if values[i] <= mantissa:
+                best = values[i]
+            i = i + 1
+        return best
+    if mode == "up":
+        i = 0
+        while i <= last:
+            if values[i] >= mantissa:
+                return values[i]
+            i = i + 1
+        return dec("10")
+    i = 0
+    while i < last:
+        a = values[i]
+        b = values[i + 1]
+        if mantissa <= b:
+            if mantissa * mantissa < a * b or mantissa * mantissa == a * b:
+                return a
+            return b
+        i = i + 1
+    a = values[last]
+    b = dec("10")
+    if mantissa * mantissa < a * b or mantissa * mantissa == a * b:
+        return a
+    return b
+
+
+def nearest_problem(value, name, mode="nearest"):
+    """Why a nominal cannot be chosen, or ""."""
+    if type(value) != "decimal":
+        return "очікується число"
+    if value == 0:
+        return "нуль не має номіналу"
+    if value < 0:
+        return "очікується додатне значення"
+    if mode != "nearest" and mode != "up" and mode != "down":
+        return "невідомий режим"
+    return series_problem(name)
+
+
+def nearest(value, name, mode="nearest"):
+    """The E-series nominal closest to value, or the next one up or down.
+
+    Distance is geometric: the midpoint of a and b is where v*v = a*b.
+    An exact series value stays put for every mode. A value above the
+    last mantissa can come back as the next decade (…, 8.2, 10).
+    """
+    reason = nearest_problem(value, name, mode=mode)
+    if reason != "":
+        _fail(reason)
+    scaled = _scale(value)
+    picked = _pick(scaled["m"], series(name), mode)
+    return picked * _pow10(scaled["exp"])
+
+
+def _lang_problem(lang):
+    """Reason when lang is not uk, ru or en, or ""."""
+    if lang != "uk" and lang != "ru" and lang != "en":
+        return "невідома мова"
+    return ""
+
+
+def _prefix(exp, lang):
+    """SI prefix for an engineering exponent, or "" for the unit itself."""
+    table = [{"exp": 12, "uk": "Т", "ru": "Т", "en": "T"}, {"exp": 9, "uk": "Г", "ru": "Г", "en": "G"}, {"exp": 6, "uk": "М", "ru": "М", "en": "M"}, {"exp": 3, "uk": "к", "ru": "к", "en": "k"}, {"exp": 0, "uk": "", "ru": "", "en": ""}, {"exp": -3, "uk": "м", "ru": "м", "en": "m"}, {"exp": -6, "uk": "мк", "ru": "мк", "en": "µ"}, {"exp": -9, "uk": "н", "ru": "н", "en": "n"}, {"exp": -12, "uk": "п", "ru": "п", "en": "p"}]
+    for row in table:
+        if row["exp"] == exp:
+            return row[lang]
+    return ""
+
+
+def _unit(unit, lang):
+    """Localized unit. An unknown unit is kept as written."""
+    if unit == "Ω" or unit == "Ом" or unit == "ohm":
+        if lang == "en":
+            return "Ω"
+        return "Ом"
+    if unit == "F" or unit == "Ф":
+        if lang == "en":
+            return "F"
+        return "Ф"
+    if unit == "H" or unit == "Гн":
+        if lang == "en":
+            return "H"
+        return "Гн"
+    if unit == "V" or unit == "В":
+        if lang == "en":
+            return "V"
+        return "В"
+    if unit == "A" or unit == "А":
+        if lang == "en":
+            return "A"
+        return "А"
+    if unit == "W" or unit == "Вт":
+        if lang == "en":
+            return "W"
+        return "Вт"
+    if unit == "Hz" or unit == "Гц":
+        if lang == "en":
+            return "Hz"
+        return "Гц"
+    return unit
+
+
+def _plain(value, lang):
+    """value with up to 6 decimal places, trailing zeros removed.
+
+    uk and ru use a comma. The engineering step has already put value
+    into a range that is normally [1, 1000).
+    """
+    text = f"{round(value, 6):.6f}"
+    while len(text) > 1 and text[len(text) - 1] == "0" and text.find(".") >= 0:
+        text = text[:len(text) - 1]
+    if text[len(text) - 1] == ".":
+        text = text[:len(text) - 1]
+    if lang != "en":
+        text = text.replace(".", ",")
+    return text
+
+
+def fmt_value_problem(value, unit, lang="uk"):
+    """Why the value cannot be captioned, or ""."""
+    if type(value) != "decimal":
+        return "очікується число"
+    if type(unit) != "str" or unit == "":
+        return "очікується одиниця"
+    return _lang_problem(lang)
+
+
+def fmt_value(value, unit, lang="uk"):
+    """A caption such as "4,7 кОм". lang is uk, ru or en.
+
+    The module does not see doc.language, so the language is an argument.
+    Prefixes run from pico to tera. Below 10^-12 the number is left smaller
+    than 1 and the prefix stays pico. The displayed digits are rounded to
+    6 places; this does not snap the value to an E series.
+    """
+    reason = fmt_value_problem(value, unit, lang=lang)
+    if reason != "":
+        _fail(reason)
+    if value == 0:
+        return "0 " + _unit(unit, lang)
+    v = value
+    sign = ""
+    if v < 0:
+        sign = "-"
+        v = 0 - v
+    exp = 0
+    while v >= 1000 and exp < 12:
+        v = v / 1000
+        exp = exp + 3
+    while v < 1 and exp > -12:
+        v = v * 1000
+        exp = exp - 3
+    return sign + _plain(v, lang) + " " + _prefix(exp, lang) + _unit(unit, lang)
+
+
+def _number_problem(value):
+    """Reason when value is not a decimal, or ""."""
+    if type(value) != "decimal":
+        return "очікується число"
+    return ""
+
+
+def divider_problem(vin, r1, r2):
+    """Why vin * r2 / (r1 + r2) cannot be computed, or "".
+
+    r1 is the upper resistor, r2 the lower one. A zero sum is rejected
+    because the division is undefined. The formula is textbook arithmetic,
+    not a quotation of a component standard.
+    """
+    reason = _number_problem(vin)
+    if reason != "":
+        return reason
+    reason = _number_problem(r1)
+    if reason != "":
+        return reason
+    reason = _number_problem(r2)
+    if reason != "":
+        return reason
+    if r1 + r2 == 0:
+        return "сума опорів дорівнює нулю"
+    return ""
+
+
+def divider(vin, r1, r2):
+    """Output of a resistive divider: vin * r2 / (r1 + r2)."""
+    reason = divider_problem(vin, r1, r2)
+    if reason != "":
+        _fail(reason)
+    return vin * r2 / (r1 + r2)
+
+
+def _list_problem(rs):
+    """Reason when rs is not a non-empty list of decimals, or ""."""
+    if type(rs) != "list" or len(rs) == 0:
+        return "очікується непорожній список"
+    for item in rs:
+        if type(item) != "decimal":
+            return "очікується число"
+    return ""
+
+
+def parallel_problem(rs):
+    """Why the parallel combination cannot be computed, or ""."""
+    return _list_problem(rs)
+
+
+def parallel(rs):
+    """1 / sum(1/r). A zero resistor is a short, so the result is 0.
+
+    The reciprocal is not evaluated in that case. rs is a list, not a
+    variable argument list: this dialect's documents pass lists.
+    """
+    reason = parallel_problem(rs)
+    if reason != "":
+        _fail(reason)
+    for item in rs:
+        if item == 0:
+            return dec("0")
+    acc = dec("0")
+    for item in rs:
+        acc = acc + 1 / item
+    return 1 / acc
+
+
+def series_sum_problem(rs):
+    """Why the series sum cannot be computed, or ""."""
+    return _list_problem(rs)
+
+
+def series_sum(rs):
+    """Sum of resistances in series. rs is a non-empty list of decimals."""
+    reason = series_sum_problem(rs)
+    if reason != "":
+        _fail(reason)
+    return sum(rs)
+
+
+def power_problem(v, r):
+    """Why v²/r cannot be computed, or ""."""
+    reason = _number_problem(v)
+    if reason != "":
+        return reason
+    reason = _number_problem(r)
+    if reason != "":
+        return reason
+    if r == 0:
+        return "нульовий опір"
+    return ""
+
+
+def power(v, r):
+    """Power v²/r. v * v is an exact product; the division is rounded to 28 digits."""
+    reason = power_problem(v, r)
+    if reason != "":
+        _fail(reason)
+    return v * v / r
+
+
+def tolerance_problem(value, percent):
+    """Why a ±percent interval cannot be built, or "".
+
+    percent is a number of percent: 5 means ±5 %, not a fraction 0.05.
+    """
+    reason = _number_problem(value)
+    if reason != "":
+        return reason
+    reason = _number_problem(percent)
+    if reason != "":
+        return reason
+    if percent < 0:
+        return "очікується невід'ємний допуск"
+    return ""
+
+
+def tolerance_range(value, percent):
+    """Record {lower, upper} for value ± percent percent."""
+    reason = tolerance_problem(value, percent)
+    if reason != "":
+        _fail(reason)
+    span = percent / dec("100")
+    return {"lower": value * (dec("1") - span), "upper": value * (dec("1") + span)}
+|end

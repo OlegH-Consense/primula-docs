@@ -1,0 +1,6 @@
+---
+name: "стили"
+---
+spacing = {"0": 0*mm, "s": 1*mm}
+def f(a): return a if a else None
+z = lambda q: q

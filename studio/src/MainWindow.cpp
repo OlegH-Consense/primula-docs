@@ -316,6 +316,8 @@ void MainWindow::createUi()
             menu.addSeparator();
             fillExportMenu(menu.addMenu(tr("Export")), pane->filePath());
         }
+        if (!primulaKind(pane->filePath()).isEmpty())
+            menu.addAction(tr("File summary…"), this, [this, pane] { showFileSummary(pane->filePath()); });
         menu.exec(m_tabs->tabBar()->mapToGlobal(point));
     });
 
@@ -2915,6 +2917,8 @@ void MainWindow::showFilesMenu(const QString &path, const QPoint &position)
                 menu.addAction(tr("Open as text in the editor"), this, [this, path] { openFileAsText(path); });
             if (primulaKind(path) == QStringLiteral("document"))
                 fillExportMenu(menu.addMenu(tr("Export")), path);
+            if (!primulaKind(path).isEmpty())
+                menu.addAction(tr("File summary…"), this, [this, path] { showFileSummary(path); });
             menu.addAction(tr("Open in an external application"), this, [path] {
                 QDesktopServices::openUrl(QUrl::fromLocalFile(path));
             });
@@ -2928,6 +2932,30 @@ void MainWindow::showFilesMenu(const QString &path, const QPoint &position)
         QDesktopServices::openUrl(QUrl::fromLocalFile(directory));
     });
     menu.exec(position);
+}
+
+void MainWindow::showFileSummary(const QString &path)
+{
+    QString reason;
+    const QString text = Translator::describeFile(path, interfaceLanguage(), &reason);
+    if (text.isEmpty()) {
+        QMessageBox::warning(this, tr("File summary"),
+                             tr("The translator could not describe %1:\n%2").arg(QFileInfo(path).fileName(), reason));
+        return;
+    }
+    QDialog dialog(this);
+    dialog.setWindowTitle(tr("File summary — %1").arg(QFileInfo(path).fileName()));
+    auto *layout = new QVBoxLayout(&dialog);
+    auto *view = new QPlainTextEdit(&dialog);
+    view->setReadOnly(true);
+    view->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+    view->setPlainText(text);
+    layout->addWidget(view, 1);
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttons);
+    dialog.resize(780, 520);
+    dialog.exec();
 }
 
 QString MainWindow::exportPath(const QString &document, const QString &format) const

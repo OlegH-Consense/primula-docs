@@ -1,0 +1,7 @@
+# Primula v1.1-draft: добавить ПЕРЕД универсальной записью «Unknown» в Syntax.
+# Порядок важен: побеждает первая подходящая запись.
+file ..\*\\.[sp]\\.prml$ Primula\scode\sfile
+include primula-code.syntax
+
+file ..\*\\.prml$ Primula\sdocument
+include primula.syntax

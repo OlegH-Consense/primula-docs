@@ -256,6 +256,23 @@ def build_parser(catalog: Catalog) -> argparse.ArgumentParser:
     export.add_argument("--pandoc-arg", action="append", default=[], metavar=t("cli.metavar.argument"),
                         help=t("cli.help.export_pandoc_arg"))
 
+    # Quick view of the built document, for F3 of a file manager (stage 24.1).
+    view = commands.add_parser("view", parents=[evaluation], help=t("cli.help.view"),
+                               description=t("cli.help.view"), epilog=t("cli.epilog.view"),
+                               formatter_class=raw)
+    view.add_argument("file", type=Path, metavar=file_, help=t("cli.help.file"))
+    view.add_argument("--lang", choices=SUPPORTED_LANGUAGES, help=t("cli.help.lang"))
+    view.add_argument("--viewer", metavar=t("cli.metavar.command"), help=t("cli.help.view_viewer"))
+    view.add_argument("--text", action="store_true", help=t("cli.help.view_text"))
+    view.add_argument("--keep", action="store_true", help=t("cli.help.view_keep"))
+
+    # Summary of a file without an output document: module, styles, project (stage 18.9).
+    describe = commands.add_parser("describe", help=t("cli.help.describe"), description=t("cli.help.describe"),
+                                   epilog=t("cli.epilog.describe"), formatter_class=raw)
+    describe.add_argument("file", type=Path, metavar=file_, help=t("cli.help.file"))
+    describe.add_argument("--lang", choices=SUPPORTED_LANGUAGES, help=t("cli.help.lang"))
+    describe.add_argument("--format", choices=("text", "json"), default="text", help=t("cli.help.format"))
+
     fmt = commands.add_parser("fmt", parents=[common], help=t("cli.help.fmt"),
                               description=t("cli.help.fmt"), epilog=t("cli.epilog.fmt"),
                               formatter_class=raw)
@@ -598,6 +615,17 @@ def main(argv: Sequence[str] | None = None, *, err: TextIO | None = None,
         print(json.dumps(data, ensure_ascii=False, indent=1) if args.format == "json" else text,
               file=output, end="\n" if args.format == "json" else "")
         return EXIT_OK
+    if args.command == "describe":
+        from primula.describe import describe, render_text
+
+        data = describe(args.file, catalog)
+        print(json.dumps(data, ensure_ascii=False, indent=1) if args.format == "json" else render_text(data, catalog),
+              file=output, end="\n" if args.format == "json" else "")
+        return EXIT_ERROR if data["kind"] is None else EXIT_OK
+    if args.command == "view":
+        from primula.view import run as run_view
+
+        return run_view(args, catalog, stream, output)
     if args.command == "console":
         return _console(args, catalog, stream, output, sys.stdin if inp is None else inp)
     if args.format == "json" and any(getattr(args, name, False) for name in (

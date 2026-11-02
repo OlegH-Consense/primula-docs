@@ -1,0 +1,63 @@
+---
+doc: {title: "legal: перевірка", language: uk-UA}
+---
+|% Hand figures. The fixture rate is 10 % until 11 January and 20 % after.
+|% 2026 has 365 days. Delay is [start, end): the end date is not counted.
+|import("../legal")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+pack = {"known_through": date(2026, 12, 31), "rows": [
+    {"from": date(2026, 1, 1), "value": dec("10"), "source": "фікстура"},
+    {"from": date(2026, 1, 11), "value": dec("20"), "source": "фікстура"}]}
+debt = dec("10000")
+start = date(2026, 1, 1)
+end = date(2026, 1, 21)
+
+expect("pen", legal.penalty(debt, start, end, pack), dec("164.38"))
+expect("pen-cap", legal.penalty(debt, start, end, pack, rate=dec("15")), dec("82.19"))
+expect("pen-none", legal.penalty(debt, start, end, pack, rate=dec("50"), cap="none"), dec("273.97"))
+expect("empty", legal.penalty_problem(debt, end, start, pack), "порожній період")
+expect("later", legal.penalty_problem(debt, date(2027, 1, 1), date(2027, 1, 2), pack), "ряд підтверджено лише до 2026-12-31")
+
+table = legal.claim_table(debt, start, end, pack)
+expect("rows", len(table), 2)
+expect("days1", table[0]["days"], 10)
+expect("rate1", table[0]["rate"], dec("20"))
+expect("amt1", table[0]["amount"], dec("54.79"))
+expect("days2", table[1]["days"], 10)
+expect("rate2", table[1]["rate"], dec("40"))
+expect("amt2", table[1]["amount"], dec("109.59"))
+expect("sum", table[0]["amount"] + table[1]["amount"], dec("164.38"))
+
+expect("a3", legal.annual3(debt, date(2026, 1, 1), date(2026, 1, 31)), dec("24.66"))
+big = dec("1000000")
+expect("leap", legal.annual3(big, date(2024, 12, 31), date(2025, 1, 2)), dec("164.16"))
+expect("a365", legal.annual3(big, date(2024, 12, 31), date(2025, 1, 2), year_days="365"), dec("164.38"))
+
+cpi = [
+    {"month": date(2026, 1, 1), "value": dec("100")},
+    {"month": date(2026, 2, 1), "value": dec("110")},
+    {"month": date(2026, 3, 1), "value": dec("99")}]
+expect("inf", legal.inflation_losses(dec("1000"), date(2026, 1, 20), date(2026, 3, 10), cpi), dec("100.00"))
+expect("def", legal.inflation_losses(dec("1000"), date(2026, 3, 1), date(2026, 4, 1), cpi), dec("0.00"))
+both = [
+    {"month": date(2026, 2, 1), "value": dec("110")},
+    {"month": date(2026, 3, 1), "value": dec("99")}]
+expect("mix", legal.inflation_losses(dec("1000"), date(2026, 2, 1), date(2026, 4, 1), both), dec("89.00"))
+jan = [{"month": date(2026, 1, 1), "value": dec("110")}]
+expect("fifteen", legal.inflation_losses(dec("1000"), date(2026, 1, 17), date(2026, 2, 1), jan), dec("0.00"))
+expect("sixteen", legal.inflation_losses(dec("1000"), date(2026, 1, 16), date(2026, 2, 1), jan), dec("100.00"))
+expect("miss", legal.inflation_problem(dec("1000"), date(2026, 4, 1), date(2026, 5, 1), cpi), "немає індексу за 2026-04-01")
+
+expect("tw", legal.term_words(5), "5 (п'яти) банківських днів")
+expect("tw1", legal.term_words(1, unit="workdays"), "1 (одного) робочий день")
+expect("tw21", legal.term_words(21, unit="calendar_days"), "21 (двадцяти одного) календарний день")
+expect("dead", legal.deadline(date(2026, 1, 2), 1), date(2026, 1, 5))
+expect("cal", legal.deadline(date(2026, 1, 31), 1, kind="calendar_days"), date(2026, 2, 1))
+expect("ver", legal.VERSION, "0.1.0")
+|end
+Пеня за фікстурою |( money(legal.penalty(debt, start, end, pack), "UAH") ).
+Строк |( legal.term_words(5) ).

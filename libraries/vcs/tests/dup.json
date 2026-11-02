@@ -1,0 +1,16 @@
+[
+  {
+    "hash": "ffffffffffffffffffffffffffffffffffffffff",
+    "date": "2026-03-01",
+    "author": "Тест Автор",
+    "message": "Зміна 1: перша підстава",
+    "files": ["doc.prml"]
+  },
+  {
+    "hash": "1111111111111111111111111111111111111111",
+    "date": "2026-03-02",
+    "author": "Тест Автор",
+    "message": "Зміна 1: друга підстава",
+    "files": ["doc.prml"]
+  }
+]

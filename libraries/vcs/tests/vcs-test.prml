@@ -1,0 +1,35 @@
+---
+doc: {title: "vcs: перевірка", language: uk-UA}
+---
+|% The fixture lists change 2 before change 1 and includes one unmarked
+|% commit. The sheet is ordered by the change number. Columns are the
+|% library's own; no DSTU or ESKD form was opened.
+|import("../vcs")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+rows = vcs.changes(load_json("changes.json"))
+expect("n", len(rows), 2)
+expect("num", rows[0]["number"], "1")
+expect("date", rows[0]["date"], "2026-01-02")
+expect("author", rows[0]["author"], "Тест Автор")
+expect("sec", rows[0]["sections"], "1.2, 4")
+expect("why", rows[0]["reason"], "уточнено таблицю")
+expect("files", rows[0]["files"], "doc.prml")
+expect("hash", rows[0]["hash"], "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+expect("num2", rows[1]["number"], "2")
+expect("why2", rows[1]["reason"], "додано рисунок")
+expect("sec2", rows[1]["sections"], "3")
+expect("files2", rows[1]["files"], "doc.prml, fig.prml")
+expect("ok", vcs.changes_problem(load_json("changes.json")), "")
+expect("empty", vcs.changes_problem([]), "історія змін порожня")
+expect("plain", vcs.changes_problem(load_json("plain.json")), "історія змін порожня")
+expect("bad", vcs.changes_problem(load_json("bad.json")), "нерозбірливий рядок зміни")
+expect("dup", vcs.changes_problem(load_json("dup.json")), "повтор номера зміни 1")
+expect("ver", vcs.VERSION, "0.1.0")
+|end
+|table(data=rows, fields=["number", "date", "author", "sections", "reason"], titles=["№", "Дата", "Автор", "Розділи", "Підстава"], cols=["12mm", "28mm", "40mm", "30mm", "*"], header=1):
+|end table
+Аркуш зібрано з |( str(len(rows)) ) рядків.

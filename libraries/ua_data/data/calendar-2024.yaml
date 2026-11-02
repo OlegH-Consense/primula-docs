@@ -1,0 +1,8 @@
+# Standard-library calendar (section 5) for 2024.
+# While martial law is in force, art. 73 of the Labour Code does not make
+# holidays days off and days off are not moved (Law No. 2136-IX, as described
+# in README). Transfers are therefore empty. The library does not invent them.
+weekend: [sat, sun]
+holidays: []
+workdays: []
+rest_days: []

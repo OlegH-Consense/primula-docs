@@ -1,0 +1,50 @@
+---
+doc: {title: "epc_qr: перевірка", language: uk-UA}
+---
+|% The two payloads are the examples in EPC069-12 v3.1 section 2.3,
+|% copied in libraries/epc_qr.md (checked 27.10.2026). Lengths: V1 is
+|% 95 characters and 96 UTF-8 bytes; V2 is 103 characters.
+|import("../epc_qr")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+def euros(n):
+    out = ""
+    i = 0
+    while i < n:
+        out = out + "€"
+        i = i + 1
+    return out
+
+v1 = "BCD\n001\n1\nSCT\nBHBLDEHHXXX\nFranz Mustermänn\nDE71110220330123456789\nEUR12.3\nGDDS\nRF18539007547034"
+v2 = "BCD\n002\n2\nSCT\n\nFrançois D'Alsace S.A.\nFR1420041010050500013M02606\nEUR12.3\n\n\nClient:Marie Louise La Lune"
+got1 = epc_qr.payload("Franz Mustermänn", "DE71110220330123456789", amount=dec("12.3"), bic="BHBLDEHHXXX", purpose="GDDS", reference="RF18539007547034", version="001")
+got2 = epc_qr.payload("François D'Alsace S.A.", "FR1420041010050500013M02606", amount=dec("12.30"), bic="", text="Client:Marie Louise La Lune", version="002", encoding="iso-8859-1")
+expect("v1", got1, v1)
+expect("v2", got2, v2)
+expect("chars", len(got1), 95)
+expect("bytes", len(base64url(got1)) * 3 // 4, 96)
+expect("qr", qr_matrix(got1, ecc="M", max_version=13).version, 6)
+expect("v2chars", len(got2), 103)
+
+tail = epc_qr.payload("Franz Mustermänn", "DE71 1102 2033 0123 4567 89", bic="BHBLDEHHXXX", version="001")
+expect("tail", tail, "BCD\n001\n1\nSCT\nBHBLDEHHXXX\nFranz Mustermänn\nDE71110220330123456789")
+expect("rf", epc_qr.rf("539007547034"), "RF18539007547034")
+
+expect("name", epc_qr.problem(euros(71), "DE71110220330123456789"), "найменування довше за 70 знаків")
+expect("both", epc_qr.problem("Franz Mustermänn", "DE71110220330123456789", reference="RF18539007547034", text="рахунок"), "структуроване і неструктуроване призначення разом")
+expect("milli", epc_qr.problem("Franz Mustermänn", "DE71110220330123456789", amount=dec("0.001")), "у сумі більше двох знаків після коми")
+expect("huge", epc_qr.problem("Franz Mustermänn", "DE71110220330123456789", amount=dec("1000000000")), "сума поза межами 0.01…999999999.99")
+expect("nobic", epc_qr.problem("Franz Mustermänn", "DE71110220330123456789", version="001"), "BIC обов'язковий для версії 001")
+expect("latin", epc_qr.problem("Єва", "DE71110220330123456789", encoding="iso-8859-1"), "символ «Є» поза ISO 8859-1")
+wide = euros(96) + "я"
+expect("wide", epc_qr.problem("N", "DE71110220330123456789", text=wide), "навантаження більше за 331 байт")
+expect("fit", epc_qr.problem("N", "DE71110220330123456789", text=euros(96)), "")
+expect("bad-rf", epc_qr.problem("N", "DE71110220330123456789", reference="RF00539007547034"), "посилання RF не збігається за mod 97")
+expect("ver", epc_qr.VERSION, "0.1.0")
+image = epc_qr.svg("Franz Mustermänn", "DE71110220330123456789", amount=dec("12.3"), bic="BHBLDEHHXXX", purpose="GDDS", reference="RF18539007547034", version="001", module="0.5mm")
+|end
+|img(svg=image)
+Код |( epc_qr.VERSION ).

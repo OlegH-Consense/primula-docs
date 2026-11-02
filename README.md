@@ -15,7 +15,7 @@ params: {сума: 30444.96}
 |> Строк оплати — див. п. |@("pay").
 ```
 
-**Status: 0.2.0, the first public pre-release.** The language (specification 1.1, draft), the translator and Studio are usable for real documents, but they still change; files written today may need small edits later.
+**Status: 0.3.0, a pre-release (the second public one; see [CHANGELOG.md](CHANGELOG.md)).** The language (specification 1.1, draft), the translator and Studio are usable for real documents, but they still change; files written today may need small edits later.
 
 ## What it does
 
@@ -23,7 +23,8 @@ params: {сума: 30444.96}
 - **Computed values:** a small, safe subset of Python with decimal arithmetic — sums, VAT, amounts in words, dates and workdays, plurals; data from CSV, YAML, JSON, ODS and XLSX files; conditions and variants of one document.
 - **Styles kept apart:** styles modules (`.s.prml`) instead of formatting in the text; built-in sets for business documents, letters, technical manuals and reports.
 - **Projects:** shared fragments and modules, parameters, a project file with build targets (a contract and its orders), combined documents, parallel bilingual texts.
-- **Libraries of modules:** reusable `.m.prml` libraries outside the translator, e.g. `libraries/payment_qr` — the payment QR code of the National Bank of Ukraine.
+- **Highlighting for editors:** Kate/KWrite/KDevelop, Midnight Commander (mcedit), Geany and VS Code (`editors/`, built from the reference of the translator).
+- **Libraries of modules:** twelve reusable `.m.prml` libraries outside the translator (`libraries/`): requisites (ЄДРПОУ, РНОКПП, IBAN UA), names in cases, rates and law data with a date of effect, penalty and terms, financial schedules, payment QR codes (NBU, SEPA), bar codes, charts, statistics, electronics, change tables from Git.
 - **Export:** Markdown, HTML, DOCX and other formats through [pandoc](https://pandoc.org) (`primula export`).
 - **Primula Studio** (Qt 6): highlighting, hints, completion and context help, the Structure, Styles and Palette panels, check and build, a PDF view, an evaluator console, AI assistance through Codex CLI or Claude CLI.
 - **Messages** like compilers give them (`file:line:column: error[P2201]: …`) in English, Ukrainian and Russian.
@@ -35,8 +36,8 @@ params: {сума: 30444.96}
 Release packages are built for one distribution each (for example openSUSE Tumbleweed, Debian 12 or 13); take the one for your system from [Releases](https://github.com/OlegH-Consense/primula-docs/releases).
 
 ```sh
-tar xf primula-docs-0.2.0-<distribution>-x86_64.tar.gz
-cd primula-docs-0.2.0-<distribution>-x86_64
+tar xf primula-docs-0.3.0-<distribution>-x86_64.tar.gz
+cd primula-docs-0.3.0-<distribution>-x86_64
 ./check-dependencies.sh --install     # Python 3.11+, PyYAML, Qt 6, LibreOffice
 ./install.sh                          # into ~/.local; the examples go to ~/Primula/examples
 primula-studio                        # or from the menu: Primula Studio
@@ -75,9 +76,9 @@ studio/make-distribution.sh --archive # a release package for this distribution
 
 Development goes on in iterations; the next directions are:
 
-- more libraries of modules for Ukrainian business documents — requisites (ЄДРПОУ, РНОКПП, IBAN), names in grammatical cases, schemas for data, penalties and terms, financial schedules, charts;
+- more libraries of modules and the check of their legal and data sources (the libraries are 0.1.0); schemas for data files;
 - conversion into Primula from other formats (DOCX, ODT, Markdown) and export from Studio;
-- support of the format in popular editors and IDEs (highlighting, later a language server);
+- a language server and a formatter for editors (highlighting is there: `editors/`);
 - AI assistance in Studio built on the checks of the translator;
 - Primula Studio and the translator for Windows.
 

@@ -1,0 +1,372 @@
+{
+ "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+ "name": "Primula (code)",
+ "scopeName": "source.primula-code",
+ "patterns": [
+  {
+   "include": "#header"
+  },
+  {
+   "include": "#python"
+  }
+ ],
+ "repository": {
+  "markup": {
+   "patterns": [
+    {
+     "name": "comment.line.primula",
+     "match": "\\|%.*$"
+    },
+    {
+     "name": "comment.block.primula",
+     "begin": "^\\|comment(?:\\([^)]*\\))?:[ \\t]*$",
+     "end": "^\\|end\\b.*$"
+    },
+    {
+     "begin": "^(\\|code):[ \\t]*$",
+     "end": "^(\\|end)[ \\t]*$",
+     "contentName": "meta.embedded.block.python",
+     "beginCaptures": {
+      "1": {
+       "name": "keyword.control.primula"
+      }
+     },
+     "endCaptures": {
+      "1": {
+       "name": "keyword.control.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#python"
+      }
+     ]
+    },
+    {
+     "name": "string.unquoted.verbatim.primula",
+     "begin": "^\\|verbatim\\(end=\"([^\"]+)\"\\):[ \\t]*$",
+     "end": "^\\1[ \\t]*$"
+    },
+    {
+     "name": "string.unquoted.verbatim.primula",
+     "begin": "^\\|verbatim:[ \\t]*$",
+     "end": "^\\|end[ \\t]*$"
+    },
+    {
+     "name": "constant.character.escape.primula",
+     "match": "\\|[|{};~\\\\]"
+    },
+    {
+     "name": "invalid.illegal.primula",
+     "match": "\\|(?:[ \\t0-9$\\[\\]–−]|$)"
+    },
+    {
+     "name": "markup.heading.marker.primula",
+     "match": "^\\|<{1,6}"
+    },
+    {
+     "name": "keyword.control.structure.primula",
+     "match": "^\\|(?:>+|[-#!:])"
+    },
+    {
+     "name": "keyword.control.structure.primula",
+     "match": "\\|&"
+    },
+    {
+     "name": "entity.name.tag.style.primula",
+     "match": "\\|\\.[\\p{L}_][\\p{L}\\p{N}_\\-]*"
+    },
+    {
+     "name": "keyword.control.end.primula",
+     "match": "\\|end(?:if|for|def|[>!]|\\.[\\p{L}][\\p{L}\\p{N}_\\-]*|[ \\t]+[\\p{L}_][\\p{L}\\p{N}_]*)?(?![\\p{L}\\p{N}_])"
+    },
+    {
+     "name": "keyword.control.primula",
+     "match": "\\|(?:elif|else|def|for|if)(?![\\p{L}\\p{N}_])"
+    },
+    {
+     "name": "keyword.control.import.primula",
+     "match": "\\|(?:include|import)(?![\\p{L}\\p{N}_])"
+    },
+    {
+     "name": "markup.bold.primula",
+     "begin": "(\\|\\*)(\\{)",
+     "end": "\\}",
+     "beginCaptures": {
+      "1": {
+       "name": "keyword.operator.inline.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#markup"
+      }
+     ]
+    },
+    {
+     "name": "markup.italic.primula",
+     "begin": "(\\|/)(\\{)",
+     "end": "\\}",
+     "beginCaptures": {
+      "1": {
+       "name": "keyword.operator.inline.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#markup"
+      }
+     ]
+    },
+    {
+     "name": "markup.underline.primula",
+     "begin": "(\\|\\_)(\\{)",
+     "end": "\\}",
+     "beginCaptures": {
+      "1": {
+       "name": "keyword.operator.inline.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#markup"
+      }
+     ]
+    },
+    {
+     "name": "markup.inline.primula",
+     "begin": "(\\|\\^)(\\{)",
+     "end": "\\}",
+     "beginCaptures": {
+      "1": {
+       "name": "keyword.operator.inline.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#markup"
+      }
+     ]
+    },
+    {
+     "name": "markup.inline.primula",
+     "begin": "(\\|\\,)(\\{)",
+     "end": "\\}",
+     "beginCaptures": {
+      "1": {
+       "name": "keyword.operator.inline.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#markup"
+      }
+     ]
+    },
+    {
+     "name": "markup.strikethrough.primula",
+     "begin": "(\\|—)(\\{)",
+     "end": "\\}",
+     "beginCaptures": {
+      "1": {
+       "name": "keyword.operator.inline.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#markup"
+      }
+     ]
+    },
+    {
+     "name": "markup.inline.raw.primula",
+     "begin": "(\\|`)(\\{)",
+     "end": "\\}",
+     "beginCaptures": {
+      "1": {
+       "name": "keyword.operator.inline.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#markup"
+      }
+     ]
+    },
+    {
+     "name": "markup.quote.primula",
+     "begin": "(\\|\")(\\{)",
+     "end": "\\}",
+     "beginCaptures": {
+      "1": {
+       "name": "keyword.operator.inline.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#markup"
+      }
+     ]
+    },
+    {
+     "name": "markup.placeholder.primula",
+     "begin": "(\\|\\?)(\\{)",
+     "end": "\\}",
+     "beginCaptures": {
+      "1": {
+       "name": "keyword.operator.inline.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#markup"
+      }
+     ]
+    },
+    {
+     "begin": "(\\|=?)(\\()",
+     "end": "\\)",
+     "beginCaptures": {
+      "1": {
+       "name": "keyword.operator.primula"
+      }
+     },
+     "contentName": "meta.embedded.expression.python",
+     "patterns": [
+      {
+       "include": "#python"
+      },
+      {
+       "include": "#parens"
+      }
+     ]
+    },
+    {
+     "begin": "(\\|(?:field\\.chapter|field\\.pages|field\\.title|field\\.page|newcolumn|toc_entry|watermark|appendix|document|footnote|parallel|verbatim|caption|comment|endnote|list_of|newpage|section|segment|export|figure|footer|header|block|frame|index|scope|table|track|abbr|call|cell|code|link|list|page|part|fmt|img|let|row|set|toc))(\\()",
+     "end": "\\)",
+     "beginCaptures": {
+      "1": {
+       "name": "support.function.command.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#python"
+      },
+      {
+       "include": "#parens"
+      }
+     ]
+    },
+    {
+     "name": "support.function.command.primula",
+     "match": "\\|(?:field\\.chapter|field\\.pages|field\\.title|field\\.page|newcolumn|toc_entry|watermark|appendix|document|footnote|parallel|verbatim|caption|comment|endnote|list_of|newpage|section|segment|export|figure|footer|header|block|frame|index|scope|table|track|abbr|call|cell|code|link|list|page|part|fmt|img|let|row|set|toc)(?![\\p{L}\\p{N}_])"
+    },
+    {
+     "begin": "(\\|[\\p{L}_][\\p{L}\\p{N}_]*(?:\\.[\\p{L}_][\\p{L}\\p{N}_]*)*)(\\()",
+     "end": "\\)",
+     "beginCaptures": {
+      "1": {
+       "name": "entity.name.function.user.primula"
+      }
+     },
+     "patterns": [
+      {
+       "include": "#python"
+      },
+      {
+       "include": "#parens"
+      }
+     ]
+    },
+    {
+     "name": "entity.name.function.user.primula",
+     "match": "\\|[\\p{L}_][\\p{L}\\p{N}_]*(?:\\.[\\p{L}_][\\p{L}\\p{N}_]*)*"
+    }
+   ]
+  },
+  "python": {
+   "patterns": [
+    {
+     "name": "comment.line.number-sign.primula",
+     "match": "#.*$"
+    },
+    {
+     "name": "string.quoted.triple.primula",
+     "begin": "[fFrR]?\"\"\"",
+     "end": "\"\"\""
+    },
+    {
+     "name": "string.quoted.triple.primula",
+     "begin": "[fFrR]?'''",
+     "end": "'''"
+    },
+    {
+     "name": "string.quoted.double.primula",
+     "match": "[fFrR]?\"(?:[^\"\\\\\\n]|\\\\.)*\""
+    },
+    {
+     "name": "string.quoted.single.primula",
+     "match": "[fFrR]?'(?:[^'\\\\\\n]|\\\\.)*'"
+    },
+    {
+     "name": "constant.numeric.primula",
+     "match": "(?<![\\p{L}\\p{N}_])\\d[\\d_]*(?:\\.\\d+)?(?![\\p{L}\\p{N}_])"
+    },
+    {
+     "name": "constant.language.primula",
+     "match": "(?<![\\p{L}\\p{N}_])(?:False|None|True)(?![\\p{L}\\p{N}_])"
+    },
+    {
+     "name": "invalid.illegal.forbidden.primula",
+     "match": "(?<![\\p{L}\\p{N}_])(?:nonlocal|finally|assert|except|global|import|lambda|async|await|class|match|raise|yield|from|with|del|try)(?![\\p{L}\\p{N}_])"
+    },
+    {
+     "match": "(?<![\\p{L}\\p{N}_])(def)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)",
+     "captures": {
+      "1": {
+       "name": "keyword.control.primula"
+      },
+      "2": {
+       "name": "entity.name.function.primula"
+      }
+     }
+    },
+    {
+     "name": "keyword.control.primula",
+     "match": "(?<![\\p{L}\\p{N}_])(?:continue|return|break|while|elif|else|pass|and|def|for|not|if|in|is|or)(?![\\p{L}\\p{N}_])"
+    },
+    {
+     "name": "support.function.builtin.primula",
+     "match": "(?<![\\p{L}\\p{N}_.])(?:admonition_symbols|structure_profile|admonition_words|structure_styles|character_style|paragraph_style|abbreviations|fmt_datetime|placeholders|review_marks|block_style|frame_style|money_words|month_names|round_money|table_style|without_vat|add_months|appendices|batch_mode|build_date|date_words|is_workday|list_style|money_full|month_name|nbsp_short|page_style|ref_labels|typography|add_years|base64url|body_rows|enumerate|footnotes|join_list|load_json|load_text|load_xlsx|load_yaml|numbering|qr_matrix|qty_range|watermark|captions|currency|datetime|distinct|floor_to|fmt_date|fmt_time|group_by|load_csv|load_ods|reversed|round_to|sort_key|this_row|translit|with_vat|workdays|ceil_to|convert|getattr|hasattr|minutes|ordinal|percent|weekday|column|derive|footer|header|length|markup|plural|qr_svg|quotes|record|sorted|sum_by|vat_in|atan2|build|count|debug|float|floor|hours|log10|money|range|round|split|track|tuple|weeks|words|bool|ceil|cell|date|dict|fail|inch|list|repr|sqrt|type|unit|abs|all|any|avg|cap|col|cos|dec|exp|has|img|int|len|log|max|min|num|qty|sin|str|sum|tan|vat|zip|cm|mm|pi|pt|e)(?=\\s*\\()"
+    },
+    {
+     "name": "keyword.operator.primula",
+     "match": ":=|[-+*/%<>=!]=?|//|\\*\\*"
+    }
+   ]
+  },
+  "parens": {
+   "begin": "\\(",
+   "end": "\\)",
+   "patterns": [
+    {
+     "include": "#python"
+    },
+    {
+     "include": "#parens"
+    }
+   ]
+  },
+  "header": {
+   "name": "meta.header.primula",
+   "begin": "\\A---[ \\t]*$",
+   "end": "^---[ \\t]*$",
+   "patterns": [
+    {
+     "include": "source.yaml"
+    }
+   ]
+  }
+ }
+}

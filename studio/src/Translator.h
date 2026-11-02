@@ -37,4 +37,12 @@ QString version();
 /// @return the object, or an empty object with errorMessage set when the output is not JSON.
 QJsonObject dumpProject(const QString &projectFile, QString *errorMessage = nullptr);
 
+/// `primula describe FILE`: the summary of a file that is not built into a document (a module,
+/// a styles module, a project): functions, styles, targets (stage 18.9).
+/// @param file  the Primula file.
+/// @param language  language of the text (en, uk, ru).
+/// @param errorMessage  receives the reason when the result is empty.
+/// @return the text of the summary, or an empty string.
+QString describeFile(const QString &file, const QString &language, QString *errorMessage = nullptr);
+
 } // namespace Translator

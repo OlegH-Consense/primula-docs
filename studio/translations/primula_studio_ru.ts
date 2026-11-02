@@ -2282,6 +2282,24 @@ Install pandoc (https://pandoc.org; openSUSE: zypper install pandoc; Debian: apt
         <source>What is exported…</source>
         <translation>Что экспортируется…</translation>
     </message>
+    <message>
+        <source>File summary…</source>
+        <translation>Сводка о файле…</translation>
+    </message>
+    <message>
+        <source>File summary</source>
+        <translation>Сводка о файле</translation>
+    </message>
+    <message>
+        <source>File summary — %1</source>
+        <translation>Сводка о файле — %1</translation>
+    </message>
+    <message>
+        <source>The translator could not describe %1:
+%2</source>
+        <translation>Транслятор не смог описать %1:
+%2</translation>
+    </message>
 </context>
 <context>
     <name>NewFileDialog</name>
@@ -2913,6 +2931,10 @@ What the AI should know about these documents: purpose, parties, terms, style of
         <location filename="../src/Translator.cpp" line="86"/>
         <source>The translator gave no project description.</source>
         <translation>Транслятор не выдал описания проекта.</translation>
+    </message>
+    <message>
+        <source>The translator gave no summary of the file.</source>
+        <translation>Транслятор не выдал сводку о файле.</translation>
     </message>
 </context>
 </TS>

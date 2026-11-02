@@ -1,0 +1,189 @@
+# Подсветка Primula (файлы с кодом: *.s.prml, *.p.prml) для mcedit.
+# Сгенерировано gen_mcedit.py.
+
+context default
+  # --- подмножество Python (разд. 12) ---
+  keyword #*\n brown
+  keyword "*" green
+  keyword '*' green
+  keyword whole class white red
+  keyword whole import white red
+  keyword whole from white red
+  keyword whole try white red
+  keyword whole except white red
+  keyword whole raise white red
+  keyword whole with white red
+  keyword whole global white red
+  keyword whole nonlocal white red
+  keyword whole del white red
+  keyword whole lambda white red
+  keyword whole yield white red
+  keyword whole async white red
+  keyword whole await white red
+  keyword whole match white red
+  keyword whole finally white red
+  keyword whole assert white red
+  keyword whole and yellow
+  keyword whole or yellow
+  keyword whole not yellow
+  keyword whole in yellow
+  keyword whole is yellow
+  keyword whole if yellow
+  keyword whole elif yellow
+  keyword whole else yellow
+  keyword whole for yellow
+  keyword whole while yellow
+  keyword whole break yellow
+  keyword whole continue yellow
+  keyword whole pass yellow
+  keyword whole return yellow
+  keyword whole def yellow
+  keyword whole None brightred
+  keyword whole True brightred
+  keyword whole False brightred
+  keyword whole abbreviations brightcyan
+  keyword whole abs brightcyan
+  keyword whole admonition_symbols brightcyan
+  keyword whole admonition_words brightcyan
+  keyword whole all brightcyan
+  keyword whole any brightcyan
+  keyword whole appendices brightcyan
+  keyword whole avg brightcyan
+  keyword whole batch_mode brightcyan
+  keyword whole block_style brightcyan
+  keyword whole body_rows brightcyan
+  keyword whole bool brightcyan
+  keyword whole build brightcyan
+  keyword whole build_date brightcyan
+  keyword whole captions brightcyan
+  keyword whole cell brightcyan
+  keyword whole character_style brightcyan
+  keyword whole cm brightcyan
+  keyword whole col brightcyan
+  keyword whole column brightcyan
+  keyword whole count brightcyan
+  keyword whole date brightcyan
+  keyword whole datetime brightcyan
+  keyword whole debug brightcyan
+  keyword whole dec brightcyan
+  keyword whole derive brightcyan
+  keyword whole dict brightcyan
+  keyword whole enumerate brightcyan
+  keyword whole fail brightcyan
+  keyword whole float brightcyan
+  keyword whole footer brightcyan
+  keyword whole footnotes brightcyan
+  keyword whole frame_style brightcyan
+  keyword whole getattr brightcyan
+  keyword whole has brightcyan
+  keyword whole hasattr brightcyan
+  keyword whole header brightcyan
+  keyword whole img brightcyan
+  keyword whole inch brightcyan
+  keyword whole int brightcyan
+  keyword whole len brightcyan
+  keyword whole length brightcyan
+  keyword whole list brightcyan
+  keyword whole list_style brightcyan
+  keyword whole load_csv brightcyan
+  keyword whole load_json brightcyan
+  keyword whole load_ods brightcyan
+  keyword whole load_text brightcyan
+  keyword whole load_xlsx brightcyan
+  keyword whole load_yaml brightcyan
+  keyword whole markup brightcyan
+  keyword whole max brightcyan
+  keyword whole min brightcyan
+  keyword whole mm brightcyan
+  keyword whole numbering brightcyan
+  keyword whole page_style brightcyan
+  keyword whole paragraph_style brightcyan
+  keyword whole placeholders brightcyan
+  keyword whole pt brightcyan
+  keyword whole quotes brightcyan
+  keyword whole range brightcyan
+  keyword whole record brightcyan
+  keyword whole ref_labels brightcyan
+  keyword whole repr brightcyan
+  keyword whole reversed brightcyan
+  keyword whole review_marks brightcyan
+  keyword whole round brightcyan
+  keyword whole sorted brightcyan
+  keyword whole str brightcyan
+  keyword whole structure_profile brightcyan
+  keyword whole structure_styles brightcyan
+  keyword whole sum brightcyan
+  keyword whole table_style brightcyan
+  keyword whole this_row brightcyan
+  keyword whole track brightcyan
+  keyword whole tuple brightcyan
+  keyword whole type brightcyan
+  keyword whole watermark brightcyan
+  keyword whole zip brightcyan
+  keyword whole add_months brightcyan
+  keyword whole add_years brightcyan
+  keyword whole atan2 brightcyan
+  keyword whole base64url brightcyan
+  keyword whole cap brightcyan
+  keyword whole ceil brightcyan
+  keyword whole ceil_to brightcyan
+  keyword whole convert brightcyan
+  keyword whole cos brightcyan
+  keyword whole currency brightcyan
+  keyword whole date_words brightcyan
+  keyword whole distinct brightcyan
+  keyword whole e brightcyan
+  keyword whole exp brightcyan
+  keyword whole floor brightcyan
+  keyword whole floor_to brightcyan
+  keyword whole fmt_date brightcyan
+  keyword whole fmt_datetime brightcyan
+  keyword whole fmt_time brightcyan
+  keyword whole group_by brightcyan
+  keyword whole hours brightcyan
+  keyword whole is_workday brightcyan
+  keyword whole join_list brightcyan
+  keyword whole log brightcyan
+  keyword whole log10 brightcyan
+  keyword whole minutes brightcyan
+  keyword whole money brightcyan
+  keyword whole money_full brightcyan
+  keyword whole money_words brightcyan
+  keyword whole month_name brightcyan
+  keyword whole month_names brightcyan
+  keyword whole nbsp_short brightcyan
+  keyword whole num brightcyan
+  keyword whole ordinal brightcyan
+  keyword whole percent brightcyan
+  keyword whole pi brightcyan
+  keyword whole plural brightcyan
+  keyword whole qr_matrix brightcyan
+  keyword whole qr_svg brightcyan
+  keyword whole qty brightcyan
+  keyword whole qty_range brightcyan
+  keyword whole round_money brightcyan
+  keyword whole round_to brightcyan
+  keyword whole sin brightcyan
+  keyword whole sort_key brightcyan
+  keyword whole split brightcyan
+  keyword whole sqrt brightcyan
+  keyword whole sum_by brightcyan
+  keyword whole tan brightcyan
+  keyword whole translit brightcyan
+  keyword whole typography brightcyan
+  keyword whole unit brightcyan
+  keyword whole vat brightcyan
+  keyword whole vat_in brightcyan
+  keyword whole weekday brightcyan
+  keyword whole weeks brightcyan
+  keyword whole with_vat brightcyan
+  keyword whole without_vat brightcyan
+  keyword whole words brightcyan
+  keyword whole workdays brightcyan
+
+# --- YAML-заголовок: от «---» до «---» (в начале файла) ---
+context linestart --- linestart --- cyan
+  keyword +: brightcyan
+  keyword "*" green
+  keyword '*' green
+  keyword #*\n brown

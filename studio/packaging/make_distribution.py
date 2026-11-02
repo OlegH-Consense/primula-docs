@@ -10,7 +10,7 @@ Layout of the package directory:
   README*.md, STUDIO-GUIDE.*.md, primula-spec-v1.1-draft.<lang>.md, primula-stdlib-v1.1-draft.<lang>.md,
   primula-cheatsheet.<lang>.pdf, examples/, guide/    manuals, examples, the author guide
   install.sh, uninstall.sh, check-dependencies.sh, runtime/  installation
-  bin/primula, bin/primula-studio              launchers
+  bin/primula, bin/primula-view, bin/primula-studio  launchers
   libexec/primula-studio                       the Studio binary
   lib/python/primula/                          the translator package
   share/primula-studio/{translations,help}/, share/icons/…, share/applications/…
@@ -99,8 +99,22 @@ def library_files(source):
     """The libraries of modules (``libraries/``, stage 18.3) as they are in the source tree."""
     root = source/'libraries'
     for path in sorted(root.rglob('*')) if root.is_dir() else []:
-        if path.is_file() and '__pycache__' not in path.parts:
-            yield path.relative_to(root)
+        relative = path.relative_to(root)
+        # Not shipped: caches, the results of the demo builds (demo/build/) and the state file of the library work.
+        if path.is_file() and '__pycache__' not in path.parts and 'build' not in relative.parts \
+                and relative.name != 'CHECKPOINT.md':
+            yield relative
+
+
+def editor_files(source):
+    """The highlighting for editors (``editors/``, stage 20.1): the definitions and the installer, not the generators and checks."""
+    root = source/'editors'
+    for name in ('README.md', 'install.sh'):
+        yield Path(name)
+    for folder in ('kate', 'mcedit', 'geany', 'vscode'):
+        for path in sorted((root/folder).rglob('*')):
+            if path.is_file() and '__pycache__' not in path.parts:
+                yield path.relative_to(root)
 
 
 def assemble(source, build, output):
@@ -117,6 +131,7 @@ def assemble(source, build, output):
     for relative in translator_files(source):
         copy_file(source/'src/primula'/relative, output/'lib/python/primula'/relative)
     copy_file(packaging/'primula', output/'bin/primula', executable=True)
+    copy_file(packaging/'primula-view', output/'bin/primula-view', executable=True)
     # Primula Studio.
     copy_file(binary, output/'libexec/primula-studio', executable=True)
     copy_file(packaging/'primula-studio', output/'bin/primula-studio', executable=True)
@@ -150,6 +165,8 @@ def assemble(source, build, output):
             raise RuntimeError(f'The example entry {entry} is missing: update EXAMPLE_ENTRIES')
     (output/'examples'/'examples.json').write_text(
         json.dumps({'entries': list(EXAMPLE_ENTRIES)}, ensure_ascii=False, indent=1)+'\n', encoding='utf-8')
+    for relative in editor_files(source):
+        copy_file(source/'editors'/relative, output/'editors'/relative, executable=relative.name == 'install.sh')
     for relative in library_files(source):
         copy_file(source/'libraries'/relative, output/'libraries'/relative)
     # The author guide (stage 15.4-15.5): ru/ (source), uk/, en/ with the same layout, generated

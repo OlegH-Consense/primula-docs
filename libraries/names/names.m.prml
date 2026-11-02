@@ -1,0 +1,678 @@
+---
+kind: module
+---
+|% names — Ukrainian surnames, given names and patronymics in case,
+|% initials and the DSTU signature line. Rules and the date they were
+|% checked are in README.md. A document imports the module with
+|% |import("lib/names").
+|code:
+VERSION = "0.1.0"
+
+# Orthography exemplars the ending rules must not guess (fleeting vowels
+# other than productive -ець, і/о, soft р in given names). Author rows
+# passed as exceptions= replace a row of this file for the same nominative.
+_EX = load_yaml("data/exceptions.yaml")
+
+# Contract positions, nominative in lowercase. Not a general noun decliner.
+_POS = load_yaml("data/positions.yaml")
+
+# § 142 note 1 names these three -ець surnames as keeping -е- in the
+# oblique cases. Every other Slavic -ець drops it (Каролець — Карольця).
+_KEEP_E = ["Швець", "Жнець", "Чернець"]
+
+# Masculine given names in -а/-я from the usual Ukrainian set. § 143
+# shows Микола and Ілля; the others are the same closed class (a consonant
+# or -й would be read as masculine). Used only when there is no patronymic.
+_MALE_A = ["Микола", "Ілля", "Кузьма", "Хома", "Лука", "Сава", "Ярема"]
+
+# Feminine given names in a consonant (§ 143.3 shows Любов and Адель).
+# Without a patronymic, a consonant given name not in this list is read
+# as masculine; pass sex="f" to override.
+_FEM_C = ["Любов", "Адель", "Нінель", "Рахіль", "Есфір"]
+
+_LATIN = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+_DIGITS = "0123456789"
+
+
+def _has_char(chars, ch):
+    """Whether ch is one of the characters in chars."""
+    for item in chars:
+        if item == ch:
+            return True
+    return False
+
+
+def _norm_apo(text):
+    """ASCII apostrophe and U+2019 become U+02BC (library convention)."""
+    return text.replace("'", "ʼ").replace("’", "ʼ")
+
+
+def _known(which):
+    """Whether which is one of the six case codes."""
+    if which == "gen" or which == "dat" or which == "acc":
+        return True
+    if which == "ins" or which == "loc" or which == "voc":
+        return True
+    return False
+
+
+def _gkh(stem):
+    """г/к/х become з/ц/с before the ending -і (§ 143 note 1, § 70 note)."""
+    if stem.endswith("г"):
+        return stem[:len(stem) - 1] + "з"
+    if stem.endswith("к"):
+        return stem[:len(stem) - 1] + "ц"
+    if stem.endswith("х"):
+        return stem[:len(stem) - 1] + "с"
+    return stem
+
+
+def _hush(word):
+    """Whether the stem ends in ж, ч, ш or щ (mixed group)."""
+    if word == "":
+        return False
+    last = word[len(word) - 1]
+    return last == "ж" or last == "ч" or last == "ш" or last == "щ"
+
+
+def _clean(full):
+    """Normalized {last, first, middle} or a Ukrainian reason.
+
+    One token and four tokens are refused: the library will not guess
+    which word is the surname. Latin letters and digits are refused
+    rather than declined by a Ukrainian ending.
+    """
+    if type(full) != "str":
+        return {"parts": None, "reason": "очікується текст"}
+    text = " ".join(_norm_apo(full).split())
+    if text == "":
+        return {"parts": None, "reason": "порожній рядок"}
+    for ch in text:
+        if _has_char(_LATIN, ch):
+            return {"parts": None, "reason": "латиниця не підтримується"}
+        if _has_char(_DIGITS, ch):
+            return {"parts": None, "reason": "цифри в імені не підтримуються"}
+    parts = text.split(" ")
+    if len(parts) < 2:
+        return {"parts": None, "reason": "потрібні прізвище й імʼя"}
+    if len(parts) > 3:
+        return {"parts": None, "reason": "забагато слів"}
+    middle = ""
+    if len(parts) == 3:
+        middle = parts[2]
+    return {"parts": {"last": parts[0], "first": parts[1], "middle": middle}, "reason": ""}
+
+
+def _listed(names, word):
+    """Whether word equals one of the closed-list entries."""
+    for item in names:
+        if item == word:
+            return True
+    return False
+
+
+def _sex_middle(middle):
+    """"m"/"f" from a patronymic ending, or None when it is not one.
+
+    Longer suffixes are not required: йович ends with ович, ївна ends
+    with івна, and both classes take the same endings.
+    """
+    if middle == "":
+        return None
+    if middle.endswith("ович") or middle.endswith("евич"):
+        return "m"
+    # ївна is not івна: Андріївна uses U+0457, Василівна uses U+0456.
+    if middle.endswith("івна") or middle.endswith("ївна"):
+        return "f"
+    return None
+
+
+def _sex_given(name):
+    """Sex guessed from a given name when there is no patronymic."""
+    if _listed(_MALE_A, name):
+        return "m"
+    if _listed(_FEM_C, name):
+        return "f"
+    if name.endswith("а") or name.endswith("я"):
+        return "f"
+    return "m"
+
+
+def _detect(parts, sex_arg):
+    """Sex to decline with, or a reason. A patronymic outranks sex=."""
+    mid = _sex_middle(parts["middle"])
+    if parts["middle"] != "" and mid is None:
+        return {"sex": None, "reason": "по батькові не розпізнано"}
+    if sex_arg is not None:
+        if sex_arg != "m" and sex_arg != "f":
+            return {"sex": None, "reason": "аргумент sex має бути «m» або «f»"}
+        if mid is not None and mid != sex_arg:
+            return {"sex": None, "reason": "по батькові суперечить аргументу sex"}
+        if mid is not None:
+            return {"sex": mid, "reason": ""}
+        return {"sex": sex_arg, "reason": ""}
+    if mid is not None:
+        return {"sex": mid, "reason": ""}
+    return {"sex": _sex_given(parts["first"]), "reason": ""}
+
+
+def _row_form(row, which):
+    """One case of a file paradigm (a record from load_yaml)."""
+    if which == "gen":
+        return row.gen
+    if which == "dat":
+        return row.dat
+    if which == "acc":
+        return row.acc
+    if which == "ins":
+        return row.ins
+    if which == "loc":
+        return row.loc
+    return row.voc
+
+
+def _dict_form(row, which):
+    """One case of an author paradigm, or None when it is incomplete."""
+    if type(row) != "dict":
+        return None
+    if not (which in row):
+        return None
+    value = row[which]
+    if type(value) != "str" or value == "":
+        return None
+    return value
+
+
+def _file_form(nom, role, which):
+    """Form from data/exceptions.yaml, or None. role filters the row."""
+    for row in _EX.words:
+        if row.nom == nom and (row.role == "" or row.role == role):
+            return _row_form(row, which)
+    return None
+
+
+def _exception_form(nom, role, which, extra):
+    """Author paradigm, then the file. None means the rules decide."""
+    if extra is not None and nom in extra:
+        form = _dict_form(extra[nom], which)
+        if form is None:
+            return {"form": None, "reason": "неповна парадигма винятку"}
+        return {"form": form, "reason": ""}
+    form = _file_form(nom, role, which)
+    return {"form": form, "reason": ""}
+
+
+def _prepare_ec(word):
+    """Productive -ець drops -е- (§ 142 note 1). The three named surnames do not.
+
+    After л the soft sign is written (Каролець — Карольця, палець —
+    пальця). After a labial, р or н it is not (Моравець — Моравця,
+    хлопець — хлопця, кінець — кінця). Other consonants follow the
+    no-soft-sign pattern; a form that needs ь goes in the exception file.
+    """
+    if word.endswith("ець") and not _listed(_KEEP_E, word):
+        head = word[:len(word) - 3]
+        if head.endswith("л"):
+            return head + "ьць"
+        return head + "ць"
+    return word
+
+
+def _ii_stem(word):
+    """Stem and group of a masculine II-declension token after -ець preparation.
+
+    A final -о is dropped first (Петро, Франко, Іваньо). -ь and -й select
+    the soft and iotated groups. ж/ч/ш/щ select the mixed group.
+    """
+    if word.endswith("о"):
+        word = word[:len(word) - 1]
+    if word.endswith("ь"):
+        return {"stem": word[:len(word) - 1], "group": "soft"}
+    if word.endswith("й"):
+        return {"stem": word[:len(word) - 1], "group": "iot"}
+    if _hush(word):
+        return {"stem": word, "group": "mixed"}
+    return {"stem": word, "group": "hard"}
+
+
+def _ii_end(group, which):
+    """First-listed personal ending for this group (§ 143 tables, § 83).
+
+    Hard locative follows the Олег table (-ові), not the common-noun -і.
+    Mixed locative follows the Тиміш table (-і). Genitive of a surname is
+    always -а/-я (§ 142 note 2); these endings already are.
+    """
+    if group == "hard":
+        if which == "gen" or which == "acc":
+            return "а"
+        if which == "ins":
+            return "ом"
+        return "ові"
+    if group == "soft":
+        if which == "gen" or which == "acc":
+            return "я"
+        if which == "ins":
+            return "ем"
+        return "еві"
+    if group == "iot":
+        if which == "gen" or which == "acc":
+            return "я"
+        if which == "ins":
+            return "єм"
+        return "єві"
+    if which == "gen" or which == "acc":
+        return "а"
+    if which == "ins":
+        return "ем"
+    if which == "dat":
+        return "еві"
+    return "і"
+
+
+def _ii_voc(original, stem, group):
+    """Vocative, § 87.
+
+    Surnames and names in -ко/-ик/-ок/-ук/-юк take -у without к→ч
+    (примітка 3: Максименку, Євгенищуку). Unsiffixed г/к/х take -е with
+    the alternation (Олеже, козаче). Soft and -ець take -ю (not шевче:
+    § 87.3 gives шевче/женче/кравче for the common noun; surnames in
+    примітка 3 keep the consonant). Mixed ж and given names take -е;
+    other mixed surnames take -у (товаришу, слухачу).
+    """
+    if group == "soft" or group == "iot":
+        return stem + "ю"
+    if group == "mixed":
+        last = stem[len(stem) - 1]
+        if last == "ж":
+            return stem + "е"
+        if original.endswith("ко"):
+            return stem + "у"
+        # Given names of this group follow Тиміш/Довбуш (-е). A surname
+        # on ч/ш/щ follows товаришу (-у). The caller passes role via
+        # the original only for suffixes; mixed given names are marked
+        # by not being surnames ending in a hushing consonant that we
+        # can see here. role is applied by the wrapper below.
+        return None
+    # -ек keeps -е- in the stem (§ 142 note 1, Гашек) and takes -у,
+    # same as other surname suffixes on к, not the common-noun к→ч.
+    if original.endswith("ко") or original.endswith("ик") or original.endswith("ок"):
+        return stem + "у"
+    if original.endswith("ук") or original.endswith("юк") or original.endswith("ек"):
+        return stem + "у"
+    last = stem[len(stem) - 1]
+    if last == "г":
+        return stem[:len(stem) - 1] + "же"
+    if last == "к":
+        return stem[:len(stem) - 1] + "че"
+    if last == "х":
+        return stem[:len(stem) - 1] + "ше"
+    return stem + "е"
+
+
+def _ii(word, which, role):
+    """Masculine II declension, animate, first listed variant."""
+    original = word
+    prepared = _prepare_ec(word)
+    parsed = _ii_stem(prepared)
+    stem = parsed["stem"]
+    group = parsed["group"]
+    if which == "voc":
+        form = _ii_voc(original, stem, group)
+        if form is None:
+            if role == "first":
+                return stem + "е"
+            return stem + "у"
+        return form
+    ending = _ii_end(group, which)
+    if ending == "і":
+        stem = _gkh(stem)
+    return stem + ending
+
+
+def _vowel_or_soft(ch):
+    """Vowel, apostrophe or soft sign: I-declension endings take ї/єю/є."""
+    return _has_char("аеєиіїоуюяьʼ", ch)
+
+
+def _i(word, which):
+    """I declension, both sexes (§ 143.1, § 74, § 142.1).
+
+    After a vowel, a soft sign or an apostrophe the soft endings are
+    ї/єю/є (Марія, Соломія). After a consonant, -я takes і/ею/е
+    (Наталя, Мотря). -а after ж/ч/ш/щ is the mixed group (і/ею/е);
+    other -а is hard (и/ою/о). г/к/х alternate only before -і.
+    """
+    stem = word[:len(word) - 1]
+    last = ""
+    if stem != "":
+        last = stem[len(stem) - 1]
+    if word.endswith("я") and _vowel_or_soft(last):
+        ending = {"gen": "ї", "dat": "ї", "acc": "ю", "ins": "єю", "loc": "ї", "voc": "є"}[which]
+    elif word.endswith("я") or _hush(stem):
+        ending = {"gen": "і", "dat": "і", "acc": "ю", "ins": "ею", "loc": "і", "voc": "е"}[which]
+        if not word.endswith("я"):
+            # Mixed -а keeps accusative -у (межа — межу), not -ю.
+            if which == "acc":
+                ending = "у"
+    else:
+        ending = {"gen": "и", "dat": "і", "acc": "у", "ins": "ою", "loc": "і", "voc": "о"}[which]
+    if ending == "і":
+        stem = _gkh(stem)
+    return stem + ending
+
+
+def _iii(word, which):
+    """Feminine given name in a consonant, III declension (§ 143.3).
+
+    Instrumental: labial or р + U+02BC + ю (Любовʼю); any other final
+    consonant doubles (Аделлю). Accusative stays the nominative.
+    """
+    if which == "acc":
+        return word
+    stem = word
+    if word.endswith("ь"):
+        stem = word[:len(word) - 1]
+    if which == "gen" or which == "dat" or which == "loc":
+        return _gkh(stem) + "і"
+    if which == "voc":
+        return stem + "е"
+    last = stem[len(stem) - 1]
+    if _has_char("бпвмфр", last):
+        return stem + "ʼю"
+    return stem + last + "ю"
+
+
+def _adj_hard(word, which):
+    """Masculine adjective surname in -ий (§ 142.2, Авдієвський).
+
+    Vocative is the nominative: § 87.4's -е is for -ов/-ин, not for -ий.
+    """
+    if which == "voc":
+        return word
+    stem = word[:len(word) - 2]
+    if which == "gen" or which == "acc":
+        return stem + "ого"
+    if which == "dat" or which == "loc":
+        return stem + "ому"
+    return stem + "им"
+
+
+def _adj_soft(word, which):
+    """Masculine adjective surname in -ній (soft adjective, синій type)."""
+    if which == "voc":
+        return word
+    stem = word[:len(word) - 2]
+    if which == "gen" or which == "acc":
+        return stem + "ього"
+    if which == "dat" or which == "loc":
+        return stem + "ьому"
+    return stem + "ім"
+
+
+def _adj_fem(word, which):
+    """Feminine adjective surname in -ська/-цька/-зька (Кобилянська)."""
+    if which == "voc":
+        return word
+    stem = word[:len(word) - 1]
+    if which == "gen":
+        return stem + "ої"
+    if which == "dat" or which == "loc":
+        return stem + "ій"
+    if which == "acc":
+        return stem + "у"
+    return stem + "ою"
+
+
+def _poss_ov(word, which):
+    """Masculine -ов/-ев/-єв/-ів/-їв without a vowel change (§ 142.3).
+
+    Alternating -ів (Ковалів — Ковалева, Прокопів — Прокопова) is data,
+    not this rule. An unlisted -ів keeps і, which is the parenthetical
+    variant in the same table. Dative is -у, instrumental -им.
+    """
+    if which == "gen" or which == "acc":
+        return word + "а"
+    if which == "dat":
+        return word + "у"
+    if which == "ins":
+        return word + "им"
+    if which == "loc":
+        return word + "і"
+    return word + "е"
+
+
+def _poss_yn(word, which):
+    """Masculine -ин/-ін/-їн of the Гаршин/Романишин type (§ 142.3).
+
+    Dative -ові, instrumental -им. Ethnonym and place surnames with
+    instrumental -ом are data (Русин, Волошин, Турчин) or the -анин rule.
+    """
+    if which == "gen" or which == "acc":
+        return word + "а"
+    if which == "dat":
+        return word + "ові"
+    if which == "ins":
+        return word + "им"
+    if which == "loc":
+        return word + "і"
+    return word + "е"
+
+
+def _anyn(word):
+    """-анин/-янин: noun II, instrumental -ом (§ 85 note)."""
+    return word.endswith("анин") or word.endswith("янин")
+
+
+def _yn(word):
+    """Adjectival -ин/-ін/-їн, excluding -анин/-янин."""
+    if _anyn(word):
+        return False
+    return word.endswith("ин") or word.endswith("ін") or word.endswith("їн")
+
+
+def _ov(word):
+    """Adjectival -ов/-ев/-єв/-ів/-їв."""
+    if word.endswith("ов") or word.endswith("ев") or word.endswith("єв"):
+        return True
+    if word.endswith("ів") or word.endswith("їв"):
+        return True
+    return False
+
+
+def _pat_m(word, which):
+    """Masculine patronymic (§ 143 sample): dative, locative and vocative -у, instrumental -ем."""
+    if which == "gen" or which == "acc":
+        return word + "а"
+    if which == "ins":
+        return word + "ем"
+    return word + "у"
+
+
+def _by_rule(word, role, which, sex):
+    """Decline one token that is not in the exception tables.
+
+    A feminine surname in a consonant or -о does not decline (§ 142
+    note 2), including -ів. A feminine given name in a consonant is
+    III declension. Adjective and possessive patterns apply to surnames.
+    """
+    if role == "middle":
+        if _sex_middle(word) == "m":
+            return _pat_m(word, which)
+        return _i(word, which)
+    if role == "last":
+        if word.endswith("ий"):
+            if sex == "f":
+                return word
+            return _adj_hard(word, which)
+        if word.endswith("ній"):
+            if sex == "f":
+                return word
+            return _adj_soft(word, which)
+        if word.endswith("ська") or word.endswith("цька") or word.endswith("зька"):
+            return _adj_fem(word, which)
+        if sex == "m" and _anyn(word):
+            return _ii(word, which, role)
+        if sex == "m" and _yn(word):
+            return _poss_yn(word, which)
+        if sex == "m" and _ov(word):
+            return _poss_ov(word, which)
+    if word.endswith("а") or word.endswith("я"):
+        return _i(word, which)
+    if sex == "f":
+        if role == "first" and not word.endswith("о"):
+            return _iii(word, which)
+        return word
+    return _ii(word, which, role)
+
+
+def _token(word, role, which, sex, extra):
+    """One declined token. A hyphenated surname declines each part (§ 146)."""
+    found = _exception_form(word, role, which, extra)
+    if found["reason"] != "":
+        return found
+    if found["form"] is not None:
+        return found
+    if role == "last" and word.find("-") >= 0:
+        bits = word.split("-")
+        done = []
+        for bit in bits:
+            if bit == "":
+                return {"form": None, "reason": "порожня частина прізвища"}
+            part = _token(bit, role, which, sex, extra)
+            if part["reason"] != "":
+                return part
+            done.append(part["form"])
+        return {"form": "-".join(done), "reason": ""}
+    return {"form": _by_rule(word, role, which, sex), "reason": ""}
+
+
+def _apply(full, which, sex, exceptions):
+    """Declined ПІБ, or a reason. exceptions is None or a dict of paradigms."""
+    if type(which) != "str" or not _known(which):
+        return {"form": None, "reason": "невідомий відмінок"}
+    cleaned = _clean(full)
+    if cleaned["reason"] != "":
+        return {"form": None, "reason": cleaned["reason"]}
+    if exceptions is not None and type(exceptions) != "dict":
+        return {"form": None, "reason": "аргумент exceptions має бути словником"}
+    who = _detect(cleaned["parts"], sex)
+    if who["reason"] != "":
+        return {"form": None, "reason": who["reason"]}
+    parts = cleaned["parts"]
+    last = _token(parts["last"], "last", which, who["sex"], exceptions)
+    if last["reason"] != "":
+        return last
+    first = _token(parts["first"], "first", which, who["sex"], exceptions)
+    if first["reason"] != "":
+        return first
+    bits = [last["form"], first["form"]]
+    if parts["middle"] != "":
+        middle = _token(parts["middle"], "middle", which, who["sex"], exceptions)
+        if middle["reason"] != "":
+            return middle
+        bits.append(middle["form"])
+    return {"form": " ".join(bits), "reason": ""}
+
+
+def parse_problem(full):
+    """Why full is not «прізвище імʼя» or «прізвище імʼя по батькові», or ""."""
+    return _clean(full)["reason"]
+
+
+def parse(full):
+    """Dictionary {last, first, middle}. A name that cannot be split stops the build."""
+    cleaned = _clean(full)
+    if cleaned["reason"] != "":
+        fail(f"names: «{full}»: {cleaned['reason']}")
+    return cleaned["parts"]
+
+
+def sex(full):
+    """"m", "f", or None from the patronymic, otherwise from the given name.
+
+    None also means the text is not a name this library splits. A patronymic
+    the library does not know (for example a Russian -ич) is None.
+    """
+    cleaned = _clean(full)
+    if cleaned["reason"] != "":
+        return None
+    parts = cleaned["parts"]
+    if parts["middle"] != "":
+        return _sex_middle(parts["middle"])
+    return _sex_given(parts["first"])
+
+
+def case_problem(full, which, sex=None, exceptions=None):
+    """Why full cannot be put in which, or "". sex is "m" or "f" when the patronymic is absent and the guess is wrong."""
+    return _apply(full, which, sex, exceptions)["reason"]
+
+
+def case(full, which, sex=None, exceptions=None):
+    """ПІБ in which ("gen", "dat", "acc", "ins", "loc", "voc"). An unknown form stops the build."""
+    got = _apply(full, which, sex, exceptions)
+    if got["reason"] != "":
+        fail(f"names: «{full}»: {got['reason']}")
+    return got["form"]
+
+
+def initials_problem(full, style="before"):
+    """Why initials cannot be built, or "". style is "before" or "after"."""
+    if style != "before" and style != "after":
+        return "невідомий стиль ініціалів"
+    return _clean(full)["reason"]
+
+
+def initials(full, style="before"):
+    """«І. М. Петренко» (style "before") or «Петренко І. М.» ("after")."""
+    reason = initials_problem(full, style)
+    if reason != "":
+        fail(f"names: «{full}»: {reason}")
+    parts = _clean(full)["parts"]
+    letters = parts["first"][0].upper() + "."
+    if parts["middle"] != "":
+        letters = letters + " " + parts["middle"][0].upper() + "."
+    if style == "before":
+        return letters + " " + parts["last"]
+    return parts["last"] + " " + letters
+
+
+def signature_problem(full):
+    """Why the signature line cannot be built, or ""."""
+    return _clean(full)["reason"]
+
+
+def signature(full):
+    """«Імʼя ПРІЗВИЩЕ» (the form named in the task; DSTU 4163:2020 text was not opened)."""
+    reason = signature_problem(full)
+    if reason != "":
+        fail(f"names: «{full}»: {reason}")
+    parts = _clean(full)["parts"]
+    return parts["first"] + " " + parts["last"].upper()
+
+
+def position_problem(text, which):
+    """Why text is not a known position in which, or "". The match is lowercase and ignores repeated spaces."""
+    if type(which) != "str" or not _known(which):
+        return "невідомий відмінок"
+    if type(text) != "str":
+        return "очікується текст"
+    key = " ".join(text.split()).lower()
+    if key == "":
+        return "порожній рядок"
+    for row in _POS.positions:
+        if row.nom == key:
+            return ""
+    return "немає в словнику посад"
+
+
+def position_case(text, which):
+    """A dictionary position in which. An unknown position stops the build."""
+    reason = position_problem(text, which)
+    if reason != "":
+        fail(f"names: посада «{text}»: {reason}")
+    key = " ".join(text.split()).lower()
+    for row in _POS.positions:
+        if row.nom == key:
+            return _row_form(row, which)
+    return ""
+|end

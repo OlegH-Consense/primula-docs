@@ -1,0 +1,140 @@
+---
+doc: {title: "ua_ids: перевірка", language: uk-UA}
+---
+|% Codes below were calculated outside Primula on 2026-10-31 (Python integers
+|% and datetime) and written here as literals. edrpou_make and rnokpp_make are
+|% a second implementation used only to show that the helper matches those
+|% literals; the library is compared with the literals, not with the helper.
+|% No real party codes: ЄДРПОУ values are boundary and synthetic, РНОКПП values
+|% are built from the algorithm. IBAN UA213223130000026007233566001 is a
+|% structurally valid IBAN (not a published sample); UA853996220000000260012335661
+|% is the Ukrainian sample published by Wikipedia (checked 2026-11-02).
+|import("../ua_ids")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+
+_OUT = [1, 2, 3, 4, 5, 6, 7]
+_MID = [7, 1, 2, 3, 4, 5, 6]
+_RW = [-1, 5, 7, 9, 4, 6, 10, 5, 7]
+_DIGITS = "0123456789"
+
+
+def edrpou_make(first7):
+    """Eight-digit code whose weight row agrees with the full value."""
+    digs = [int(ch) for ch in first7]
+
+    def control(weights):
+        total = sum([digs[i] * weights[i] for i in range(7)])
+        rest = total % 11
+        if rest == 10:
+            total = sum([digs[i] * (weights[i] + 2) for i in range(7)])
+            rest = total % 11
+            if rest == 10:
+                rest = 0
+        return rest
+
+    for weights in (_OUT, _MID):
+        code = first7 + _DIGITS[int(control(weights))]
+        number = int(code)
+        outside = number < 30000000 or number > 60000000
+        if outside == (weights[0] == 1):
+            return code
+    fail(f"edrpou_make: немає розряду для {first7}")
+
+
+def rnokpp_make(days, serial, sex_digit):
+    """Ten digits: day count, 3-digit serial, sex digit, check digit."""
+    first9 = str(days).zfill(5) + str(serial).zfill(3) + str(sex_digit)
+    digs = [int(ch) for ch in first9]
+    total = sum([digs[i] * _RW[i] for i in range(9)])
+    return first9 + _DIGITS[int((total % 11) % 10)]
+
+
+expect("make-low", edrpou_make("0001001"), "00010010")
+expect("make-plus2", edrpou_make("0000003"), "00000035")
+expect("make-zero", edrpou_make("0000281"), "00002810")
+expect("make-below30", edrpou_make("2999999"), "29999993")
+expect("make-mid-plus2", edrpou_make("3000000"), "30000005")
+expect("make-mid", edrpou_make("3000001"), "30000015")
+expect("make-mid-zero", edrpou_make("3000044"), "30000440")
+expect("make-below60", edrpou_make("5999999"), "59999994")
+expect("make-above60", edrpou_make("6000000"), "60000006")
+
+expect("edrpou-0", ua_ids.edrpou("00000000"), "00000000")
+expect("edrpou-low", ua_ids.edrpou("0001 0010"), "00010010")
+expect("edrpou-plus2", ua_ids.is_edrpou("00000035"), True)
+expect("edrpou-zero", ua_ids.is_edrpou("00002810"), True)
+expect("edrpou-below30", ua_ids.edrpou("29999993"), "29999993")
+expect("edrpou-mid-plus2", ua_ids.edrpou("30000005"), "30000005")
+expect("edrpou-mid", ua_ids.is_edrpou("30000015"), True)
+expect("edrpou-mid-zero", ua_ids.is_edrpou("30000440"), True)
+expect("edrpou-below60", ua_ids.edrpou("59999994"), "59999994")
+expect("edrpou-above60", ua_ids.edrpou("60000006"), "60000006")
+
+expect("bad-0", ua_ids.edrpou_problem("00000001"), "не збігається контрольний розряд")
+expect("bad-30m", ua_ids.edrpou_problem("30000000"), "не збігається контрольний розряд")
+expect("bad-60m", ua_ids.edrpou_problem("60000000"), "не збігається контрольний розряд")
+expect("bad-switch", ua_ids.edrpou_problem("60000009"), "не збігається контрольний розряд")
+expect("bad-len", ua_ids.edrpou_problem("1234567"), "очікується 8 цифр")
+expect("bad-len2", ua_ids.edrpou_problem("123456789"), "очікується 8 цифр")
+expect("bad-chars", ua_ids.edrpou_problem("12AB5678"), "очікується 8 цифр")
+expect("bad-empty", ua_ids.edrpou_problem(""), "очікується 8 цифр")
+expect("bad-type", ua_ids.edrpou_problem(30000005), "очікується 8 цифр")
+expect("bad-hyphen", ua_ids.edrpou_problem("3000-0005"), "очікується 8 цифр")
+expect("is-false", ua_ids.is_edrpou("30000000"), False)
+
+expect("make-m", rnokpp_make(32873, 0, 1), "3287300012")
+expect("make-f", rnokpp_make(32873, 0, 2), "3287300029")
+expect("make-1900", rnokpp_make(1, 1, 3), "0000100138")
+expect("make-leap", rnokpp_make(36584, 7, 9), "3658400796")
+expect("make-future", rnokpp_make(72685, 0, 1), "7268500011")
+expect("make-neg", rnokpp_make(90000, 0, 1), "9000000019")
+expect("make-sex0", rnokpp_make(32873, 0, 0), "3287300006")
+expect("make-day0", rnokpp_make(0, 0, 1), "0000000017")
+
+expect("rnokpp", ua_ids.rnokpp("32873 00012"), "3287300012")
+expect("birth-1990", ua_ids.rnokpp_birth_date("3287300012"), date(1990, 1, 1))
+expect("sex-m", ua_ids.rnokpp_sex("3287300012"), "m")
+expect("birth-f", ua_ids.rnokpp_birth_date("3287300029"), date(1990, 1, 1))
+expect("sex-f", ua_ids.rnokpp_sex("3287300029"), "f")
+expect("sex-0", ua_ids.rnokpp_sex("3287300006"), "f")
+expect("birth-1900", ua_ids.rnokpp_birth_date("0000100138"), date(1900, 1, 1))
+expect("sex-1900", ua_ids.rnokpp_sex("0000100138"), "m")
+expect("birth-leap", ua_ids.rnokpp_birth_date("3658400796"), date(2000, 2, 29))
+expect("birth-future", ua_ids.rnokpp_birth_date("7268500011"), date(2099, 1, 1))
+expect("birth-neg", ua_ids.rnokpp_birth_date("9000000019"), date(2146, 5, 30))
+expect("birth-0", ua_ids.rnokpp_birth_date("0000000017"), date(1899, 12, 31))
+expect("future-soft", ua_ids.rnokpp_problem("7268500011"), "")
+expect("future-day", ua_ids.rnokpp_problem("7268500011", day=date(2026, 10, 31)), "дата народження пізніша за передану дату")
+expect("past-day", ua_ids.is_rnokpp("3287300012", day=date(2026, 10, 31)), True)
+expect("same-day", ua_ids.is_rnokpp("3287300012", day=date(1990, 1, 1)), True)
+expect("rnokpp-bad", ua_ids.rnokpp_problem("3287300013"), "не збігається контрольний розряд")
+expect("rnokpp-len", ua_ids.rnokpp_problem("328730001"), "очікується 10 цифр")
+expect("rnokpp-len2", ua_ids.rnokpp_problem("32873000123"), "очікується 10 цифр")
+expect("rnokpp-chars", ua_ids.rnokpp_problem("328730001X"), "очікується 10 цифр")
+expect("day-type", ua_ids.rnokpp_problem("3287300012", day="2026-10-31"), "аргумент day має бути датою")
+
+expect("iban", ua_ids.iban("ua21 3223 1300 0002 6007 2335 6600 1"), "UA213223130000026007233566001")
+expect("iban-published", ua_ids.iban_problem("UA85 399622 0000 0002 6001 2335 661"), "")
+expect("iban-published-mfo", ua_ids.iban_bank_code("UA853996220000000260012335661"), "399622")
+expect("iban-bad", ua_ids.iban_problem("UA223223130000026007233566001"), "не збігається контрольне число")
+expect("grouped", ua_ids.iban_grouped("UA213223130000026007233566001"), "UA21 3223 1300 0002 6007 2335 6600 1")
+expect("mfo", ua_ids.iban_bank_code("UA213223130000026007233566001"), "322313")
+expect("make-sample", ua_ids.iban_make("322313", "0000026007233566001"), "UA213223130000026007233566001")
+expect("make-short", ua_ids.iban_make("000000", "1"), "UA620000000000000000000000001")
+expect("make-full", ua_ids.iban_make("999999", "1234567890123456789"), "UA109999991234567890123456789")
+expect("make-ok", ua_ids.is_iban(ua_ids.iban_make("000000", "1")), True)
+expect("iban-len", ua_ids.iban_problem("UA21322313000002600723356600"), "очікується UA і 27 цифр")
+expect("iban-country", ua_ids.iban_problem("DE89370400440532013000"), "очікується UA і 27 цифр")
+expect("iban-type", ua_ids.is_iban(213223130000026007233566001), False)
+
+expect("party-8", ua_ids.party_code("3000 0005"), "30000005")
+expect("party-10", ua_ids.party_code("3287300012"), "3287300012")
+expect("party-len", ua_ids.party_code_problem("123456789"), "очікується код із 8 (ЄДРПОУ) або 10 (РНОКПП) цифр")
+expect("party-future", ua_ids.party_code_problem("7268500011", day=date(2026, 10, 31)), "дата народження пізніша за передану дату")
+expect("party-type", ua_ids.is_party_code(3287300012), False)
+|end
+ua_ids |(ua_ids.VERSION): ЄДРПОУ |(ua_ids.edrpou("30000005")), IBAN |(ua_ids.iban_grouped("UA213223130000026007233566001")).

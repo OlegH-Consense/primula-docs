@@ -1,0 +1,16 @@
+---
+doc: {title: "Приклад finance", language: uk-UA}
+---
+|import("lib/finance")
+|code:
+principal = dec("1000")
+rate = dec("12")
+start = date(2026, 1, 15)
+rows = finance.schedule(principal, rate, 3, start)
+line = finance.straight_line(dec("10000"), dec("1000"), 5, date(2026, 1, 1))
+worth = finance.npv(dec("10"), [dec("-1000"), dec("400"), dec("400"), dec("400")])
+|end
+Бібліотека finance |(finance.VERSION).
+Ануїтет на |( money(principal, "UAH") ) під |( num(rate, digits=0) ) % на 3 місяці — |( money(rows[0]["payment"], "UAH") ), перша дата |( fmt_date(rows[0]["date"]) ), остання |( money(rows[2]["payment"], "UAH") ).
+Рік амортизації — |( money(line[0]["amount"], "UAH") ).
+NPV трьох надходжень — |( money(round_money(worth), "UAH") ).

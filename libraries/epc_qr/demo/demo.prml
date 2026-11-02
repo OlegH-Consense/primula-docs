@@ -1,0 +1,11 @@
+---
+doc: {title: "Приклад epc_qr", language: uk-UA}
+---
+|% Names and the IBAN are the published EPC069-12 examples, not a person's details.
+|import("lib/epc_qr")
+|code:
+text = epc_qr.payload("François D'Alsace S.A.", "FR1420041010050500013M02606", amount=dec("12.3"), text="Client:Marie Louise La Lune", version="002", encoding="iso-8859-1")
+|end
+Бібліотека epc_qr |(epc_qr.VERSION).
+|img(svg=epc_qr.svg("Franz Mustermänn", "DE71110220330123456789", amount=dec("12.3"), bic="BHBLDEHHXXX", purpose="GDDS", reference="RF18539007547034", version="001"))
+Версія 2, кодування ISO 8859-1, у зображення не передається: |( text ).

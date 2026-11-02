@@ -1,0 +1,23 @@
+[
+  {
+    "hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "date": "2026-02-03",
+    "author": "Тест Автор",
+    "message": "Зміна 2: додано рисунок\n\nРозділи: 3\n",
+    "files": ["doc.prml", "fig.prml"]
+  },
+  {
+    "hash": "cccccccccccccccccccccccccccccccccccccccc",
+    "date": "2026-01-15",
+    "author": "Інший Автор",
+    "message": "початковий опис\n",
+    "files": ["doc.prml"]
+  },
+  {
+    "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "date": "2026-01-02",
+    "author": "Тест Автор",
+    "message": "Зміна 1: уточнено таблицю\n\nРозділи: 1.2, 4\n",
+    "files": ["doc.prml"]
+  }
+]

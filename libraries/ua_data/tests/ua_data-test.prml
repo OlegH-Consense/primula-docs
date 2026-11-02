@@ -1,0 +1,56 @@
+---
+doc: {title: "ua_data: перевірка", language: uk-UA}
+---
+|import("../ua_data")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+expect("ver", ua_data.VERSION, "0.1.0")
+expect("asof", ua_data.DATA_AS_OF, "2026-10-31")
+
+rates = ua_data.series("discount")
+expect("rate-first", ua_data.value_on(rates, date(2022, 6, 3)), dec("25"))
+expect("rate-before", ua_data.value_problem(rates, date(2022, 6, 2)), "немає значення на цю дату")
+expect("rate-mid", ua_data.discount_rate_on(date(2024, 6, 13)), dec("13.5"))
+expect("rate-change", ua_data.discount_rate_on(date(2024, 6, 14)), dec("13"))
+expect("rate-15", ua_data.discount_rate_on(date(2026, 9, 17)), dec("15.5"))
+expect("rate-16", ua_data.discount_rate_on(date(2026, 9, 18)), dec("16"))
+expect("rate-165", ua_data.discount_rate_on(date(2026, 10, 30)), dec("16.5"))
+expect("rate-horizon", ua_data.discount_rate_on(date(2026, 10, 31)), dec("16.5"))
+expect("rate-later", ua_data.value_problem(rates, date(2026, 11, 1)), "ряд підтверджено лише до 2026-10-31")
+expect("rate-src", ua_data.source_on(rates, date(2026, 10, 30)), "Рішення Правління НБУ від 29.10.2026 № 369-рш, чинне з 30.10.2026")
+expect("rate-type", ua_data.value_problem(rates, "2026-10-30"), "очікується дата")
+
+expect("vat", ua_data.vat_rate_on(date(2026, 1, 1)), dec("20"))
+expect("vat-early", ua_data.value_problem(ua_data.series("vat"), date(2013, 12, 31)), "немає значення на цю дату")
+expect("vat-later", ua_data.value_problem(ua_data.series("vat"), date(2027, 1, 1)), "ряд підтверджено лише до 2026-12-31")
+
+expect("wage-2025", ua_data.min_wage_on(date(2025, 12, 31)), dec("8000"))
+expect("wage-2026", ua_data.min_wage_on(date(2026, 1, 1)), dec("8647"))
+expect("hour-2025", ua_data.min_wage_hour_on(date(2025, 6, 1)), dec("48"))
+expect("hour-2026", ua_data.min_wage_hour_on(date(2026, 11, 1)), dec("52"))
+expect("wage-early", ua_data.value_problem(ua_data.series("min_wage"), date(2024, 12, 31)), "немає значення на цю дату")
+
+expect("sub-able", ua_data.subsistence_on(date(2026, 6, 1)), dec("3328"))
+expect("sub-child", ua_data.subsistence_on(date(2026, 6, 1), group="child_0_6"), dec("2817"))
+expect("sub-old", ua_data.subsistence_on(date(2025, 6, 1), group="unable"), dec("2361"))
+expect("sub-general", ua_data.subsistence_on(date(2026, 1, 1), group="general"), dec("3209"))
+expect("sub-teen", ua_data.subsistence_on(date(2026, 1, 1), group="child_6_18"), dec("3512"))
+
+expect("cpi-sep", ua_data.cpi_on(date(2026, 9, 15)), dec("102.1"))
+expect("cpi-jul25", ua_data.cpi_on(date(2025, 7, 1)), dec("99.8"))
+expect("cpi-jan24", ua_data.cpi_on(date(2024, 1, 31)), dec("100.4"))
+expect("cpi-oct", ua_data.cpi_problem(date(2026, 10, 1)), "немає індексу за цей місяць")
+expect("cpi-old", ua_data.cpi_problem(date(2023, 12, 1)), "немає індексу за цей місяць")
+
+cal = ua_data.calendar(2026)
+expect("ny", is_workday(date(2026, 1, 1), calendar=cal), True)
+expect("sun", is_workday(date(2026, 1, 4), calendar=cal), False)
+expect("xmas", is_workday(date(2026, 1, 7), calendar=cal), True)
+expect("after", workdays(date(2026, 1, 2), 1, calendar=cal), date(2026, 1, 5))
+expect("cal-2027", ua_data.calendar_problem(2027), "календар цього року не зібрано")
+expect("cal-frac", ua_data.calendar_problem(dec("2026.5")), "очікується рік")
+|end
+Ряд облікової ставки на |( fmt_date(date(2026, 10, 31), "long") ): |( num(ua_data.discount_rate_on(date(2026, 10, 31)), digits=1) ) %.

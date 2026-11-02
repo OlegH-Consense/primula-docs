@@ -1,0 +1,21 @@
+---
+doc: {title: "Приклад legal", language: uk-UA}
+---
+|% A project document. The discount pack and the CPI rows are arguments:
+|% a module cannot import a sibling library, so the document passes them.
+|import("lib/legal/legal")
+|import("lib/ua_data/ua_data")
+|code:
+debt = dec("10000")
+start = date(2026, 10, 30)
+end = date(2026, 10, 31)
+pen = legal.penalty(debt, start, end, ua_data.series("discount"))
+loss = legal.inflation_losses(dec("1000"), date(2026, 9, 1), date(2026, 10, 1), ua_data.cpi_rows())
+due = legal.deadline(date(2026, 1, 2), 5, calendar=ua_data.calendar(2026))
+interest = legal.annual3(debt, date(2026, 1, 1), date(2026, 1, 31))
+|end
+Бібліотека legal |(legal.VERSION).
+Пеня на |( money(debt, "UAH") ) за |( fmt_date(start) ) (день сплати |( fmt_date(end) ) не входить) — |( money(pen, "UAH") ). Ставка — подвійна облікова.
+Інфляційні втрати на 1 000 грн за вересень 2026 року — |( money(loss, "UAH") ).
+3 % річних за 30 днів січня — |( money(interest, "UAH") ).
+Строк |( legal.term_words(5) ), дата |( due ).

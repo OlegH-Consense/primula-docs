@@ -1,0 +1,11 @@
+---
+doc: {title: "Приклад ua_ids", language: uk-UA}
+---
+|% A project document. lib/ is a symbolic link to the library, so the import
+|% path is the one a real project uses. Values are synthetic, plus the
+|% published IBAN sample named in the library skill.
+|import("lib/ua_ids")
+Бібліотека ua_ids |(ua_ids.VERSION).
+ЄДРПОУ |(ua_ids.edrpou("3000 0005")), код сторони |(ua_ids.party_code("3287300012")).
+IBAN |(ua_ids.iban_grouped("ua21 3223 1300 0002 6007 2335 6600 1")), МФО |(ua_ids.iban_bank_code("UA213223130000026007233566001")).
+Дата народження |(fmt_date(ua_ids.rnokpp_birth_date("3287300012"), "long")).

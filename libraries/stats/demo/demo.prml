@@ -1,0 +1,11 @@
+---
+doc: {title: "Приклад stats", language: uk-UA}
+---
+|import("lib/stats")
+|code:
+xs = [dec("2"), dec("4"), dec("4"), dec("8")]
+info = stats.describe(xs, digits=2)
+|end
+Бібліотека stats |(stats.VERSION).
+Чотири виміри: мінімум |( num(info["min"], digits=0) ), медіана |( num(info["median"], digits=1) ), відхилення |( num(info["stdev"], digits=2) ).
+Мода |( num(stats.mode(xs), digits=0) ).

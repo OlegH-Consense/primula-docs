@@ -1,0 +1,43 @@
+# Full paradigms the ending rules cannot know.
+# Orthography: Український правопис 2019, §§ 142–143, 85, 87.
+# Apostrophe is U+02BC. role "" applies to any token; "first" only to a
+# given name; "last" only to a surname. When the orthography lists two
+# endings, the value here is the first one.
+# Checked against slovnyk.ua (2019 text) on 2026-10-31.
+words:
+  - {nom: "Заєць", role: "", gen: "Зайця", dat: "Зайцеві", acc: "Зайця", ins: "Зайцем", loc: "Зайцеві", voc: "Зайцю"}
+  - {nom: "Кривоніс", role: "", gen: "Кривоноса", dat: "Кривоносові", acc: "Кривоноса", ins: "Кривоносом", loc: "Кривоносові", voc: "Кривоносе"}
+  - {nom: "Лебідь", role: "", gen: "Лебедя", dat: "Лебедеві", acc: "Лебедя", ins: "Лебедем", loc: "Лебедеві", voc: "Лебедю"}
+  - {nom: "Журавель", role: "", gen: "Журавля", dat: "Журавлеві", acc: "Журавля", ins: "Журавлем", loc: "Журавлеві", voc: "Журавлю"}
+  - {nom: "Соловей", role: "", gen: "Соловʼя", dat: "Соловʼєві", acc: "Соловʼя", ins: "Соловʼєм", loc: "Соловʼєві", voc: "Соловʼю"}
+  - {nom: "Бусел", role: "", gen: "Бусла", dat: "Буслові", acc: "Бусла", ins: "Буслом", loc: "Буслові", voc: "Бусле"}
+  - {nom: "Свекор", role: "", gen: "Свекра", dat: "Свекрові", acc: "Свекра", ins: "Свекром", loc: "Свекрові", voc: "Свекре"}
+  - {nom: "Моток", role: "", gen: "Мотка", dat: "Моткові", acc: "Мотка", ins: "Мотком", loc: "Моткові", voc: "Мотку"}
+  - {nom: "Снігир", role: "", gen: "Снігиря", dat: "Снігиреві", acc: "Снігиря", ins: "Снігирем", loc: "Снігиреві", voc: "Снігирю"}
+  - {nom: "Ковалів", role: "", gen: "Ковалева", dat: "Ковалеву", acc: "Ковалева", ins: "Ковалевим", loc: "Ковалеві", voc: "Ковалеве"}
+  - {nom: "Прокопів", role: "", gen: "Прокопова", dat: "Прокопову", acc: "Прокопова", ins: "Прокоповим", loc: "Прокопові", voc: "Прокопове"}
+  - {nom: "Кирчів", role: "", gen: "Кирчева", dat: "Кирчеву", acc: "Кирчева", ins: "Кирчевим", loc: "Кирчеві", voc: "Кирчеве"}
+  # § 142 note 3: noun-type, instrumental -ом (not Гаршиним).
+  - {nom: "Русин", role: "", gen: "Русина", dat: "Русинові", acc: "Русина", ins: "Русином", loc: "Русинові", voc: "Русине"}
+  # § 83 note lists dative -у first; § 85 instrumental -ом.
+  # Locative -і is the first ending of the -ин table; § 86 was not copied in full.
+  - {nom: "Волошин", role: "", gen: "Волошина", dat: "Волошину", acc: "Волошина", ins: "Волошином", loc: "Волошині", voc: "Волошине"}
+  - {nom: "Турчин", role: "", gen: "Турчина", dat: "Турчинові", acc: "Турчина", ins: "Турчином", loc: "Турчинові", voc: "Турчине"}
+  # Letters -ов would otherwise take the Павлов paradigm (§ 142.3).
+  - {nom: "Любов", role: "last", gen: "Любова", dat: "Любовові", acc: "Любова", ins: "Любовом", loc: "Любовові", voc: "Любове"}
+  # § 143. Given-name rows must not capture a surname of the same spelling.
+  - {nom: "Ілля", role: "first", gen: "Іллі", dat: "Іллі", acc: "Іллю", ins: "Іллею", loc: "Іллі", voc: "Іллє"}
+  # Closed-syllable і → о, same pattern as § 143 note 1, not in that list by name.
+  - {nom: "Яків", role: "first", gen: "Якова", dat: "Яковові", acc: "Якова", ins: "Яковом", loc: "Яковові", voc: "Якове"}
+  - {nom: "Антін", role: "first", gen: "Антона", dat: "Антонові", acc: "Антона", ins: "Антоном", loc: "Антонові", voc: "Антону"}
+  - {nom: "Нестір", role: "first", gen: "Нестора", dat: "Несторові", acc: "Нестора", ins: "Нестором", loc: "Несторові", voc: "Несторе"}
+  - {nom: "Ничипір", role: "first", gen: "Ничипора", dat: "Ничипорові", acc: "Ничипора", ins: "Ничипором", loc: "Ничипорові", voc: "Ничипоре"}
+  - {nom: "Прокіп", role: "first", gen: "Прокопа", dat: "Прокопові", acc: "Прокопа", ins: "Прокопом", loc: "Прокопові", voc: "Прокопе"}
+  - {nom: "Сидір", role: "first", gen: "Сидора", dat: "Сидорові", acc: "Сидора", ins: "Сидором", loc: "Сидорові", voc: "Сидоре"}
+  - {nom: "Федір", role: "first", gen: "Федора", dat: "Федорові", acc: "Федора", ins: "Федором", loc: "Федорові", voc: "Федоре"}
+  - {nom: "Тиміш", role: "first", gen: "Тимоша", dat: "Тимошеві", acc: "Тимоша", ins: "Тимошем", loc: "Тимоші", voc: "Тимоше"}
+  - {nom: "Ігор", role: "first", gen: "Ігоря", dat: "Ігореві", acc: "Ігоря", ins: "Ігорем", loc: "Ігореві", voc: "Ігорю"}
+  - {nom: "Лазар", role: "first", gen: "Лазаря", dat: "Лазареві", acc: "Лазаря", ins: "Лазарем", loc: "Лазареві", voc: "Лазарю"}
+  # § 142 note 1: these given names drop -е-; the same surnames keep it.
+  - {nom: "Павел", role: "first", gen: "Павла", dat: "Павлові", acc: "Павла", ins: "Павлом", loc: "Павлові", voc: "Павле"}
+  - {nom: "Петер", role: "first", gen: "Петра", dat: "Петрові", acc: "Петра", ins: "Петром", loc: "Петрові", voc: "Петре"}

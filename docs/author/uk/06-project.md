@@ -1,4 +1,4 @@
-<!-- translation: source=docs/author/ru/06-project.md sections=ac21902d ed618ab9 0f2d968f 0ecf8e58 28139212 4c88988a 4666df39 42f79e1f a698ee9f 448f3597 9fe170b6 abc8222f -->
+<!-- translation: source=docs/author/ru/06-project.md sections=ac21902d ed618ab9 0f2d968f 0ecf8e58 28139212 4c88988a 4666df39 42f79e1f 8f03baf2 a698ee9f 448f3597 9fe170b6 abc8222f -->
 <!-- spec: 5.7 9.3 10.1 10.2 10.3 10.4 10.5 10.6 10.7 11.7 -->
 # Проєкт із кількох документів
 
@@ -176,6 +176,28 @@ primula export договір.prml --to html          # один файл HTML �
 primula export договір.prml --to docx          # стилі абзаців — за іменами (custom-style)
 primula export договір.prml --to json          # AST pandoc, pandoc не потрібен
 ```
+
+## Швидкий перегляд: primula view
+
+`primula view` збирає документ у тимчасовому каталозі (ODT і PDF, як `build --pdf`), відкриває PDF у переглядачі й видаляє файли, коли вікно закрито. Якщо збірка не вдалась, замість PDF показується журнал збірки — у терміналі або у вікні. Команда потрібна для файлових менеджерів: коротке ім'я `primula-view` лежить поруч із `primula`.
+
+```sh
+primula view договір.prml
+primula view договір.prml --param номер=12 --viewer "okular --unique"
+primula view --text договір.prml | less        # без LibreOffice: простий текст через pandoc, близько секунди
+```
+
+Переглядач береться з `--viewer`, потім зі змінної `PRIMULA_VIEWER`, потім це переглядач PDF стільниці (okular, evince, atril, xreader, zathura, mupdf, qpdfview), потім `xdg-open`. Заданий і впізнаний переглядач очікується; `xdg-open` повертається одразу, тому файли залишаються в `$XDG_RUNTIME_DIR/primula-view` і видаляються пізніше. LibreOffice стартує з профілем у `~/.cache/primula`, що трохи прискорює повторні запуски; основний час забирає верстка в LibreOffice, тому для документа на кілька сторінок чекайте кілька секунд, а для швидкого погляду на текст використовуйте `--text`.
+
+F3 у Midnight Commander — у `~/.config/mc/mc.ext.ini`:
+
+```ini
+[primula]
+Extensions=prml
+View=primula-view %f
+```
+
+Для тексту в самому терміналі: `View=%view{ascii} primula view --text %f`.
 
 ## Зведений документ
 

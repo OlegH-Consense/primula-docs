@@ -1,0 +1,10 @@
+---
+doc: {title: "Приклад names", language: uk-UA}
+---
+|% A project document. lib/ is a symbolic link to the library, so the import
+|% path is the one a real project uses. The names are the orthography samples,
+|% not personal data.
+|import("lib/names")
+Бібліотека names |(names.VERSION).
+Договір укладено в особі |(names.position_case("директор", "gen")) |(names.case("Петренко Іван Миколайович", "gen")).
+Підпис: |(names.signature("Петренко Іван Миколайович")). Ініціали: |(names.initials("Петренко Іван Миколайович")).

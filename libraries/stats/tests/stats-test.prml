@@ -1,0 +1,47 @@
+---
+doc: {title: "stats: перевірка", language: uk-UA}
+---
+|% Sample variance of 1,2,3,4 is 5/3. The sample standard deviation is
+|% round(dec(sqrt(5/3)), 10) through the core's shortest float repr.
+|import("../stats")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+xs = [dec("1"), dec("2"), dec("3"), dec("4")]
+expect("med", stats.median(xs), dec("2.5"))
+expect("med1", stats.median([dec("1"), dec("2"), dec("3")]), dec("2"))
+expect("mode", stats.mode([dec("1"), dec("2"), dec("2"), dec("3"), dec("3")]), dec("2"))
+expect("tie", stats.mode([dec("2"), dec("1"), dec("2"), dec("1")]), dec("1"))
+expect("var", round(stats.variance(xs), 10), dec("1.6666666667"))
+expect("pop", stats.variance(xs, sample=False), dec("1.25"))
+expect("one", stats.variance_problem([dec("5")]), "для вибіркової дисперсії потрібно щонайменше два значення")
+expect("sd", stats.stdev(xs), dec("1.2909944487"))
+expect("sd2", stats.stdev(xs, digits=2), dec("1.29"))
+expect("psd", stats.stdev(xs, sample=False), dec("1.1180339887"))
+expect("p25", stats.percentile(xs, dec("25")), dec("1.75"))
+expect("p50", stats.percentile(xs, dec("50")), dec("2.5"))
+expect("p0", stats.percentile(xs, dec("0")), dec("1"))
+expect("p100", stats.percentile(xs, dec("100")), dec("4"))
+expect("p40", stats.percentile(xs, dec("40")), dec("2.2"))
+expect("pbad", stats.percentile_problem(xs, dec("101")), "перцентиль поза межами 0…100")
+expect("empty", stats.values_problem([]), "очікується непорожній список")
+expect("none", stats.values_problem([dec("1"), None]), "у даних є порожнє значення")
+avg = stats.moving_average(xs, 2)
+expect("ma-n", len(avg), 3)
+expect("ma0", avg[0], dec("1.5"))
+expect("ma2", avg[2], dec("3.5"))
+wide = stats.moving_average(xs, 3)
+expect("w0", wide[0], dec("2"))
+expect("w1", wide[1], dec("3"))
+info = stats.describe(xs, digits=6)
+expect("n", info["n"], 4)
+expect("min", info["min"], dec("1"))
+expect("max", info["max"], dec("4"))
+expect("mean", info["mean"], dec("2.5"))
+expect("dmed", info["median"], dec("2.5"))
+expect("dsd", info["stdev"], dec("1.290994"))
+expect("ver", stats.VERSION, "0.1.0")
+|end
+Медіана |( num(stats.median(xs), digits=1) ), відхилення |( num(stats.stdev(xs, digits=2), digits=2) ).

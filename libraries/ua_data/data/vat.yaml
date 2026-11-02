@@ -1,0 +1,7 @@
+# Standard VAT rate, percent. Reduced 7 % and 14 % are not this series:
+# they depend on the kind of supply (Tax Code art. 193.1).
+# The date the 20 % rate last changed was not established in this session.
+# known_through is the horizon of this release, not an expiry of the rate.
+known_through: 2026-12-31
+rows:
+  - {from: 2014-01-01, value: "20", source: "ПКУ, п.п. «а» п. 193.1, основна ставка 20 %"}

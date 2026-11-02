@@ -1,0 +1,278 @@
+---
+kind: module
+---
+|% epc_qr — EPC069-12 payload for a SEPA credit transfer QR code.
+|% The element order, the examples and the limits are the task statement
+|% libraries/epc_qr.md (EPC069-12 v3.1, checked 27.10.2026). The QR matrix
+|% is qr_svg of the translator. This module writes character set 1 (UTF-8)
+|% into an image; character set 2 is accepted in the payload only, because
+|% qr_svg has no ISO-8859 encoding. IBAN and RF use the mod-97 algorithm
+|% locally: a sibling library cannot be imported.
+|code:
+VERSION = "0.1.0"
+
+_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+_DIGITS = "0123456789"
+# Printable ASCII, then U+00A0..U+00FF. Encoding 2 rejects anything else,
+# including C1 controls and the euro sign (that sign is ISO-8859-15).
+_ASCII = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+_LATIN = " ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
+
+
+def _charset(encoding):
+    """EPC character-set digit, or "" when encoding is unknown."""
+    if encoding == "utf-8" or encoding == "1":
+        return "1"
+    if encoding == "iso-8859-1" or encoding == "2":
+        return "2"
+    return ""
+
+
+def _two(number):
+    """Two digits, with a leading zero below 10."""
+    if number < 10:
+        return "0" + str(number)
+    return str(number)
+
+
+def _expand(text):
+    """Letters expanded to A=10 … Z=35, or "" when a character is not alphanumeric."""
+    out = ""
+    for ch in text:
+        if _DIGITS.find(ch) >= 0:
+            out = out + ch
+        else:
+            pos = _LETTERS.find(ch)
+            if pos < 0:
+                return ""
+            out = out + str(pos + 10)
+    return out
+
+
+def _mod97(digits):
+    """Running remainder of a digit string. The string is never one integer: an IBAN can exceed 64 digits."""
+    rest = 0
+    for ch in digits:
+        rest = (rest * 10 + int(ch)) % 97
+    return rest
+
+
+def _iban_ok(text):
+    """Whether text is an IBAN whose mod 97 remainder is 1."""
+    n = len(text)
+    if n < 15 or n > 34:
+        return False
+    if _LETTERS.find(text[0]) < 0 or _LETTERS.find(text[1]) < 0:
+        return False
+    if _DIGITS.find(text[2]) < 0 or _DIGITS.find(text[3]) < 0:
+        return False
+    digits = _expand(text[4:] + text[:4])
+    if digits == "":
+        return False
+    return _mod97(digits) == 1
+
+
+def _bic_ok(text):
+    """8 or 11 characters: 4 letters, 2 letters, then alphanumeric. Upper case only."""
+    n = len(text)
+    if n != 8 and n != 11:
+        return False
+    index = 0
+    for ch in text:
+        if index < 6:
+            if _LETTERS.find(ch) < 0:
+                return False
+        elif _LETTERS.find(ch) < 0 and _DIGITS.find(ch) < 0:
+            return False
+        index = index + 1
+    return True
+
+
+def _bad_char(text, charset):
+    """A character the chosen EPC set cannot hold, or ""."""
+    for ch in text:
+        if ch == "\n" or ch == "\r":
+            return ch
+        if charset == "2" and _ASCII.find(ch) < 0 and _LATIN.find(ch) < 0:
+            return ch
+    return ""
+
+
+def _eur(amount):
+    """The amount element, or a reason. None means the element is absent."""
+    if amount is None:
+        return ""
+    if type(amount) != "decimal":
+        return "очікується сума"
+    if round(amount, 2) != amount:
+        return "у сумі більше двох знаків після коми"
+    if amount < dec("0.01") or amount > dec("999999999.99"):
+        return "сума поза межами 0.01…999999999.99"
+    text = f"{amount:.2f}"
+    if text.endswith("0"):
+        text = text[:-1]
+    if text.endswith("0"):
+        text = text[:-1]
+    if text.endswith("."):
+        text = text[:-1]
+    field = "EUR" + text
+    if len(field) > 12:
+        return "сума не вміщується в 12 знаків"
+    return field
+
+
+def _length_problem(text, limit, label):
+    """Reason when text is longer than limit. An empty text is allowed."""
+    if len(text) > limit:
+        return label
+    return ""
+
+
+def _utf8_len(text):
+    """UTF-8 byte length via base64url, which the core counts in bytes. No ord()."""
+    encoded = base64url(text, encoding="utf-8")
+    return len(encoded) * 3 // 4
+
+
+def _join(fields):
+    """Elements up to the last non-empty one, separated by LF. Empty ones in between stay."""
+    last = 0
+    index = 0
+    for field in fields:
+        if field != "":
+            last = index
+        index = index + 1
+    out = ""
+    index = 0
+    for field in fields:
+        if index > last:
+            break
+        if index > 0:
+            out = out + "\n"
+        out = out + field
+        index = index + 1
+    return out
+
+
+def _fields(name, iban, amount, bic, purpose, reference, text, info, version, encoding):
+    """The twelve elements, or a Ukrainian reason."""
+    if version != "001" and version != "002":
+        return "невідома версія"
+    charset = _charset(encoding)
+    if charset == "":
+        return "невідоме кодування"
+    if type(name) != "str" or type(iban) != "str" or type(bic) != "str":
+        return "очікується текст"
+    if type(purpose) != "str" or type(reference) != "str" or type(text) != "str" or type(info) != "str":
+        return "очікується текст"
+    if name == "":
+        return "порожнє найменування"
+    reason = _length_problem(name, 70, "найменування довше за 70 знаків")
+    if reason != "":
+        return reason
+    compact = "".join(iban.split())
+    if not _iban_ok(compact):
+        return "IBAN не збігається за mod 97"
+    if version == "001" and bic == "":
+        return "BIC обов'язковий для версії 001"
+    if bic != "" and not _bic_ok(bic):
+        return "BIC має невірну форму"
+    money = _eur(amount)
+    if money != "" and not money.startswith("EUR"):
+        return money
+    if purpose != "":
+        reason = _length_problem(purpose, 4, "код призначення довший за 4 знаки")
+        if reason != "":
+            return reason
+        if _expand(purpose) == "":
+            return "код призначення має невірну форму"
+    if reference != "" and text != "":
+        return "структуроване і неструктуроване призначення разом"
+    reason = _length_problem(reference, 35, "посилання довше за 35 знаків")
+    if reason != "":
+        return reason
+    if reference.startswith("RF") and not _iban_ok(reference) and len(reference) >= 5:
+        # RF uses the same rearrangement as an IBAN. A short "RF" prefix that
+        # is not a creditor reference is still a free-form reference.
+        digits = _expand(reference[4:] + reference[:4])
+        if digits == "" or _mod97(digits) != 1:
+            return "посилання RF не збігається за mod 97"
+    reason = _length_problem(text, 140, "текст довший за 140 знаків")
+    if reason != "":
+        return reason
+    reason = _length_problem(info, 70, "пояснення довше за 70 знаків")
+    if reason != "":
+        return reason
+    pieces = [name, compact, bic, purpose, reference, text, info, money]
+    for piece in pieces:
+        bad = _bad_char(piece, charset)
+        if bad != "":
+            if charset == "2":
+                return f"символ «{bad}» поза ISO 8859-1"
+            return "у полі є розрив рядка"
+    fields = ["BCD", version, charset, "SCT", bic, name, compact, money, purpose, reference, text, info]
+    payload = _join(fields)
+    if charset == "1":
+        size = _utf8_len(payload)
+    else:
+        size = len(payload)
+    if size > 331:
+        return "навантаження більше за 331 байт"
+    return fields
+
+
+def problem(name, iban, amount=None, bic="", purpose="", reference="", text="", info="", version="002", encoding="utf-8"):
+    """Why the EPC payload cannot be built, or ""."""
+    fields = _fields(name, iban, amount, bic, purpose, reference, text, info, version, encoding)
+    if type(fields) == "str":
+        return fields
+    return ""
+
+
+def payload(name, iban, amount=None, bic="", purpose="", reference="", text="", info="", version="002", encoding="utf-8"):
+    """EPC069-12 elements joined by LF, with nothing after the last filled element."""
+    reason = problem(name, iban, amount, bic, purpose, reference, text, info, version, encoding)
+    if reason != "":
+        fail(f"epc_qr: {reason}")
+    return _join(_fields(name, iban, amount, bic, purpose, reference, text, info, version, encoding))
+
+
+def svg(name, iban, amount=None, bic="", purpose="", reference="", text="", info="", version="002", encoding="utf-8", module="0.5mm"):
+    """SVG of the payload at error correction M, version at most 13.
+
+    encoding must be UTF-8. module is the size of one module, for example
+    "0.5mm"; the image side is that size times the modules, including a
+    quiet zone of 4. There is no logo in the centre.
+    """
+    if _charset(encoding) != "1":
+        fail("epc_qr: qr_svg ще не кодує ISO 8859; для зображення лишайте кодування utf-8")
+    data = payload(name, iban, amount, bic, purpose, reference, text, info, version, encoding)
+    matrix = qr_matrix(data, ecc="M", max_version=13, encoding="utf-8")
+    side = int(matrix.size) + 8
+    return qr_svg(data, ecc="M", min_version=int(matrix.version), max_version=13, encoding="utf-8", quiet=4, size=length(module) * side)
+
+
+def rf_problem(reference):
+    """Why an ISO 11649 reference cannot be built from this creditor reference, or ""."""
+    if type(reference) != "str" or reference == "":
+        return "очікується посилання"
+    if len(reference) > 21:
+        return "посилання довше за 21 знак"
+    if _expand(reference) == "":
+        return "посилання має невірну форму"
+    return ""
+
+
+def rf(reference):
+    """RF plus two check digits plus the creditor reference (ISO 11649, mod 97).
+
+    reference is the creditor's own reference, without the RF prefix.
+    The result is at most 25 characters.
+    """
+    reason = rf_problem(reference)
+    if reason != "":
+        fail(f"epc_qr: {reason}")
+    digits = _expand(reference + "RF00")
+    check = 98 - _mod97(digits)
+    return "RF" + _two(check) + reference
+|end

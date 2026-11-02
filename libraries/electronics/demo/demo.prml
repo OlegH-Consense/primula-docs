@@ -1,0 +1,8 @@
+---
+doc: {title: "Приклад electronics", language: uk-UA}
+---
+|import("lib/electronics")
+|code:
+pair = electronics.parallel([dec("10000"), dec("10000")])
+|end
+Бібліотека electronics |( electronics.VERSION ). Номінал |( electronics.fmt_value(dec("4700"), "Ω") ). Найближчий до 5 кОм у ряді E24 — |( electronics.fmt_value(electronics.nearest(dec("5000"), "E24"), "Ω") ). Два резистори по 10 кОм паралельно — |( electronics.fmt_value(pair, "Ω") ).

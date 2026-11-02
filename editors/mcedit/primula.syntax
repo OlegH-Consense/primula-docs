@@ -1,0 +1,354 @@
+# Подсветка Primula v1.1-draft для mcedit — сгенерировано gen_mcedit.py.
+# Не править вручную: правится prml_lexicon.py / gen_mcedit.py.
+# Ограничения движка mcedit: см. README (нет вложенности и регулярных выражений).
+
+# '.' слева от слова = атрибут (it.qty), а не отдельное имя функции
+wholechars left ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789.
+wholechars right ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789
+
+context default
+  # экранирования (разд. 3.3)
+  keyword || magenta
+  keyword |{ magenta
+  keyword |} magenta
+  keyword |; magenta
+  keyword |~ magenta
+  keyword |\\ magenta
+  # недопустимые и зарезервированные формы — ошибка (разд. 3.1)
+  keyword |\s white red
+  keyword |$ white red
+  keyword |[ white red
+  keyword |] white red
+  keyword |– white red
+  keyword |− white red
+  # закрывающие маркеры (разд. 3.5)
+  keyword whole linestart |endif yellow
+  keyword whole linestart |endfor yellow
+  keyword whole linestart |enddef yellow
+  keyword linestart |end\{>!\}\[>\] yellow
+  keyword linestart |end.+ yellow
+  keyword linestart |end\s+ yellow
+  keyword whole linestart |end yellow
+  # заголовки: вся строка (внутристрочные формы внутри не различаются)
+  keyword linestart |<*\n brightmagenta
+  # пункты, списки, предупреждения, строки таблиц, ячейки
+  keyword linestart |>\[>\] brightgreen
+  keyword linestart |\{-#\}\[-#\] brightgreen
+  keyword linestart |! brightgreen
+  keyword linestart |: brightgreen
+  keyword |& brightgreen
+  # управляющие конструкции
+  keyword linestart |.+: cyan
+  keyword whole |else yellow
+  keyword whole |def yellow
+  keyword whole |if yellow
+  keyword whole |elif yellow
+  keyword whole |for yellow
+  # модульные и встроенные команды (до общего правила пользовательских)
+  keyword whole |include brightred
+  keyword whole |import brightred
+  keyword whole |field.chapter brightcyan
+  keyword whole |field.pages brightcyan
+  keyword whole |field.title brightcyan
+  keyword whole |field.page brightcyan
+  keyword whole |newcolumn brightcyan
+  keyword whole |toc_entry brightcyan
+  keyword whole |watermark brightcyan
+  keyword whole |appendix brightcyan
+  keyword whole |document brightcyan
+  keyword whole |footnote brightcyan
+  keyword whole |parallel brightcyan
+  keyword whole |verbatim brightcyan
+  keyword whole |caption brightcyan
+  keyword whole |comment brightcyan
+  keyword whole |endnote brightcyan
+  keyword whole |list_of brightcyan
+  keyword whole |newpage brightcyan
+  keyword whole |section brightcyan
+  keyword whole |segment brightcyan
+  keyword whole |export brightcyan
+  keyword whole |figure brightcyan
+  keyword whole |footer brightcyan
+  keyword whole |header brightcyan
+  keyword whole |block brightcyan
+  keyword whole |frame brightcyan
+  keyword whole |index brightcyan
+  keyword whole |scope brightcyan
+  keyword whole |table brightcyan
+  keyword whole |track brightcyan
+  keyword whole |abbr brightcyan
+  keyword whole |call brightcyan
+  keyword whole |cell brightcyan
+  keyword whole |code brightcyan
+  keyword whole |link brightcyan
+  keyword whole |list brightcyan
+  keyword whole |page brightcyan
+  keyword whole |part brightcyan
+  keyword whole |fmt brightcyan
+  keyword whole |img brightcyan
+  keyword whole |let brightcyan
+  keyword whole |row brightcyan
+  keyword whole |set brightcyan
+  keyword whole |toc brightcyan
+  keyword whole |field.+ brightcyan
+  # команда пользователя/модуля: |имя, |модуль.имя (только латиница)
+  keyword whole |\{ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\}\[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789.\] cyan
+
+# --- комментарий |% до конца строки ---
+context |% \n brown
+
+# --- блоки до |end ---
+context exclusive whole |code: |end lightgray
+  # --- подмножество Python (разд. 12) ---
+  keyword #*\n brown
+  keyword "*" green
+  keyword '*' green
+  keyword whole class white red
+  keyword whole import white red
+  keyword whole from white red
+  keyword whole try white red
+  keyword whole except white red
+  keyword whole raise white red
+  keyword whole with white red
+  keyword whole global white red
+  keyword whole nonlocal white red
+  keyword whole del white red
+  keyword whole lambda white red
+  keyword whole yield white red
+  keyword whole async white red
+  keyword whole await white red
+  keyword whole match white red
+  keyword whole finally white red
+  keyword whole assert white red
+  keyword whole and yellow
+  keyword whole or yellow
+  keyword whole not yellow
+  keyword whole in yellow
+  keyword whole is yellow
+  keyword whole if yellow
+  keyword whole elif yellow
+  keyword whole else yellow
+  keyword whole for yellow
+  keyword whole while yellow
+  keyword whole break yellow
+  keyword whole continue yellow
+  keyword whole pass yellow
+  keyword whole return yellow
+  keyword whole def yellow
+  keyword whole None brightred
+  keyword whole True brightred
+  keyword whole False brightred
+  keyword whole abbreviations brightcyan
+  keyword whole abs brightcyan
+  keyword whole admonition_symbols brightcyan
+  keyword whole admonition_words brightcyan
+  keyword whole all brightcyan
+  keyword whole any brightcyan
+  keyword whole appendices brightcyan
+  keyword whole avg brightcyan
+  keyword whole batch_mode brightcyan
+  keyword whole block_style brightcyan
+  keyword whole body_rows brightcyan
+  keyword whole bool brightcyan
+  keyword whole build brightcyan
+  keyword whole build_date brightcyan
+  keyword whole captions brightcyan
+  keyword whole cell brightcyan
+  keyword whole character_style brightcyan
+  keyword whole cm brightcyan
+  keyword whole col brightcyan
+  keyword whole column brightcyan
+  keyword whole count brightcyan
+  keyword whole date brightcyan
+  keyword whole datetime brightcyan
+  keyword whole debug brightcyan
+  keyword whole dec brightcyan
+  keyword whole derive brightcyan
+  keyword whole dict brightcyan
+  keyword whole enumerate brightcyan
+  keyword whole fail brightcyan
+  keyword whole float brightcyan
+  keyword whole footer brightcyan
+  keyword whole footnotes brightcyan
+  keyword whole frame_style brightcyan
+  keyword whole getattr brightcyan
+  keyword whole has brightcyan
+  keyword whole hasattr brightcyan
+  keyword whole header brightcyan
+  keyword whole img brightcyan
+  keyword whole inch brightcyan
+  keyword whole int brightcyan
+  keyword whole len brightcyan
+  keyword whole length brightcyan
+  keyword whole list brightcyan
+  keyword whole list_style brightcyan
+  keyword whole load_csv brightcyan
+  keyword whole load_json brightcyan
+  keyword whole load_ods brightcyan
+  keyword whole load_text brightcyan
+  keyword whole load_xlsx brightcyan
+  keyword whole load_yaml brightcyan
+  keyword whole markup brightcyan
+  keyword whole max brightcyan
+  keyword whole min brightcyan
+  keyword whole mm brightcyan
+  keyword whole numbering brightcyan
+  keyword whole page_style brightcyan
+  keyword whole paragraph_style brightcyan
+  keyword whole placeholders brightcyan
+  keyword whole pt brightcyan
+  keyword whole quotes brightcyan
+  keyword whole range brightcyan
+  keyword whole record brightcyan
+  keyword whole ref_labels brightcyan
+  keyword whole repr brightcyan
+  keyword whole reversed brightcyan
+  keyword whole review_marks brightcyan
+  keyword whole round brightcyan
+  keyword whole sorted brightcyan
+  keyword whole str brightcyan
+  keyword whole structure_profile brightcyan
+  keyword whole structure_styles brightcyan
+  keyword whole sum brightcyan
+  keyword whole table_style brightcyan
+  keyword whole this_row brightcyan
+  keyword whole track brightcyan
+  keyword whole tuple brightcyan
+  keyword whole type brightcyan
+  keyword whole watermark brightcyan
+  keyword whole zip brightcyan
+  keyword whole add_months brightcyan
+  keyword whole add_years brightcyan
+  keyword whole atan2 brightcyan
+  keyword whole base64url brightcyan
+  keyword whole cap brightcyan
+  keyword whole ceil brightcyan
+  keyword whole ceil_to brightcyan
+  keyword whole convert brightcyan
+  keyword whole cos brightcyan
+  keyword whole currency brightcyan
+  keyword whole date_words brightcyan
+  keyword whole distinct brightcyan
+  keyword whole e brightcyan
+  keyword whole exp brightcyan
+  keyword whole floor brightcyan
+  keyword whole floor_to brightcyan
+  keyword whole fmt_date brightcyan
+  keyword whole fmt_datetime brightcyan
+  keyword whole fmt_time brightcyan
+  keyword whole group_by brightcyan
+  keyword whole hours brightcyan
+  keyword whole is_workday brightcyan
+  keyword whole join_list brightcyan
+  keyword whole log brightcyan
+  keyword whole log10 brightcyan
+  keyword whole minutes brightcyan
+  keyword whole money brightcyan
+  keyword whole money_full brightcyan
+  keyword whole money_words brightcyan
+  keyword whole month_name brightcyan
+  keyword whole month_names brightcyan
+  keyword whole nbsp_short brightcyan
+  keyword whole num brightcyan
+  keyword whole ordinal brightcyan
+  keyword whole percent brightcyan
+  keyword whole pi brightcyan
+  keyword whole plural brightcyan
+  keyword whole qr_matrix brightcyan
+  keyword whole qr_svg brightcyan
+  keyword whole qty brightcyan
+  keyword whole qty_range brightcyan
+  keyword whole round_money brightcyan
+  keyword whole round_to brightcyan
+  keyword whole sin brightcyan
+  keyword whole sort_key brightcyan
+  keyword whole split brightcyan
+  keyword whole sqrt brightcyan
+  keyword whole sum_by brightcyan
+  keyword whole tan brightcyan
+  keyword whole translit brightcyan
+  keyword whole typography brightcyan
+  keyword whole unit brightcyan
+  keyword whole vat brightcyan
+  keyword whole vat_in brightcyan
+  keyword whole weekday brightcyan
+  keyword whole weeks brightcyan
+  keyword whole with_vat brightcyan
+  keyword whole without_vat brightcyan
+  keyword whole words brightcyan
+  keyword whole workdays brightcyan
+context exclusive whole |comment: linestart |end brown
+context exclusive whole |verbatim: linestart |end gray
+context exclusive whole |verbatim(end="EOF"): linestart EOF gray
+context exclusive whole |verbatim(end="END"): linestart END gray
+
+# --- выражения |( … ) и формулы |=( … ) ---
+context |( ) green
+context |=( ) green
+
+# --- аргументы встроенных и управляющих команд |имя( … ) ---
+context exclusive |if( ) green
+context exclusive |elif( ) green
+context exclusive |for( ) green
+context exclusive |include( ) green
+context exclusive |import( ) green
+context exclusive |abbr( ) green
+context exclusive |appendix( ) green
+context exclusive |block( ) green
+context exclusive |call( ) green
+context exclusive |caption( ) green
+context exclusive |cell( ) green
+context exclusive |document( ) green
+context exclusive |endnote( ) green
+context exclusive |export( ) green
+context exclusive |field.chapter( ) green
+context exclusive |field.page( ) green
+context exclusive |field.pages( ) green
+context exclusive |field.title( ) green
+context exclusive |figure( ) green
+context exclusive |fmt( ) green
+context exclusive |footer( ) green
+context exclusive |footnote( ) green
+context exclusive |frame( ) green
+context exclusive |header( ) green
+context exclusive |img( ) green
+context exclusive |index( ) green
+context exclusive |let( ) green
+context exclusive |link( ) green
+context exclusive |list( ) green
+context exclusive |list_of( ) green
+context exclusive |newcolumn( ) green
+context exclusive |newpage( ) green
+context exclusive |page( ) green
+context exclusive |parallel( ) green
+context exclusive |part( ) green
+context exclusive |row( ) green
+context exclusive |scope( ) green
+context exclusive |section( ) green
+context exclusive |segment( ) green
+context exclusive |set( ) green
+context exclusive |table( ) green
+context exclusive |toc( ) green
+context exclusive |toc_entry( ) green
+context exclusive |track( ) green
+context exclusive |watermark( ) green
+
+# --- внутристрочные формы: тело {…} до первой «}» (без вложенности) ---
+context |\*{ } white base bold
+context |/{ } lightgray base italic
+context |_{ } lightgray base underline
+context |^{ } cyan
+context |,{ } cyan
+context |—{ } gray
+context |`{ } brightgreen
+context |"{ } green
+context |?{ } white red
+context |.+{ } brightcyan
+
+# --- YAML-заголовок ---
+# --- YAML-заголовок: от «---» до «---» (в начале файла) ---
+context linestart --- linestart --- cyan
+  keyword +: brightcyan
+  keyword "*" green
+  keyword '*' green
+  keyword #*\n brown

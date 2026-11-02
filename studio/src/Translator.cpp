@@ -90,4 +90,22 @@ QJsonObject dumpProject(const QString &projectFile, QString *errorMessage)
     return document.object();
 }
 
+QString describeFile(const QString &file, const QString &language, QString *errorMessage)
+{
+    const QFileInfo info(file);
+    QByteArray output;
+    QString errors;
+    const int code = run({QStringLiteral("describe"), info.fileName(), QStringLiteral("--lang"), language},
+                         info.absolutePath(), &output, &errors);
+    // Exit code 2 still prints the reason (an unreadable file).
+    if (code < 0 || output.isEmpty()) {
+        if (errorMessage)
+            *errorMessage = errors.trimmed().isEmpty()
+                ? QCoreApplication::translate("Translator", "The translator gave no summary of the file.")
+                : errors.trimmed();
+        return {};
+    }
+    return QString::fromUtf8(output);
+}
+
 } // namespace Translator

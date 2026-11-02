@@ -1,0 +1,274 @@
+---
+kind: module
+---
+|% ua_ids — Ukrainian party identifiers: ЄДРПОУ, РНОКПП and IBAN UA.
+|% Check digits, the date they were checked and what is deliberately absent
+|% (bank directory, passport series) are described in README.md.
+|% A document imports the module with |import("lib/ua_ids").
+|code:
+VERSION = "0.1.0"
+
+# Weight rows for the 8th digit of ЄДРПОУ. The row is chosen from the whole
+# 8-digit value, not from the first seven: below 30_000_000 and above
+# 60_000_000 use _W_OUT; 30_000_000 and 60_000_000 themselves use _W_MID
+# (the comparisons are strict). A check digit can push 6000000x across
+# 60_000_000, so a generator must keep the row consistent with the full code.
+# If the weighted sum mod 11 is 10, each weight grows by 2 and the sum is
+# repeated; a second 10 becomes the digit 0 (task statement; some public
+# reproductions reject that code instead).
+_W_OUT = [1, 2, 3, 4, 5, 6, 7]
+_W_MID = [7, 1, 2, 3, 4, 5, 6]
+
+# РНОКПП: (sum of the first nine digits times these weights) mod 11, then
+# mod 10, is the tenth digit. The first weight is negative, so the sum can
+# be negative; the remainder follows the same rule as Python (-2 % 11 == 9).
+_W_RNOKPP = [-1, 5, 7, 9, 4, 6, 10, 5, 7]
+
+# Day 00001 is 1900-01-01, one day after this date (DPS clarification,
+# cited from the public description of the number; see README).
+_RNOKPP_EPOCH = date(1899, 12, 31)
+
+_LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+_DIGITS = "0123456789"
+
+
+def _compact(value):
+    """Whitespace-free string, or None when value is not a string.
+
+    Identifiers are strings on purpose: a number would already have lost
+    its leading zeros. Spaces and line breaks are ignored, hyphens are not.
+    """
+    if type(value) != "str":
+        return None
+    return "".join(value.split())
+
+
+def _digits(text):
+    """Decimal digits of a digit string, as a list."""
+    return [int(ch) for ch in text]
+
+
+def _mod11_digit(digits, weights):
+    """ЄДРПОУ check digit for one weight row, including the second pass."""
+    total = sum([digits[i] * weights[i] for i in range(7)])
+    rest = total % 11
+    if rest == 10:
+        total = sum([digits[i] * (weights[i] + 2) for i in range(7)])
+        rest = total % 11
+        if rest == 10:
+            rest = 0
+    return rest
+
+
+def _edrpou_weights(code):
+    """Weight row of a complete 8-digit code. See _W_OUT."""
+    number = int(code)
+    if number < 30000000 or number > 60000000:
+        return _W_OUT
+    return _W_MID
+
+
+def _day_problem(day):
+    """Reason when day is not a date and not None, else ""."""
+    if day is not None and type(day) != "datetime":
+        return "аргумент day має бути датою"
+    return ""
+
+
+def edrpou_problem(code):
+    """Why the text is not a ЄДРПОУ code, or "" when it is valid."""
+    s = _compact(code)
+    if s is None or len(s) != 8 or not s.isdigit():
+        return "очікується 8 цифр"
+    expected = _mod11_digit(_digits(s[:7]), _edrpou_weights(s))
+    if expected != int(s[7]):
+        return "не збігається контрольний розряд"
+    return ""
+
+
+def is_edrpou(code):
+    """Whether the text is a valid ЄДРПОУ code."""
+    return edrpou_problem(code) == ""
+
+
+def edrpou(code):
+    """Normalized ЄДРПОУ (8 digits). A wrong code stops the build."""
+    reason = edrpou_problem(code)
+    if reason:
+        fail(f"ua_ids: ЄДРПОУ «{code}»: {reason}")
+    return _compact(code)
+
+
+def _rnokpp_digit(digits9):
+    """Tenth digit of a РНОКПП from its first nine digits."""
+    total = sum([digits9[i] * _W_RNOKPP[i] for i in range(9)])
+    return (total % 11) % 10
+
+
+def _birth(code):
+    """Date encoded by the first five digits (days since 1899-12-31).
+
+    This is the usual birth date. It is not guaranteed when more than
+    5000 people of one sex were registered for the same day: the counter
+    then leaves the day number. The function still returns the encoded date.
+    """
+    return _RNOKPP_EPOCH + int(code[:5])
+
+
+def rnokpp_problem(code, day=None):
+    """Why the text is not a РНОКПП, or "" when the check digit matches.
+
+    day, when given, is the document date: an encoded birth date after it
+    is a reason. Without day a future encoded date is not an error, because
+    the module has no clock and must not use the build date.
+    """
+    reason = _day_problem(day)
+    if reason:
+        return reason
+    s = _compact(code)
+    if s is None or len(s) != 10 or not s.isdigit():
+        return "очікується 10 цифр"
+    if _rnokpp_digit(_digits(s[:9])) != int(s[9]):
+        return "не збігається контрольний розряд"
+    if day is not None and _birth(s) > day:
+        return "дата народження пізніша за передану дату"
+    return ""
+
+
+def is_rnokpp(code, day=None):
+    """Whether the text is a valid РНОКПП. day is as in rnokpp_problem."""
+    return rnokpp_problem(code, day=day) == ""
+
+
+def rnokpp(code):
+    """Normalized РНОКПП (10 digits). A wrong check digit stops the build.
+
+    A birth date later than the document is not checked here: pass day to
+    rnokpp_problem or is_rnokpp.
+    """
+    reason = rnokpp_problem(code)
+    if reason:
+        fail(f"ua_ids: РНОКПП «{code}»: {reason}")
+    return _compact(code)
+
+
+def rnokpp_birth_date(code):
+    """Date encoded by a valid РНОКПП. See _birth for the 5000-a-day caveat."""
+    return _birth(rnokpp(code))
+
+
+def rnokpp_sex(code):
+    """"m" or "f" from digit 9 of a valid РНОКПП (odd — male, even — female)."""
+    s = rnokpp(code)
+    if int(s[8]) % 2 == 1:
+        return "m"
+    return "f"
+
+
+def _iban_digits(text):
+    """ISO 13616 letter expansion: A=10 … Z=35, digits unchanged."""
+    parts = []
+    for ch in text:
+        if ch.isdigit():
+            parts.append(ch)
+        else:
+            parts.append(str(_LETTERS.find(ch) + 10))
+    return "".join(parts)
+
+
+def _iban_normalized(text):
+    """IBAN without spaces, in capitals, or None when text is not a string."""
+    s = _compact(text)
+    if s is None:
+        return None
+    return s.upper()
+
+
+def iban_problem(text):
+    """Why the text is not an IBAN UA, or "" when mod 97 holds.
+
+    Only UA, 29 characters. Another country's IBAN is a reason even when
+    its own check digits are correct.
+    """
+    s = _iban_normalized(text)
+    if s is None or not s.startswith("UA") or len(s) != 29 or not s[2:].isdigit():
+        return "очікується UA і 27 цифр"
+    # Move the country code and the check digits to the end (ISO 13616).
+    if int(_iban_digits(s[4:] + s[:4])) % 97 != 1:
+        return "не збігається контрольне число"
+    return ""
+
+
+def is_iban(text):
+    """Whether the text is a valid IBAN UA."""
+    return iban_problem(text) == ""
+
+
+def iban(text):
+    """Normalized IBAN UA. A wrong one stops the build."""
+    reason = iban_problem(text)
+    if reason:
+        fail(f"ua_ids: IBAN «{text}»: {reason}")
+    return _iban_normalized(text)
+
+
+def iban_grouped(text):
+    """IBAN UA in groups of four characters, last group shorter."""
+    s = iban(text)
+    return " ".join([s[i:i + 4] for i in range(0, len(s), 4)])
+
+
+def iban_bank_code(text):
+    """Six-digit bank code (МФО): characters 5–10 of an IBAN UA."""
+    return iban(text)[4:10]
+
+
+def iban_make(bank, account):
+    """IBAN UA from a 6-digit bank code and an account of 1..19 digits.
+
+    The account is padded with zeros on the left to 19 digits. Check digits
+    are 98 minus (rearranged body mod 97), as in ISO 13616.
+    """
+    b = _compact(bank)
+    a = _compact(account)
+    if b is None or len(b) != 6 or not b.isdigit():
+        fail(f"ua_ids: IBAN: код банку «{bank}» має містити 6 цифр")
+    if a is None or len(a) < 1 or len(a) > 19 or not a.isdigit():
+        fail(f"ua_ids: IBAN: рахунок «{account}» має містити від 1 до 19 цифр")
+    body = b + a.zfill(19)
+    # Rearranged "UA00" + body, with UA00 expanded as 301000, check = 98 - mod.
+    check = 98 - (int(_iban_digits(body + "UA00")) % 97)
+    return "UA" + _DIGITS[int(check / 10)] + _DIGITS[int(check % 10)] + body
+
+
+def party_code_problem(code, day=None):
+    """Why the text is neither a ЄДРПОУ nor a РНОКПП, or "".
+
+    8 digits are read as ЄДРПОУ, 10 as РНОКПП. day is passed to the РНОКПП
+    check and ignored for an 8-digit code.
+    """
+    reason = _day_problem(day)
+    if reason:
+        return reason
+    s = _compact(code)
+    if s is None:
+        return "очікується рядок"
+    if len(s) == 8:
+        return edrpou_problem(s)
+    if len(s) == 10:
+        return rnokpp_problem(s, day=day)
+    return "очікується код із 8 (ЄДРПОУ) або 10 (РНОКПП) цифр"
+
+
+def is_party_code(code, day=None):
+    """Whether the text is a valid ЄДРПОУ or РНОКПП. day is as in rnokpp_problem."""
+    return party_code_problem(code, day=day) == ""
+
+
+def party_code(code, day=None):
+    """Normalized ЄДРПОУ or РНОКПП, chosen by length. A wrong code stops the build."""
+    reason = party_code_problem(code, day=day)
+    if reason:
+        fail(f"ua_ids: код сторони «{code}»: {reason}")
+    return _compact(code)
+|end

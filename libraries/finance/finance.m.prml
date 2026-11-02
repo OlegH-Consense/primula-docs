@@ -1,0 +1,350 @@
+---
+kind: module
+---
+|% finance — annuity, a payment schedule, NPV, IRR and straight-line depreciation.
+|% The formulas, the rounding step and what is deliberately approximate are
+|% described in README.md. A document imports the module with |import("lib/finance").
+|code:
+VERSION = "0.1.0"
+
+
+def _money_problem(value, label):
+    """Reason when value is not a non-negative decimal, or ""."""
+    if type(value) != "decimal":
+        return "очікується " + label
+    if value < 0:
+        return "від'ємна " + label
+    return ""
+
+
+def _rate_problem(rate):
+    """Reason when an annual percent is missing or negative, or ""."""
+    if type(rate) != "decimal":
+        return "очікується ставка"
+    if rate < 0:
+        return "від'ємна ставка"
+    return ""
+
+
+def _months_problem(months):
+    """Reason when months is not a positive whole number, or ""."""
+    if type(months) != "decimal" or months != int(months) or months < 1:
+        return "очікується додатне ціле число періодів"
+    return ""
+
+
+def _date_problem(day):
+    """Reason when day is not a date, or ""."""
+    if type(day) != "datetime":
+        return "очікується дата"
+    return ""
+
+
+def _pmt_raw(principal, annual_rate, months):
+    """Unrounded monthly payment. The monthly rate is annual_rate/100/12.
+
+    The discount factor is (1+r)^(-n). A positive integer power is exact,
+    and a repeating monthly rate (10 % / 12) does not fit in 64 digits.
+    A negative power is rounded to 28 digits by the core. The product
+    principal*r is written as a division for the same reason.
+    """
+    monthly = annual_rate / 100 / 12
+    count = int(months)
+    if monthly == 0:
+        return principal / count
+    discount = (1 + monthly) ** (-count)
+    return (principal / (1 / monthly)) / (1 - discount)
+
+
+def annuity_problem(principal, annual_rate, months):
+    """Why the annuity payment cannot be computed, or ""."""
+    reason = _money_problem(principal, "сума")
+    if reason != "":
+        return reason
+    reason = _rate_problem(annual_rate)
+    if reason != "":
+        return reason
+    return _months_problem(months)
+
+
+def annuity_payment(principal, annual_rate, months):
+    """Monthly annuity, round_money of the ordinary PMT formula.
+
+    annual_rate is a percent per year: 12 means 12 %. A zero rate is
+    principal/months. Day count is not part of this payment; schedule()
+    says how act/365 uses it.
+    """
+    reason = annuity_problem(principal, annual_rate, months)
+    if reason != "":
+        fail(f"finance: {reason}")
+    return round_money(_pmt_raw(principal, annual_rate, months))
+
+
+def _on_workday(day, calendar):
+    """day itself, or the next workday when a calendar rejects day.
+
+    The move is forward only. workdays() does not count its start date,
+    so a Saturday becomes the following Monday under a Sat/Sun weekend.
+    """
+    if calendar is None:
+        return day
+    if is_workday(day, calendar=calendar):
+        return day
+    return workdays(day, 1, calendar=calendar)
+
+
+def _schedule_problem(principal, annual_rate, months, start, kind, day_count):
+    """Reason when a schedule cannot be built, or ""."""
+    reason = annuity_problem(principal, annual_rate, months)
+    if reason != "":
+        return reason
+    reason = _date_problem(start)
+    if reason != "":
+        return reason
+    if kind != "annuity" and kind != "equal_principal":
+        return "невідомий вид графіка"
+    if day_count != "30/360" and day_count != "act/365":
+        return "невідомий підрахунок днів"
+    return ""
+
+
+def schedule_problem(principal, annual_rate, months, start, kind="annuity", day_count="30/360", calendar=None):
+    """Why the schedule cannot be built, or "". calendar is not validated here."""
+    return _schedule_problem(principal, annual_rate, months, start, kind, day_count)
+
+
+def schedule(principal, annual_rate, months, start, kind="annuity", day_count="30/360", calendar=None):
+    """Rows {number, date, payment, interest, principal, balance}.
+
+    start is the disbursement and is not a payment. Payment k falls on
+    add_months(start, k), moved forward to the next workday when calendar
+    is passed. 30/360 always charges one twelfth, including after that
+    move. act/365 charges annual_rate/100 * actual days / 365 from the
+    previous date (start, for the first row) to this payment date.
+
+    The annuity's level payment is the 30/360 payment in both day counts.
+    The last row repays whatever balance remains, so the principal parts
+    add up to principal. Interest and the level payment are round_money.
+    A non-last principal part that would exceed the balance is cut to it.
+    """
+    reason = _schedule_problem(principal, annual_rate, months, start, kind, day_count)
+    if reason != "":
+        fail(f"finance: {reason}")
+    count = int(months)
+    level = annuity_payment(principal, annual_rate, months)
+    regular = round_money(principal / count)
+    # Keep the kopeck residue on the last equal-principal row.
+    if regular * (count - 1) > principal:
+        regular = regular - dec("0.01")
+        if regular < 0:
+            regular = dec(0)
+    balance = principal
+    previous = start
+    rows = []
+    number = 1
+    while number <= count:
+        when = _on_workday(add_months(start, number), calendar)
+        if day_count == "30/360":
+            interest = round_money(balance * annual_rate / 100 / 12)
+        else:
+            days = when - previous
+            interest = round_money(balance * annual_rate / 100 * days / 365)
+        if number == count:
+            principal_part = balance
+            payment = principal_part + interest
+        elif kind == "equal_principal":
+            principal_part = regular
+            if principal_part > balance:
+                principal_part = balance
+            payment = principal_part + interest
+        else:
+            principal_part = level - interest
+            payment = level
+            if principal_part > balance:
+                principal_part = balance
+                payment = principal_part + interest
+        balance = balance - principal_part
+        rows.append({"number": number, "date": when, "payment": payment, "interest": interest,
+                     "principal": principal_part, "balance": balance})
+        previous = when
+        number = number + 1
+    return rows
+
+
+def _flows_problem(flows):
+    """Reason when flows is not a non-empty list of decimals, or ""."""
+    if type(flows) != "list" or len(flows) == 0:
+        return "очікується непорожній список потоків"
+    for flow in flows:
+        if type(flow) != "decimal":
+            return "очікується сума потоку"
+    return ""
+
+
+def _period_rate_problem(rate):
+    """Reason when a percent per period cannot be a discount factor, or ""."""
+    if type(rate) != "decimal":
+        return "очікується ставка"
+    if rate <= -100:
+        return "ставка -100 % і нижче не має сенсу"
+    return ""
+
+
+def npv_problem(rate, flows):
+    """Why NPV cannot be computed, or ""."""
+    reason = _period_rate_problem(rate)
+    if reason != "":
+        return reason
+    return _flows_problem(flows)
+
+
+def npv(rate, flows):
+    """Present value. rate is a percent per period, 10 means 10 %.
+
+    The first flow is period 1, as in the spreadsheet function NPV.
+    It is not a flow at time zero.
+    """
+    reason = npv_problem(rate, flows)
+    if reason != "":
+        fail(f"finance: {reason}")
+    factor = 1 + rate / 100
+    total = dec(0)
+    power = factor
+    # Division keeps 28 digits. An exact product overflows once a trial
+    # rate of irr() is no longer a short decimal.
+    step = 1 / factor
+    for flow in flows:
+        total = total + flow / power
+        power = power / step
+    return total
+
+
+def _sign_changes(flows):
+    """How many times a non-zero flow changes sign. Zeros are skipped."""
+    changes = 0
+    previous = 0
+    seen = False
+    for flow in flows:
+        if flow == 0:
+            continue
+        sign = 1
+        if flow < 0:
+            sign = -1
+        if seen and sign != previous:
+            changes = changes + 1
+        previous = sign
+        seen = True
+    return changes
+
+
+def irr_problem(flows, guess=None):
+    """Why IRR cannot be computed, or "".
+
+    Zero sign changes and more than one sign change are both refused:
+    0.1.0 does not pick one root of a non-conventional series. guess is
+    checked and does not affect the search.
+    """
+    reason = _flows_problem(flows)
+    if reason != "":
+        return reason
+    if guess is not None and type(guess) != "decimal":
+        return "очікується початкове наближення"
+    changes = _sign_changes(flows)
+    if changes == 0:
+        return "немає зміни знака"
+    if changes > 1:
+        return "кілька змін знака"
+    return ""
+
+
+def irr(flows, guess=None):
+    """Internal rate in percent per period, by bisection.
+
+    The root matches the spreadsheet IRR: that equation puts the first
+    flow at time zero, and it is the same root as npv() == 0. The bracket
+    starts at -99 % .. 100 % and the upper end doubles until the values
+    differ in sign, up to 1 000 000 %. The search stops when the bracket
+    is narrower than 0.0000001 percentage points. guess does not move it.
+    """
+    reason = irr_problem(flows, guess)
+    if reason != "":
+        fail(f"finance: {reason}")
+    low = dec("-99")
+    high = dec("100")
+    low_value = npv(low, flows)
+    if low_value == 0:
+        return low
+    high_value = npv(high, flows)
+    steps = 0
+    while low_value * high_value > 0 and high < dec("1000000") and steps < 30:
+        high = high * 2
+        high_value = npv(high, flows)
+        steps = steps + 1
+    if high_value == 0:
+        return high
+    if low_value * high_value > 0:
+        fail("finance: немає кореня в діапазоні пошуку")
+    while high - low > dec("0.0000001"):
+        mid = (low + high) / 2
+        mid_value = npv(mid, flows)
+        if mid_value == 0:
+            return mid
+        if low_value * mid_value < 0:
+            high = mid
+            high_value = mid_value
+        else:
+            low = mid
+            low_value = mid_value
+    return (low + high) / 2
+
+
+def straight_line_problem(cost, salvage, years, start):
+    """Why the depreciation schedule cannot be built, or ""."""
+    reason = _money_problem(cost, "первісна вартість")
+    if reason != "":
+        return reason
+    reason = _money_problem(salvage, "ліквідаційна вартість")
+    if reason != "":
+        return reason
+    if salvage > cost:
+        return "ліквідаційна вартість більша за первісну"
+    if type(years) != "decimal" or years != int(years) or years < 1:
+        return "очікується додатне ціле число років"
+    return _date_problem(start)
+
+
+def straight_line(cost, salvage, years, start):
+    """Rows {year, date, amount, book} of straight-line depreciation.
+
+    The date of year k is add_months(start, 12 * k), the end of that year
+    of use. Each amount except the last is round_money((cost - salvage) / years).
+    The last amount takes the kopiyka residue, so the amounts add up to
+    cost - salvage and the last book value equals salvage.
+    """
+    reason = straight_line_problem(cost, salvage, years, start)
+    if reason != "":
+        fail(f"finance: {reason}")
+    count = int(years)
+    depreciable = cost - salvage
+    regular = round_money(depreciable / count)
+    if regular * (count - 1) > depreciable:
+        regular = regular - dec("0.01")
+        if regular < 0:
+            regular = dec(0)
+    spent = dec(0)
+    rows = []
+    year = 1
+    while year <= count:
+        if year == count:
+            amount = depreciable - spent
+        else:
+            amount = regular
+            spent = spent + amount
+        if year == count:
+            book = salvage
+        else:
+            book = cost - spent
+        rows.append({"year": year, "date": add_months(start, 12 * year), "amount": amount, "book": book})
+        year = year + 1
+    return rows
+|end

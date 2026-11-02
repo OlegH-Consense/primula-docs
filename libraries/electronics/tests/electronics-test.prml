@@ -1,0 +1,68 @@
+---
+doc: {title: "electronics: перевірка", language: uk-UA}
+---
+|% Mantissas from Wikipedia "E series of preferred numbers", fetched 2026-10-31.
+|% 5.0 is on the 4.7 side of the E12 midpoint of 4.7 and 5.6 (25 < 26.32).
+|% 5.3 is on the 5.6 side. 9.0 stays at 8.2; 9.1 crosses to 10.
+|import("../electronics")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+e24 = electronics.series("E24")
+e12 = electronics.series("E12")
+e48 = electronics.series("E48")
+e96 = electronics.series("E96")
+expect("n3", electronics.series("E3"), [dec("1.0"), dec("2.2"), dec("4.7")])
+expect("n6", electronics.series("E6"), [dec("1.0"), dec("1.5"), dec("2.2"), dec("3.3"), dec("4.7"), dec("6.8")])
+expect("n12", len(e12), 12)
+expect("e12-47", e12[8], dec("4.7"))
+expect("n24", len(e24), 24)
+expect("e24-0", e24[0], dec("1.0"))
+expect("e24-27", e24[10], dec("2.7"))
+expect("e24-82", e24[22], dec("8.2"))
+expect("e24-91", e24[23], dec("9.1"))
+expect("n48", len(e48), 48)
+expect("e48-1", e48[1], dec("1.05"))
+expect("e48-z", e48[47], dec("9.53"))
+expect("n96", len(e96), 96)
+expect("e96-0", e96[0], dec("1.00"))
+expect("e96-z", e96[95], dec("9.76"))
+expect("e192", electronics.series_problem("E192"), "ряд E192 у 0.1.0 немає")
+expect("bad", electronics.series_problem("E25"), "невідомий ряд")
+expect("near", electronics.nearest(dec("5.0"), "E12"), dec("4.7"))
+expect("far", electronics.nearest(dec("5.3"), "E12"), dec("5.6"))
+expect("same", electronics.nearest(dec("4.7"), "E24"), dec("4.7"))
+expect("down", electronics.nearest(dec("4.8"), "E24", mode="down"), dec("4.7"))
+expect("up", electronics.nearest(dec("4.8"), "E24", mode="up"), dec("5.1"))
+expect("side", electronics.nearest(dec("4.8"), "E24"), dec("4.7"))
+expect("dec50", electronics.nearest(dec("50"), "E12"), dec("47"))
+expect("sub", electronics.nearest(dec("0.5"), "E12"), dec("0.47"))
+expect("k", electronics.nearest(dec("4700"), "E24"), dec("4700"))
+expect("lo", electronics.nearest(dec("9.0"), "E12"), dec("8.2"))
+expect("hi", electronics.nearest(dec("9.1"), "E12"), dec("10"))
+expect("up10", electronics.nearest(dec("95"), "E24", mode="up"), dec("100"))
+expect("zero", electronics.nearest_problem(dec("0"), "E24"), "нуль не має номіналу")
+expect("mode", electronics.nearest_problem(dec("1"), "E24", mode="middle"), "невідомий режим")
+expect("ohm", electronics.fmt_value(dec("4700"), "Ω"), "4,7 кОм")
+expect("en", electronics.fmt_value(dec("4700"), "Ω", lang="en"), "4.7 kΩ")
+expect("ru", electronics.fmt_value(dec("4700"), "Ом", lang="ru"), "4,7 кОм")
+expect("m", electronics.fmt_value(dec("0.0047"), "Ω"), "4,7 мОм")
+expect("meg", electronics.fmt_value(dec("1000000"), "Ω"), "1 МОм")
+expect("volt", electronics.fmt_value(dec("10"), "V"), "10 В")
+expect("lang", electronics.fmt_value_problem(dec("1"), "Ω", lang="de"), "невідома мова")
+expect("div", electronics.divider(dec("10"), dec("10"), dec("10")), dec("5"))
+expect("div0", electronics.divider_problem(dec("10"), dec("0"), dec("0")), "сума опорів дорівнює нулю")
+expect("par", electronics.parallel([dec("10"), dec("10")]), dec("5"))
+expect("short", electronics.parallel([dec("0"), dec("10")]), dec("0"))
+expect("empty", electronics.parallel_problem([]), "очікується непорожній список")
+expect("ser", electronics.series_sum([dec("2.2"), dec("4.7")]), dec("6.9"))
+expect("pow", electronics.power(dec("10"), dec("5")), dec("20"))
+expect("prz", electronics.power_problem(dec("5"), dec("0")), "нульовий опір")
+band = electronics.tolerance_range(dec("100"), dec("5"))
+expect("lo5", band["lower"], dec("95"))
+expect("hi5", band["upper"], dec("105"))
+expect("ver", electronics.VERSION, "0.1.0")
+|end
+Номінал |( electronics.fmt_value(dec("4700"), "Ω") ), англійською |( electronics.fmt_value(dec("4700"), "Ω", lang="en") ).

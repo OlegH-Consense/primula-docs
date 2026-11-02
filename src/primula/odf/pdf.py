@@ -15,12 +15,19 @@ updated (P8008).
 
 from __future__ import annotations
 
+import contextlib
 import functools
+import os
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - not on Windows
+    fcntl = None  # type: ignore[assignment]
 
 _UNO_SCRIPT = Path(__file__).with_name("uno_export.py")
 
@@ -31,6 +38,40 @@ class PdfError(Exception):
     def __init__(self, reason: str) -> None:
         super().__init__(reason)
         self.reason = reason
+
+
+@contextlib.contextmanager
+def profile_for(work: Path):
+    """The LibreOffice user profile of one conversion.
+
+    A new profile costs more than a second of LibreOffice start.  With
+    ``PRIMULA_LO_PROFILE`` set (``primula view`` sets it) that directory is
+    reused between runs; a lock file keeps two runs from sharing it, and a run
+    that finds it busy uses a private profile in ``work``.
+
+    Args:
+        work: a temporary directory of the caller.
+
+    Yields:
+        The profile directory.
+    """
+    shared = os.environ.get("PRIMULA_LO_PROFILE")
+    lock = None
+    if shared and fcntl is not None:
+        directory = Path(shared)
+        try:
+            directory.parent.mkdir(parents=True, exist_ok=True)
+            lock = open(directory.parent / (directory.name + ".lock"), "w")  # noqa: SIM115 - closed below
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            if lock is not None:
+                lock.close()
+            lock = None
+    try:
+        yield Path(shared) if lock is not None and shared else work / "profile"
+    finally:
+        if lock is not None:
+            lock.close()    # releases the lock
 
 
 @functools.cache
@@ -72,11 +113,11 @@ def export_pdf(odt: Path, target: Path, timeout: int = 180, *, update: bool = Fa
         if python is None:
             reason = "the Python UNO bridge (python3-uno) is not available"
         else:
-            with tempfile.TemporaryDirectory(prefix="primula-pdf-") as work:
+            with tempfile.TemporaryDirectory(prefix="primula-pdf-") as work, profile_for(Path(work)) as profile:
                 produced = Path(work) / "out.pdf"
                 try:
                     run = subprocess.run([python, "-I", str(_UNO_SCRIPT), executable, str(odt), str(produced),
-                                          str(Path(work) / "profile")],
+                                          str(profile)],
                                          capture_output=True, text=True, timeout=timeout, check=False)
                     if run.returncode == 0 and produced.exists():
                         target.parent.mkdir(parents=True, exist_ok=True)
@@ -92,8 +133,7 @@ def export_pdf(odt: Path, target: Path, timeout: int = 180, *, update: bool = Fa
 
 def _convert(executable: str, odt: Path, target: Path, timeout: int) -> None:
     """Plain ``soffice --convert-to pdf``."""
-    with tempfile.TemporaryDirectory(prefix="primula-pdf-") as work:
-        profile = Path(work) / "profile"
+    with tempfile.TemporaryDirectory(prefix="primula-pdf-") as work, profile_for(Path(work)) as profile:
         out_dir = Path(work) / "out"
         try:
             run = subprocess.run(

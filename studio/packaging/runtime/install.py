@@ -4,7 +4,7 @@
 Layout under PREFIX (default ~/.local):
   share/primula-docs/        the whole package (verified against MANIFEST.sha256)
   share/primula-python/      Python environment of the translator (--system-site-packages)
-  bin/primula, bin/primula-studio            launchers (copies, not links)
+  bin/primula, bin/primula-view, bin/primula-studio  launchers (copies, not links)
   libexec/primula-studio     link to the Studio binary in share/primula-docs
   share/icons/…/primula-studio.svg, share/applications/org.primula_docs.Studio.desktop
 Outside PREFIX, for the user (С1):
@@ -34,7 +34,7 @@ from dependencies import default_prefix, modules_status, python_command, runtime
 
 DESKTOP = 'org.primula_docs.Studio.desktop'
 ICON = 'share/icons/hicolor/scalable/apps/primula-studio.svg'
-COMMANDS = ('primula', 'primula-studio')
+COMMANDS = ('primula', 'primula-view', 'primula-studio')
 
 
 def verified_files(package):

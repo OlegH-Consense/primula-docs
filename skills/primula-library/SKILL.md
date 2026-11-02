@@ -18,6 +18,13 @@ skill adds what is specific to libraries.
 - Find the translator as in `primula-docs` (`primula --version`, or the launcher of a
   source checkout). Read the task statement if the library is a planned one:
   `docs/libraries/<name>.md` in the Primula source tree.
+- Libraries that already exist are in `libraries/` of the source tree and in
+  `share/primula-docs/libraries/` of an installation (ua_ids, names, ua_data, legal,
+  finance, payment_qr, epc_qr, codes, charts, stats, electronics, vcs). Look at what
+  one contains before writing another: `primula describe libraries/<name>/<name>.m.prml`
+  lists its public functions with signatures and descriptions, constants and the
+  version (the code is not run). Write a docstring for every public function: it is the
+  text `describe` shows.
 - Check what the core and the standard library already give:
   `primula commands --functions`, `primula commands --format json --lang en` (`functions`).
   Do not reimplement money, words, cases of numbers, dates, workdays, VAT — call them.

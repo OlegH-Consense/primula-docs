@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Сгенерировано gen_kate.py — не править вручную. Спецификация: Primula v1.1-draft. -->
+<!DOCTYPE language SYSTEM "language.dtd">
+<language version="1" kateversion="5.0" casesensitive="true" mimetype="text/x-primula" author="Primula project" name="Primula (code)" section="Markup" extensions="*.s.prml;*.p.prml" priority="5">
+  <highlighting>
+    <list name="pykeywords">
+      <item>and</item>
+      <item>or</item>
+      <item>not</item>
+      <item>in</item>
+      <item>is</item>
+      <item>if</item>
+      <item>elif</item>
+      <item>else</item>
+      <item>for</item>
+      <item>while</item>
+      <item>break</item>
+      <item>continue</item>
+      <item>pass</item>
+      <item>return</item>
+      <item>def</item>
+    </list>
+    <list name="pyconsts">
+      <item>None</item>
+      <item>True</item>
+      <item>False</item>
+    </list>
+    <list name="pyforbidden">
+      <item>class</item>
+      <item>import</item>
+      <item>from</item>
+      <item>try</item>
+      <item>except</item>
+      <item>raise</item>
+      <item>with</item>
+      <item>global</item>
+      <item>nonlocal</item>
+      <item>del</item>
+      <item>lambda</item>
+      <item>yield</item>
+      <item>async</item>
+      <item>await</item>
+      <item>match</item>
+      <item>finally</item>
+      <item>assert</item>
+    </list>
+    <list name="pybuiltins">
+      <item>abbreviations</item>
+      <item>abs</item>
+      <item>admonition_symbols</item>
+      <item>admonition_words</item>
+      <item>all</item>
+      <item>any</item>
+      <item>appendices</item>
+      <item>avg</item>
+      <item>batch_mode</item>
+      <item>block_style</item>
+      <item>body_rows</item>
+      <item>bool</item>
+      <item>build</item>
+      <item>build_date</item>
+      <item>captions</item>
+      <item>cell</item>
+      <item>character_style</item>
+      <item>cm</item>
+      <item>col</item>
+      <item>column</item>
+      <item>count</item>
+      <item>date</item>
+      <item>datetime</item>
+      <item>debug</item>
+      <item>dec</item>
+      <item>derive</item>
+      <item>dict</item>
+      <item>enumerate</item>
+      <item>fail</item>
+      <item>float</item>
+      <item>footer</item>
+      <item>footnotes</item>
+      <item>frame_style</item>
+      <item>getattr</item>
+      <item>has</item>
+      <item>hasattr</item>
+      <item>header</item>
+      <item>img</item>
+      <item>inch</item>
+      <item>int</item>
+      <item>len</item>
+      <item>length</item>
+      <item>list</item>
+      <item>list_style</item>
+      <item>load_csv</item>
+      <item>load_json</item>
+      <item>load_ods</item>
+      <item>load_text</item>
+      <item>load_xlsx</item>
+      <item>load_yaml</item>
+      <item>markup</item>
+      <item>max</item>
+      <item>min</item>
+      <item>mm</item>
+      <item>numbering</item>
+      <item>page_style</item>
+      <item>paragraph_style</item>
+      <item>placeholders</item>
+      <item>pt</item>
+      <item>quotes</item>
+      <item>range</item>
+      <item>record</item>
+      <item>ref_labels</item>
+      <item>repr</item>
+      <item>reversed</item>
+      <item>review_marks</item>
+      <item>round</item>
+      <item>sorted</item>
+      <item>str</item>
+      <item>structure_profile</item>
+      <item>structure_styles</item>
+      <item>sum</item>
+      <item>table_style</item>
+      <item>this_row</item>
+      <item>track</item>
+      <item>tuple</item>
+      <item>type</item>
+      <item>watermark</item>
+      <item>zip</item>
+    </list>
+    <list name="pystdlib">
+      <item>add_months</item>
+      <item>add_years</item>
+      <item>atan2</item>
+      <item>base64url</item>
+      <item>cap</item>
+      <item>ceil</item>
+      <item>ceil_to</item>
+      <item>convert</item>
+      <item>cos</item>
+      <item>currency</item>
+      <item>date_words</item>
+      <item>distinct</item>
+      <item>e</item>
+      <item>exp</item>
+      <item>floor</item>
+      <item>floor_to</item>
+      <item>fmt_date</item>
+      <item>fmt_datetime</item>
+      <item>fmt_time</item>
+      <item>group_by</item>
+      <item>hours</item>
+      <item>is_workday</item>
+      <item>join_list</item>
+      <item>log</item>
+      <item>log10</item>
+      <item>minutes</item>
+      <item>money</item>
+      <item>money_full</item>
+      <item>money_words</item>
+      <item>month_name</item>
+      <item>month_names</item>
+      <item>nbsp_short</item>
+      <item>num</item>
+      <item>ordinal</item>
+      <item>percent</item>
+      <item>pi</item>
+      <item>plural</item>
+      <item>qr_matrix</item>
+      <item>qr_svg</item>
+      <item>qty</item>
+      <item>qty_range</item>
+      <item>round_money</item>
+      <item>round_to</item>
+      <item>sin</item>
+      <item>sort_key</item>
+      <item>split</item>
+      <item>sqrt</item>
+      <item>sum_by</item>
+      <item>tan</item>
+      <item>translit</item>
+      <item>typography</item>
+      <item>unit</item>
+      <item>vat</item>
+      <item>vat_in</item>
+      <item>weekday</item>
+      <item>weeks</item>
+      <item>with_vat</item>
+      <item>without_vat</item>
+      <item>words</item>
+      <item>workdays</item>
+    </list>
+    <contexts>
+      <context name="Start" attribute="Normal" lineEndContext="#pop!CodeBody" fallthroughContext="#pop!CodeBody" lineEmptyContext="#pop!CodeBody">
+        <RegExpr String="---[ \t]*$" attribute="HeaderDelim" context="#pop!HeaderCode" column="0" beginRegion="header"/>
+      </context>
+      <context name="HeaderCode" attribute="HeaderValue" lineEndContext="#stay">
+        <RegExpr String="---[ \t]*$" attribute="HeaderDelim" context="#pop!CodeBody" column="0" endRegion="header"/>
+        <RegExpr String="(?:^|(?&lt;=[ \t]))#.*$" attribute="HeaderComment"/>
+        <RegExpr String="(?&lt;![\p{L}\p{N}_\-])(?:ref_documents|doc_defaults|organization|description|on_conflict|build_date|characters|identifier|paragraphs|references|recursion|structure|defaults|keywords|language|modified|revision|created|creator|extends|primula|subject|targets|version|blocks|frames|limits|output|params|source|status|stdlib|styles|tables|lists|pages|title|keys|kind|name|size|time|doc|pdf)(?=[ \t]*:(?:[ \t]|$))" attribute="HeaderKnownKey"/>
+        <RegExpr String="[\p{L}\p{N}_][\p{L}\p{N}_ .\-]*?(?=[ \t]*:(?:[ \t]|$))" attribute="HeaderKey"/>
+        <RegExpr String='"' attribute="HeaderString" context="HStrDQ"/>
+        <RegExpr String="'" attribute="HeaderString" context="HStrSQ"/>
+        <RegExpr String="\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}(?::\d{2})?)?(?![\p{L}\p{N}_])" attribute="HeaderNumber"/>
+        <RegExpr String="(?&lt;![\p{L}\p{N}_.\-])[-+]?\d[\d_]*(?:\.\d+)?(?![\p{L}\p{N}_])" attribute="HeaderNumber"/>
+        <RegExpr String="(?&lt;![\p{L}\p{N}_])(?:true|false|null)(?![\p{L}\p{N}_])|~" attribute="HeaderConst"/>
+        <RegExpr String="^[ \t]*-(?=[ \t])|[:,\[\]{}]" attribute="HeaderPunct"/>
+      </context>
+      <context name="HStrDQ" attribute="HeaderString" lineEndContext="#pop">
+        <RegExpr String="\\." attribute="PyEscape"/>
+        <DetectChar char='"' attribute="HeaderString" context="#pop"/>
+      </context>
+      <context name="HStrSQ" attribute="HeaderString" lineEndContext="#pop">
+        <RegExpr String="''" attribute="PyEscape"/>
+        <DetectChar char="'" attribute="HeaderString" context="#pop"/>
+      </context>
+      <context name="CodeBody" attribute="CodeText" lineEndContext="#stay">
+        <RegExpr String="#.*$" attribute="PyComment"/>
+        <IncludeRules context="PyRules"/>
+        <RegExpr String="[()]" attribute="PyOperator"/>
+      </context>
+      <context name="PyRules" attribute="CodeText" lineEndContext="#stay">
+        <RegExpr String='(?&lt;![\p{L}\p{N}_])(?:[rRfF]{1,2})?"""' attribute="PyString" context="TripleDQ"/>
+        <RegExpr String="(?&lt;![\p{L}\p{N}_])(?:[rRfF]{1,2})?'''" attribute="PyString" context="TripleSQ"/>
+        <RegExpr String='(?&lt;![\p{L}\p{N}_])(?:[rRfF]{1,2})?"' attribute="PyString" context="StrDQ"/>
+        <RegExpr String="(?&lt;![\p{L}\p{N}_])(?:[rRfF]{1,2})?'" attribute="PyString" context="StrSQ"/>
+        <RegExpr String="(?&lt;![\p{L}\p{N}_.])\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?(?![\p{L}\p{N}_])" attribute="PyNumber"/>
+        <RegExpr String="[\p{L}_][\p{L}\p{N}_]*(?=[ \t]*=(?!=))" attribute="CodeText"/>
+        <RegExpr String=":=" attribute="Error"/>
+        <keyword String="pyforbidden" attribute="Error"/>
+        <keyword String="pykeywords" attribute="PyKeyword"/>
+        <keyword String="pyconsts" attribute="PyConst"/>
+        <keyword String="pybuiltins" attribute="PyBuiltin"/>
+        <keyword String="pystdlib" attribute="PyStdlib"/>
+        <RegExpr String="//|\*\*|[&lt;&gt;=!]=|[-+*/%&lt;&gt;=]" attribute="PyOperator"/>
+        <RegExpr String="[\[\]{},:;.]" attribute="PyOperator"/>
+      </context>
+      <context name="StrDQ" attribute="PyString" lineEndContext="#pop">
+        <RegExpr String="\\." attribute="PyEscape"/>
+        <DetectChar char='"' attribute="PyString" context="#pop"/>
+      </context>
+      <context name="StrSQ" attribute="PyString" lineEndContext="#pop">
+        <RegExpr String="\\." attribute="PyEscape"/>
+        <DetectChar char="'" attribute="PyString" context="#pop"/>
+      </context>
+      <context name="TripleDQ" attribute="PyString" lineEndContext="#stay">
+        <RegExpr String="\\." attribute="PyEscape"/>
+        <RegExpr String='"""' attribute="PyString" context="#pop"/>
+      </context>
+      <context name="TripleSQ" attribute="PyString" lineEndContext="#stay">
+        <RegExpr String="\\." attribute="PyEscape"/>
+        <RegExpr String="'''" attribute="PyString" context="#pop"/>
+      </context>
+    </contexts>
+    <itemDatas>
+      <itemData name="Normal" defStyleNum="dsNormal"/>
+      <itemData name="HeaderDelim" defStyleNum="dsRegionMarker" spellChecking="false"/>
+      <itemData name="HeaderKey" defStyleNum="dsAttribute" spellChecking="false"/>
+      <itemData name="HeaderKnownKey" defStyleNum="dsKeyword" spellChecking="false"/>
+      <itemData name="HeaderValue" defStyleNum="dsNormal" spellChecking="false"/>
+      <itemData name="HeaderString" defStyleNum="dsString" spellChecking="false"/>
+      <itemData name="HeaderNumber" defStyleNum="dsDecVal" spellChecking="false"/>
+      <itemData name="HeaderConst" defStyleNum="dsConstant" spellChecking="false"/>
+      <itemData name="HeaderPunct" defStyleNum="dsOperator" spellChecking="false"/>
+      <itemData name="HeaderComment" defStyleNum="dsComment"/>
+      <itemData name="Comment" defStyleNum="dsComment"/>
+      <itemData name="Escape" defStyleNum="dsSpecialChar" spellChecking="false"/>
+      <itemData name="Error" defStyleNum="dsError" spellChecking="false"/>
+      <itemData name="BlockCmd" defStyleNum="dsControlFlow" spellChecking="false"/>
+      <itemData name="ControlFlow" defStyleNum="dsControlFlow" spellChecking="false"/>
+      <itemData name="ModuleCmd" defStyleNum="dsImport" spellChecking="false"/>
+      <itemData name="BuiltinCmd" defStyleNum="dsFunction" spellChecking="false"/>
+      <itemData name="UserCmd" defStyleNum="dsExtension" spellChecking="false"/>
+      <itemData name="DefName" defStyleNum="dsFunction" spellChecking="false" bold="true"/>
+      <itemData name="StyleName" defStyleNum="dsDataType" spellChecking="false"/>
+      <itemData name="Reference" defStyleNum="dsAnnotation" spellChecking="false"/>
+      <itemData name="StructMarker" defStyleNum="dsKeyword" spellChecking="false" bold="true"/>
+      <itemData name="HeadingMarker" defStyleNum="dsControlFlow" spellChecking="false" bold="true"/>
+      <itemData name="Heading" defStyleNum="dsNormal" bold="true"/>
+      <itemData name="Bracket" defStyleNum="dsOperator" spellChecking="false"/>
+      <itemData name="EnvColon" defStyleNum="dsOperator" spellChecking="false" bold="true"/>
+      <itemData name="ExprDelim" defStyleNum="dsOperator" spellChecking="false" bold="true"/>
+      <itemData name="Expression" defStyleNum="dsVariable" spellChecking="false"/>
+      <itemData name="Arguments" defStyleNum="dsNormal" spellChecking="false"/>
+      <itemData name="InlineMark" defStyleNum="dsOperator" spellChecking="false"/>
+      <itemData name="InlineBody" defStyleNum="dsNormal"/>
+      <itemData name="InlineBold" defStyleNum="dsNormal" bold="true"/>
+      <itemData name="InlineItalic" defStyleNum="dsNormal" italic="true"/>
+      <itemData name="InlineUnderline" defStyleNum="dsNormal" underline="true"/>
+      <itemData name="InlineSup" defStyleNum="dsOthers"/>
+      <itemData name="InlineSub" defStyleNum="dsOthers"/>
+      <itemData name="InlineStrike" defStyleNum="dsNormal" strikeOut="true"/>
+      <itemData name="InlineCode" defStyleNum="dsVerbatimString" spellChecking="false"/>
+      <itemData name="InlineQuote" defStyleNum="dsString"/>
+      <itemData name="InlinePlaceholder" defStyleNum="dsAlert"/>
+      <itemData name="CodeText" defStyleNum="dsNormal" spellChecking="false"/>
+      <itemData name="CommentText" defStyleNum="dsComment"/>
+      <itemData name="Verbatim" defStyleNum="dsVerbatimString" spellChecking="false"/>
+      <itemData name="PyKeyword" defStyleNum="dsKeyword" spellChecking="false"/>
+      <itemData name="PyConst" defStyleNum="dsConstant" spellChecking="false"/>
+      <itemData name="PyBuiltin" defStyleNum="dsBuiltIn" spellChecking="false"/>
+      <itemData name="PyStdlib" defStyleNum="dsBuiltIn" spellChecking="false" italic="true"/>
+      <itemData name="PyNumber" defStyleNum="dsDecVal" spellChecking="false"/>
+      <itemData name="PyString" defStyleNum="dsString" spellChecking="false"/>
+      <itemData name="PyEscape" defStyleNum="dsSpecialChar" spellChecking="false"/>
+      <itemData name="PyOperator" defStyleNum="dsOperator" spellChecking="false"/>
+      <itemData name="PyComment" defStyleNum="dsComment"/>
+    </itemDatas>
+  </highlighting>
+  <general>
+    <comments><comment name="singleLine" start="# " position="afterwhitespace"/></comments>
+    <keywords casesensitive="1" weakDeliminator="." additionalDeliminator=""/>
+  </general>
+</language>

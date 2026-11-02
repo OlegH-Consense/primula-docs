@@ -1,0 +1,182 @@
+---
+kind: module
+---
+|% vcs — a change-registration sheet from a JSON export of git history.
+|% The module does not run git. tools/export-changes.sh writes the file,
+|% and the document passes load_json(...) in. The columns are this
+|% library's own: no DSTU or ESKD form was opened.
+|code:
+VERSION = "0.1.0"
+
+# First line of a commit that belongs on the sheet: "Зміна N: підстава".
+# Other commits are skipped. A line that starts with "Зміна" but does not
+# match is an error, so a typo is not dropped silently.
+_MARK = "Зміна "
+_SECTIONS = "Розділи:"
+
+
+def _fail(reason):
+    """Stop with a vcs: message."""
+    fail(f"vcs: {reason}")
+
+
+def _strip_cr(line):
+    """Drop one trailing CR, so a CRLF message still parses."""
+    if len(line) > 0 and line[len(line) - 1] == "\r":
+        return line[:len(line) - 1]
+    return line
+
+
+def _trim_left(text):
+    """text without leading spaces."""
+    while len(text) > 0 and text[0] == " ":
+        text = text[1:]
+    return text
+
+
+def _lines(message):
+    """Lines of a commit message. The split is on LF."""
+    parts = message.split("\n")
+    out = []
+    for line in parts:
+        out.append(_strip_cr(line))
+    return out
+
+
+def _head(line):
+    """Parse "Зміна N: підстава", or a record with skip or error.
+
+    skip means the commit is ordinary history and is not a sheet row.
+    error is a Ukrainian reason. A parsed row has neither.
+    """
+    if not line.startswith(_MARK):
+        return {"skip": True, "error": "", "number": "", "reason": ""}
+    rest = line[len(_MARK):]
+    colon = rest.find(":")
+    if colon < 1:
+        return {"skip": False, "error": "нерозбірливий рядок зміни", "number": "", "reason": ""}
+    raw = rest[:colon]
+    if raw == "" or not raw.isdigit() or int(raw) < 1:
+        return {"skip": False, "error": "нерозбірливий рядок зміни", "number": "", "reason": ""}
+    why = _trim_left(rest[colon + 1:])
+    if why == "":
+        return {"skip": False, "error": "немає підстави зміни", "number": "", "reason": ""}
+    return {"skip": False, "error": "", "number": str(int(raw)), "reason": why}
+
+
+def _sections(lines):
+    """Text after every "Розділи:" line, joined with a comma."""
+    parts = []
+    i = 1
+    count = len(lines)
+    while i < count:
+        line = lines[i]
+        if line.startswith(_SECTIONS):
+            part = _trim_left(line[len(_SECTIONS):])
+            if part != "":
+                parts.append(part)
+        i = i + 1
+    return ", ".join(parts)
+
+
+def _files(names):
+    """Comma-separated file list, or a reason when names is not a list of strings."""
+    if type(names) != "list":
+        return {"text": "", "error": "очікується перелік файлів"}
+    for name in names:
+        if type(name) != "str":
+            return {"text": "", "error": "очікується перелік файлів"}
+    return {"text": ", ".join(names), "error": ""}
+
+
+def _text_field(row, key):
+    """A non-empty string field, or "" when the field is missing or empty."""
+    if type(row[key]) != "str" or row[key] == "":
+        return ""
+    return row[key]
+
+
+def _one(row):
+    """One sheet row, a skip, or an error. row is one JSON commit."""
+    message = row["message"]
+    if type(message) != "str":
+        return {"skip": False, "error": "очікується текст повідомлення", "row": None}
+    lines = _lines(message)
+    if len(lines) == 0:
+        return {"skip": True, "error": "", "row": None}
+    head = _head(lines[0])
+    if head["skip"] or head["error"] != "":
+        return {"skip": head["skip"], "error": head["error"], "row": None}
+    day = _text_field(row, "date")
+    author = _text_field(row, "author")
+    sha = _text_field(row, "hash")
+    if day == "" or author == "" or sha == "":
+        return {"skip": False, "error": "у коміті немає дати, автора або хеша", "row": None}
+    files = _files(row["files"])
+    if files["error"] != "":
+        return {"skip": False, "error": files["error"], "row": None}
+    return {"skip": False, "error": "", "row": {"number": head["number"], "date": day, "author": author, "sections": _sections(lines), "reason": head["reason"], "files": files["text"], "hash": sha}}
+
+
+def _duplicate(rows):
+    """The repeated change number, or ""."""
+    i = 0
+    count = len(rows)
+    while i < count:
+        j = i + 1
+        while j < count:
+            if rows[i]["number"] == rows[j]["number"]:
+                return rows[i]["number"]
+            j = j + 1
+        i = i + 1
+    return ""
+
+
+def _by_number(rows):
+    """rows ordered by the change number. Equal numbers are already rejected."""
+    out = []
+    for row in rows:
+        i = 0
+        while i < len(out) and int(out[i]["number"]) <= int(row["number"]):
+            i = i + 1
+        out = out[:i] + [row] + out[i:]
+    return out
+
+
+def _collect(data):
+    """Sheet rows, or a reason. An empty selection is "історія змін порожня"."""
+    if type(data) != "list":
+        return {"rows": None, "reason": "очікується список комітів"}
+    found = []
+    for row in data:
+        item = _one(row)
+        if item["error"] != "":
+            return {"rows": None, "reason": item["error"]}
+        if not item["skip"]:
+            found.append(item["row"])
+    if len(found) == 0:
+        return {"rows": None, "reason": "історія змін порожня"}
+    dup = _duplicate(found)
+    if dup != "":
+        return {"rows": None, "reason": "повтор номера зміни " + dup}
+    return {"rows": _by_number(found), "reason": ""}
+
+
+def changes_problem(data):
+    """Why data cannot become a change sheet, or ""."""
+    return _collect(data)["reason"]
+
+
+def changes(data):
+    """Rows for |table(data=…). data is the list load_json returned.
+
+    Each row has number, date, author, sections, reason, files and hash,
+    all strings. number is the decimal text of N, not a decimal value.
+    Rows are ordered by number. A commit whose first line is not
+    "Зміна N: …" is left out. None left, or an empty list, is an error.
+    """
+    packed = _collect(data)
+    if packed["reason"] != "":
+        _fail(packed["reason"])
+    return packed["rows"]
+|end

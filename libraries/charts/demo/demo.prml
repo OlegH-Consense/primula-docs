@@ -1,0 +1,11 @@
+---
+doc: {title: "Приклад charts", language: uk-UA}
+---
+|import("lib/charts")
+|code:
+rows = [{"міс": "січ", "грн": dec("10")}, {"міс": "лют", "грн": dec("20")}, {"міс": "бер", "грн": dec("15")}]
+|end
+Бібліотека charts |(charts.VERSION).
+|figure(svg=charts.bar(rows, "міс", "грн", title="Три місяці")):
+Умовні суми
+|end figure

@@ -1,0 +1,11 @@
+---
+doc: {title: "Приклад codes", language: uk-UA}
+---
+|import("lib/codes")
+|code:
+image = codes.ean13_svg("5901234123457", quiet=7)
+|end
+Бібліотека codes |( codes.VERSION ). Контрольна цифра |( codes.ean13_check("590123412345") ), ISBN-13 |( codes.isbn13("0-306-40615-2") ), цифра Луна |( codes.luhn_check("7992739871") ).
+|figure(svg=image):
+Приклад EAN-13 з опису коду, не товар цієї бібліотеки
+|end figure

@@ -1,0 +1,341 @@
+---
+kind: module
+---
+|% legal — contractual penalty, 3 % per annum and inflation losses.
+|% The discount-rate pack and the CPI rows come from ua_data: a module
+|% cannot import a sibling library. The methodology is fixed in README.md.
+|code:
+VERSION = "0.1.0"
+
+
+def _num(value):
+    """Decimal from a YAML number or a numeric string."""
+    if type(value) == "str":
+        return dec(value)
+    return value
+
+
+def _date_problem(day):
+    """Reason when day is not a date, or ""."""
+    if type(day) != "datetime":
+        return "очікується дата"
+    return ""
+
+
+def _money_problem(debt):
+    """Reason when debt is not a non-negative decimal, or ""."""
+    if type(debt) != "decimal":
+        return "очікується сума"
+    if debt < 0:
+        return "від'ємна сума"
+    return ""
+
+
+def _period_problem(start, end):
+    """Reason when [start, end) is not a delay, or "" . end is not counted."""
+    reason = _date_problem(start)
+    if reason != "":
+        return reason
+    reason = _date_problem(end)
+    if reason != "":
+        return reason
+    if end <= start:
+        return "порожній період"
+    return ""
+
+
+def _leap(year):
+    """Whether year has a 29 February (Gregorian)."""
+    y = int(year)
+    if y % 400 == 0:
+        return True
+    if y % 100 == 0:
+        return False
+    return y % 4 == 0
+
+
+def _year_len(year, mode):
+    """Days in the year for mode, or None when mode is unknown."""
+    if mode == "365":
+        return 365
+    if mode == "366":
+        return 366
+    if mode == "act/act":
+        if _leap(year):
+            return 366
+        return 365
+    return None
+
+
+def _rate_on(pack, day):
+    """Discount percent on day from an ua_data step pack, or a reason."""
+    if day > pack["known_through"]:
+        return {"value": None, "reason": "ряд підтверджено лише до " + str(pack["known_through"])}
+    best = None
+    for row in pack["rows"]:
+        since = row["from"]
+        if since <= day and (best is None or since >= best["from"]):
+            best = row
+    if best is None:
+        return {"value": None, "reason": "немає ставки на цю дату"}
+    return {"value": _num(best["value"]), "reason": ""}
+
+
+def _applied(rate, discount, cap):
+    """Annual percent actually charged, or a reason in the reason field."""
+    if cap != "2x_discount" and cap != "none":
+        return {"value": None, "reason": "невідоме обмеження пені"}
+    if rate is not None and (type(rate) != "decimal" or rate < 0):
+        return {"value": None, "reason": "очікується договірна ставка"}
+    double = discount * 2
+    if cap == "none":
+        if rate is None:
+            return {"value": None, "reason": "немає договірної ставки"}
+        return {"value": rate, "reason": ""}
+    if rate is None or rate > double:
+        return {"value": double, "reason": ""}
+    return {"value": rate, "reason": ""}
+
+
+def _penalty_parts(debt, start, end, rates, rate, cap, year_days):
+    """Unrounded segments of the penalty, or a reason."""
+    reason = _money_problem(debt)
+    if reason != "":
+        return {"parts": None, "reason": reason}
+    reason = _period_problem(start, end)
+    if reason != "":
+        return {"parts": None, "reason": reason}
+    if _year_len(start.year, year_days) is None:
+        return {"parts": None, "reason": "невідомий підрахунок днів у році"}
+    parts = []
+    day = start
+    while day < end:
+        got = _rate_on(rates, day)
+        if got["reason"] != "":
+            return {"parts": None, "reason": got["reason"]}
+        charged = _applied(rate, got["value"], cap)
+        if charged["reason"] != "":
+            return {"parts": None, "reason": charged["reason"]}
+        ylen = _year_len(day.year, year_days)
+        since = day
+        count = 0
+        while day < end:
+            step = _rate_on(rates, day)
+            if step["reason"] != "":
+                return {"parts": None, "reason": step["reason"]}
+            again = _applied(rate, step["value"], cap)
+            if again["value"] != charged["value"] or _year_len(day.year, year_days) != ylen:
+                break
+            count = count + 1
+            day = day + 1
+        raw = debt * charged["value"] / 100 / ylen * count
+        parts.append({"since": since, "until": day - 1, "days": count, "rate": charged["value"], "raw": raw})
+    return {"parts": parts, "reason": ""}
+
+
+def penalty_problem(debt, start, end, rates, rate=None, cap="2x_discount", year_days="act/act"):
+    """Why the penalty cannot be computed, or ""."""
+    return _penalty_parts(debt, start, end, rates, rate, cap, year_days)["reason"]
+
+
+def penalty(debt, start, end, rates, rate=None, cap="2x_discount", year_days="act/act"):
+    """Penalty for [start, end). end is the payment date and is not counted.
+
+    rate is the contractual percent per year. None means the statutory
+    double discount rate. cap "2x_discount" never charges more than twice
+    the NBU rate in force on that day. The result is round_money of the
+    exact sum, once.
+    """
+    got = _penalty_parts(debt, start, end, rates, rate, cap, year_days)
+    if got["reason"] != "":
+        fail(f"legal: {got['reason']}")
+    total = dec(0)
+    for part in got["parts"]:
+        total = total + part["raw"]
+    return round_money(total)
+
+
+def claim_table(debt, start, end, rates, rate=None, cap="2x_discount", year_days="act/act"):
+    """Rows {since, until, days, rate, amount} for a penalty table.
+
+    Each amount is round_money of the segment. The last amount absorbs
+    the kopiyka so the rows add up to penalty().
+    """
+    got = _penalty_parts(debt, start, end, rates, rate, cap, year_days)
+    if got["reason"] != "":
+        fail(f"legal: {got['reason']}")
+    total = dec(0)
+    for part in got["parts"]:
+        total = total + part["raw"]
+    total = round_money(total)
+    rows = []
+    spent = dec(0)
+    index = 0
+    n = len(got["parts"])
+    for part in got["parts"]:
+        if index == n - 1:
+            amount = total - spent
+        else:
+            amount = round_money(part["raw"])
+            spent = spent + amount
+        rows.append({"since": part["since"], "until": part["until"], "days": part["days"], "rate": part["rate"], "amount": amount})
+        index = index + 1
+    return rows
+
+
+def _annual_parts(debt, start, end, percent, year_days):
+    """Unrounded pieces of percent per annum, split on the year length."""
+    reason = _money_problem(debt)
+    if reason != "":
+        return {"raw": None, "reason": reason}
+    reason = _period_problem(start, end)
+    if reason != "":
+        return {"raw": None, "reason": reason}
+    if type(percent) != "decimal" or percent < 0:
+        return {"raw": None, "reason": "очікується відсоток"}
+    if _year_len(start.year, year_days) is None:
+        return {"raw": None, "reason": "невідомий підрахунок днів у році"}
+    raw = dec(0)
+    day = start
+    while day < end:
+        ylen = _year_len(day.year, year_days)
+        count = 0
+        while day < end and _year_len(day.year, year_days) == ylen:
+            count = count + 1
+            day = day + 1
+        raw = raw + debt * percent / 100 / ylen * count
+    return {"raw": raw, "reason": ""}
+
+
+def annual3_problem(debt, start, end, percent=3, year_days="act/act"):
+    """Why the annual interest cannot be computed, or ""."""
+    return _annual_parts(debt, start, end, percent, year_days)["reason"]
+
+
+def annual3(debt, start, end, percent=3, year_days="act/act"):
+    """percent per annum of debt for [start, end). Default 3, actual/actual.
+
+    One round_money at the end. 366 is used only for the days of a leap year.
+    """
+    got = _annual_parts(debt, start, end, percent, year_days)
+    if got["reason"] != "":
+        fail(f"legal: {got['reason']}")
+    return round_money(got["raw"])
+
+
+def _month_add(day):
+    """The first day of the month after day."""
+    if day.month == 12:
+        return date(day.year + 1, 1, 1)
+    return date(day.year, day.month + 1, 1)
+
+
+def _cpi_factor(rows, year, month):
+    """Index/100 of that month, or None when the row is absent."""
+    for row in rows:
+        stamp = row["month"]
+        if stamp.year == year and stamp.month == month:
+            return _num(row["value"]) / 100
+    return None
+
+
+def _inflation_months(start, end, rows):
+    """Months of the delay with a day count and whether the 15-day rule includes them."""
+    reason = _period_problem(start, end)
+    if reason != "":
+        return {"months": None, "reason": reason}
+    last = end - 1
+    cursor = date(start.year, start.month, 1)
+    stop = date(last.year, last.month, 1)
+    months = []
+    while cursor <= stop:
+        nxt = _month_add(cursor)
+        left = start
+        if cursor > left:
+            left = cursor
+        right = end
+        if nxt < right:
+            right = nxt
+        count = int(right - left)
+        include = count > 15
+        factor = None
+        if include:
+            factor = _cpi_factor(rows, cursor.year, cursor.month)
+            if factor is None:
+                return {"months": None, "reason": "немає індексу за " + str(cursor)}
+        months.append({"month": cursor, "days": count, "include": include, "factor": factor})
+        cursor = nxt
+    return {"months": months, "reason": ""}
+
+
+def inflation_problem(debt, start, end, cpi):
+    """Why inflation losses cannot be computed, or ""."""
+    reason = _money_problem(debt)
+    if reason != "":
+        return reason
+    return _inflation_months(start, end, cpi)["reason"]
+
+
+def inflation_losses(debt, start, end, cpi):
+    """Inflation losses for [start, end). cpi is ua_data.cpi_rows() or the same shape.
+
+    A month counts when more than 15 days of the delay fall in it. Every
+    counted index is multiplied, including an index below 100. The loss is
+    debt times (product minus one), and zero when that product is below one.
+    """
+    reason = inflation_problem(debt, start, end, cpi)
+    if reason != "":
+        fail(f"legal: {reason}")
+    product = dec(1)
+    for row in _inflation_months(start, end, cpi)["months"]:
+        if row["include"]:
+            product = product * row["factor"]
+    raw = debt * (product - 1)
+    if raw < 0:
+        raw = dec(0)
+    return round_money(raw)
+
+
+def inflation_table(debt, start, end, cpi):
+    """Rows {month, days, include, factor} of the inflation calculation."""
+    reason = inflation_problem(debt, start, end, cpi)
+    if reason != "":
+        fail(f"legal: {reason}")
+    return _inflation_months(start, end, cpi)["months"]
+
+
+def term_words(n, unit="banking_days"):
+    """«5 (п'яти) банківських днів». The words are Ukrainian regardless of the document language."""
+    if type(n) != "decimal" or n != int(n) or n < 1:
+        fail("legal: очікується додатне ціле число")
+    number = int(n)
+    if unit == "banking_days":
+        noun = plural(number, "банківський день", "банківські дні", "банківських днів", lang="uk")
+    elif unit == "workdays":
+        noun = plural(number, "робочий день", "робочі дні", "робочих днів", lang="uk")
+    elif unit == "calendar_days":
+        noun = plural(number, "календарний день", "календарні дні", "календарних днів", lang="uk")
+    else:
+        fail(f"legal: невідома одиниця строку «{unit}»")
+    return str(number) + " (" + words(number, case="gen", lang="uk") + ") " + noun
+
+
+def deadline(start, n, kind="workdays", calendar=None):
+    """The date n days after start. start itself is not counted.
+
+    workdays and banking_days use the standard-library workdays. There is
+    no separate bank-holiday list in 0.1.0, so banking_days is the same
+    calendar. calendar_days is start plus n.
+    """
+    if _date_problem(start) != "":
+        fail("legal: очікується дата")
+    if type(n) != "decimal" or n != int(n):
+        fail("legal: очікується ціле число днів")
+    if kind == "calendar_days":
+        return start + n
+    if kind == "workdays" or kind == "banking_days":
+        if calendar is None:
+            return workdays(start, n)
+        return workdays(start, n, calendar=calendar)
+    fail(f"legal: невідомий вид строку «{kind}»")
+|end

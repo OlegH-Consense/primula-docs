@@ -176,6 +176,28 @@ primula export договір.prml --to docx          # стили абзаце�
 primula export договір.prml --to json          # AST pandoc, pandoc не нужен
 ```
 
+## Быстрый просмотр: primula view
+
+`primula view` собирает документ во временном каталоге (ODT и PDF, как `build --pdf`), открывает PDF в просмотрщике и удаляет файлы, когда окно закрыто. Если сборка не удалась, вместо PDF показывается журнал сборки — в терминале или в окне. Команда нужна для файловых менеджеров: короткое имя `primula-view` лежит рядом с `primula`.
+
+```sh
+primula view договір.prml
+primula view договір.prml --param номер=12 --viewer "okular --unique"
+primula view --text договір.prml | less        # без LibreOffice: простой текст через pandoc, около секунды
+```
+
+Просмотрщик берётся из `--viewer`, затем из переменной `PRIMULA_VIEWER`, затем это просмотрщик PDF рабочего стола (okular, evince, atril, xreader, zathura, mupdf, qpdfview), затем `xdg-open`. Заданный и опознанный просмотрщик ожидается; `xdg-open` возвращается сразу, поэтому файлы остаются в `$XDG_RUNTIME_DIR/primula-view` и удаляются позднее. LibreOffice стартует с профилем в `~/.cache/primula`, что немного ускоряет повторные запуски; основное время занимает вёрстка в LibreOffice, поэтому для документа в несколько страниц ждите несколько секунд, а для быстрого взгляда на текст используйте `--text`.
+
+F3 в Midnight Commander — в `~/.config/mc/mc.ext.ini`:
+
+```ini
+[primula]
+Extensions=prml
+View=primula-view %f
+```
+
+Для текста в самом терминале: `View=%view{ascii} primula view --text %f`.
+
 ## Сводный документ
 
 Несколько документов собираются в один ODT командой `|document`:

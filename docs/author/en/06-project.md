@@ -1,4 +1,4 @@
-<!-- translation: source=docs/author/ru/06-project.md sections=ac21902d ed618ab9 0f2d968f 0ecf8e58 28139212 4c88988a 4666df39 42f79e1f a698ee9f 448f3597 9fe170b6 abc8222f -->
+<!-- translation: source=docs/author/ru/06-project.md sections=ac21902d ed618ab9 0f2d968f 0ecf8e58 28139212 4c88988a 4666df39 42f79e1f 8f03baf2 a698ee9f 448f3597 9fe170b6 abc8222f -->
 <!-- spec: 5.7 9.3 10.1 10.2 10.3 10.4 10.5 10.6 10.7 11.7 -->
 # Project of several documents
 
@@ -176,6 +176,28 @@ primula export договір.prml --to html          # one HTML file with the i
 primula export договір.prml --to docx          # paragraph styles by name (custom-style)
 primula export договір.prml --to json          # the pandoc AST, no pandoc needed
 ```
+
+## Quick view: primula view
+
+`primula view` builds the document in a temporary directory (ODT and PDF, as `build --pdf` does), opens the PDF in a viewer and deletes the files when the window is closed. If the build fails, the build log is shown instead of the PDF, in the terminal or in a window. The command is meant for file managers: the short name `primula-view` lies next to `primula`.
+
+```sh
+primula view договір.prml
+primula view договір.prml --param номер=12 --viewer "okular --unique"
+primula view --text договір.prml | less        # no LibreOffice: plain text through pandoc, about a second
+```
+
+The viewer is taken from `--viewer`, then from the variable `PRIMULA_VIEWER`, then it is the PDF viewer of the desktop (okular, evince, atril, xreader, zathura, mupdf, qpdfview), then `xdg-open`. A viewer that is given or recognised is waited for; `xdg-open` returns at once, so its files stay in `$XDG_RUNTIME_DIR/primula-view` and are deleted later. LibreOffice starts with a profile in `~/.cache/primula`, which speeds up repeated runs a little; most of the time goes to the layout in LibreOffice, so a document of several pages takes a few seconds, and `--text` is for a quick look at the text.
+
+F3 in Midnight Commander goes into `~/.config/mc/mc.ext.ini`:
+
+```ini
+[primula]
+Extensions=prml
+View=primula-view %f
+```
+
+For the text in the terminal itself: `View=%view{ascii} primula view --text %f`.
 
 ## Assembled document
 

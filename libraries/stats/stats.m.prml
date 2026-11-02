@@ -1,0 +1,195 @@
+---
+kind: module
+---
+|% stats — median, mode, variance, percentile, moving average.
+|% The mean is the core function avg. sqrt comes from std/math and is a
+|% float, so stdev rounds it back to a decimal. The rules are in README.md.
+|import("std/math")
+|code:
+VERSION = "0.1.0"
+
+
+def values_problem(xs):
+    """Why xs is not a non-empty list of decimals, or ""."""
+    if type(xs) != "list" or len(xs) == 0:
+        return "очікується непорожній список"
+    for item in xs:
+        if type(item) == "NoneType":
+            return "у даних є порожнє значення"
+        if type(item) != "decimal":
+            return "очікується число"
+    return ""
+
+
+def _fail(reason):
+    """Stop with a stats: message."""
+    fail(f"stats: {reason}")
+
+
+def _sorted(xs):
+    """A sorted copy. The caller's list is left as it was."""
+    return sorted(xs)
+
+
+def median(xs):
+    """The middle value. An even count averages the two middle values."""
+    reason = values_problem(xs)
+    if reason != "":
+        _fail(reason)
+    data = _sorted(xs)
+    count = len(data)
+    mid = count // 2
+    if count % 2 == 1:
+        return data[mid]
+    return (data[mid - 1] + data[mid]) / 2
+
+
+def mode(xs):
+    """The most frequent value. A tie returns the smallest value."""
+    reason = values_problem(xs)
+    if reason != "":
+        _fail(reason)
+    data = _sorted(xs)
+    best = data[0]
+    best_count = 0
+    run = data[0]
+    count = 0
+    for item in data:
+        if item == run:
+            count = count + 1
+        else:
+            if count > best_count:
+                best = run
+                best_count = count
+            run = item
+            count = 1
+    if count > best_count:
+        best = run
+    return best
+
+
+def _sample_problem(sample):
+    """Reason when sample is not a boolean, or ""."""
+    if sample != True and sample != False:
+        return "очікується ознака вибірки"
+    return ""
+
+
+def variance_problem(xs, sample=True):
+    """Why the variance cannot be computed, or "".
+
+    The sample variance divides by n-1, so a single value is refused.
+    The population variance of one value is zero.
+    """
+    reason = _sample_problem(sample)
+    if reason != "":
+        return reason
+    reason = values_problem(xs)
+    if reason != "":
+        return reason
+    if sample and len(xs) < 2:
+        return "для вибіркової дисперсії потрібно щонайменше два значення"
+    return ""
+
+
+def variance(xs, sample=True):
+    """Variance. sample=True divides by n-1, sample=False by n."""
+    reason = variance_problem(xs, sample)
+    if reason != "":
+        _fail(reason)
+    count = len(xs)
+    mean = sum(xs) / count
+    acc = dec(0)
+    for item in xs:
+        delta = item - mean
+        acc = acc + delta * delta
+    if sample:
+        return acc / (count - 1)
+    return acc / count
+
+
+def _digits_problem(digits):
+    """Reason when digits is not a non-negative whole number, or ""."""
+    if type(digits) != "decimal" or digits != int(digits) or digits < 0:
+        return "очікується кількість знаків"
+    return ""
+
+
+def stdev(xs, sample=True, digits=10):
+    """Standard deviation as a decimal rounded to digits places.
+
+    math.sqrt returns a float. dec() takes its shortest decimal, then
+    round halves away from zero.
+    """
+    reason = _digits_problem(digits)
+    if reason != "":
+        _fail(reason)
+    spread = variance(xs, sample)
+    return round(dec(math.sqrt(float(spread))), int(digits))
+
+
+def percentile_problem(xs, p, method="inclusive"):
+    """Why the percentile cannot be computed, or ""."""
+    if method != "inclusive":
+        return "невідомий метод перцентиля"
+    if type(p) != "decimal" or p < 0 or p > 100:
+        return "перцентиль поза межами 0…100"
+    return values_problem(xs)
+
+
+def percentile(xs, p, method="inclusive"):
+    """Linear percentile. p is 0..100.
+
+    method "inclusive" is the spreadsheet PERCENTILE.INC: the rank is
+    p/100*(n-1) and the two surrounding values are interpolated.
+    """
+    reason = percentile_problem(xs, p, method)
+    if reason != "":
+        _fail(reason)
+    data = _sorted(xs)
+    count = len(data)
+    if count == 1:
+        return data[0]
+    rank = p / 100 * (count - 1)
+    low = int(rank)
+    high = low
+    if rank != low:
+        high = low + 1
+    if high >= count:
+        high = count - 1
+    frac = rank - low
+    return data[low] + (data[high] - data[low]) * frac
+
+
+def moving_average(xs, n):
+    """Means of each window of n values, length len(xs)-n+1."""
+    reason = values_problem(xs)
+    if reason != "":
+        _fail(reason)
+    if type(n) != "decimal" or n != int(n) or n < 1:
+        _fail("очікується додатне ціле вікно")
+    width = int(n)
+    count = len(xs)
+    if width > count:
+        _fail("вікно довше за ряд")
+    out = []
+    index = 0
+    last = count - width
+    while index <= last:
+        acc = dec(0)
+        step = 0
+        while step < width:
+            acc = acc + xs[index + step]
+            step = step + 1
+        out.append(acc / width)
+        index = index + 1
+    return out
+
+
+def describe(xs, digits=10):
+    """Record-like dict: n, min, max, mean, median, stdev (sample)."""
+    reason = variance_problem(xs, True)
+    if reason != "":
+        _fail(reason)
+    return {"n": len(xs), "min": min(xs), "max": max(xs), "mean": sum(xs) / len(xs), "median": median(xs), "stdev": stdev(xs, digits=digits)}
+|end

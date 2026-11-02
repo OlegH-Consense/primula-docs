@@ -1,0 +1,7 @@
+# Standard-library calendar (section 5) for 2026.
+# Martial law covers the whole year: Decree No. 1060/2026 extends it from
+# 05:30 on 31.10.2026 for 90 days. Art. 73 holidays stay ordinary days.
+weekend: [sat, sun]
+holidays: []
+workdays: []
+rest_days: []

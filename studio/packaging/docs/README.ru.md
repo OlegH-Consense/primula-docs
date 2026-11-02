@@ -21,6 +21,7 @@ Primula — язык разметки деловых и технических �
 | [primula-spec-v1.1-draft.ru.md](primula-spec-v1.1-draft.ru.md) | спецификация языка (черновик 1.1; переводы — [uk](primula-spec-v1.1-draft.uk.md), [en](primula-spec-v1.1-draft.en.md)) |
 | [primula-stdlib-v1.1-draft.ru.md](primula-stdlib-v1.1-draft.ru.md) | стандартная библиотека: стили, модули ([uk](primula-stdlib-v1.1-draft.uk.md), [en](primula-stdlib-v1.1-draft.en.md)) |
 | [examples/README.md](examples/README.md) | примеры: от простого документа до проекта с договором и заказами |
+| [editors/README.md](editors/README.md) | подсветка `.prml` для Kate, mcedit, Geany и VS Code (`editors/install.sh`) |
 
 ## Требования
 
@@ -75,7 +76,7 @@ primula --help                         # все команды; primula commands
 | --- | --- | --- |
 | `~/.local/share/primula-docs/` | установленный пакет: транслятор, Studio, руководства, спецификация, примеры и библиотеки (исходные), `uninstall.sh` | удаляет |
 | `~/.local/share/primula-python/` | окружение Python транслятора (PyYAML) | удаляет (кроме `--keep-python`) |
-| `~/.local/bin/primula`, `~/.local/bin/primula-studio` | команды | удаляет |
+| `~/.local/bin/primula`, `~/.local/bin/primula-view`, `~/.local/bin/primula-studio` | команды | удаляет |
 | `~/.local/libexec/primula-studio` | ссылка на программу Studio в пакете | удаляет |
 | `~/.local/share/applications/org.primula_docs.Studio.desktop`, `~/.local/share/icons/hicolor/scalable/apps/primula-studio.svg` | ярлык в меню и значок | удаляет |
 | `~/Primula/examples/`, `~/Primula/examples.old-<время>/` | рабочая копия примеров и прежние копии | `--purge` |

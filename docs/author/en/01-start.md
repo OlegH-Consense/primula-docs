@@ -1,4 +1,4 @@
-<!-- translation: source=docs/author/ru/01-start.md sections=94ebfc53 9efb2beb 576d9a8e bfecfea0 1e33b025 9613b006 1d9db58e -->
+<!-- translation: source=docs/author/ru/01-start.md sections=94ebfc53 9efb2beb 576d9a8e bfecfea0 1e33b025 9613b006 670c8797 1d9db58e -->
 <!-- spec: 2.1 2.2 2.3 3.1 3.3 3.4 3.5 3.6 4.1 4.2 5.2 5.3 5.4 14.1 -->
 # First document
 
@@ -95,6 +95,10 @@ primula build довідка.prml --pdf    # a PDF as well (needs LibreOffice)
 ```
 
 The check reports errors and warnings with the line and column; what to do with them is on the page [“Messages of the translator”](08-messages.md). In Studio the same commands are “Check document” (`Ctrl+Shift+Enter`) and “Build document (ODT and PDF)” (`F9`); a click on a message opens its line.
+
+## Highlighting in other editors
+
+`.prml` files are plain text and can be edited in any editor. Highlighting for Kate, KWrite, KDevelop, Midnight Commander (mcedit), Geany and VS Code is in the `editors/` directory of the package: `editors/install.sh` installs it into the user profile (`./install.sh kate vscode` for the chosen editors only), and `editors/README.md` describes what each editor can and cannot show. The word list of the highlighting is built from the reference of the translator, so new commands and functions of the language reach it when the kit is updated.
 
 ## Default look
 

@@ -1,0 +1,112 @@
+---
+doc: {title: "finance: перевірка", language: uk-UA}
+---
+|% Hand figures from the ordinary PMT formula and round_money (half away
+|% from zero). 1 000 at 12 % for 3 months, monthly rate 1 %:
+|% raw payment 340.022… → 340.02; the last row clears the balance.
+|import("../finance")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+def near(name, got, wanted, tol):
+    if abs(got - wanted) > tol:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)} ± {repr(tol)}")
+
+principal = dec("1000")
+rate = dec("12")
+start = date(2026, 1, 15)
+
+expect("pmt", finance.annuity_payment(principal, rate, 3), dec("340.02"))
+expect("pmt-10", finance.annuity_payment(dec("10000"), dec("10"), 12), dec("879.16"))
+expect("pmt-0", finance.annuity_payment(dec("1200"), dec("0"), 12), dec("100.00"))
+expect("neg", finance.annuity_problem(dec("-1"), rate, 12), "від'ємна сума")
+expect("months", finance.schedule_problem(principal, rate, 0, start), "очікується додатне ціле число періодів")
+expect("kind", finance.schedule_problem(principal, rate, 3, start, kind="balloon"), "невідомий вид графіка")
+
+rows = finance.schedule(principal, rate, 3, start)
+expect("n", len(rows), 3)
+expect("d1", rows[0]["date"], date(2026, 2, 15))
+expect("p1", rows[0]["payment"], dec("340.02"))
+expect("i1", rows[0]["interest"], dec("10.00"))
+expect("c1", rows[0]["principal"], dec("330.02"))
+expect("b1", rows[0]["balance"], dec("669.98"))
+expect("d2", rows[1]["date"], date(2026, 3, 15))
+expect("i2", rows[1]["interest"], dec("6.70"))
+expect("c2", rows[1]["principal"], dec("333.32"))
+expect("b2", rows[1]["balance"], dec("336.66"))
+expect("d3", rows[2]["date"], date(2026, 4, 15))
+expect("p3", rows[2]["payment"], dec("340.03"))
+expect("i3", rows[2]["interest"], dec("3.37"))
+expect("c3", rows[2]["principal"], dec("336.66"))
+expect("b3", rows[2]["balance"], dec("0.00"))
+expect("sum", sum([row["principal"] for row in rows]), principal)
+
+equal = finance.schedule(principal, rate, 3, start, kind="equal_principal")
+expect("e1", equal[0]["payment"], dec("343.33"))
+expect("ei1", equal[0]["interest"], dec("10.00"))
+expect("ec1", equal[0]["principal"], dec("333.33"))
+expect("eb1", equal[0]["balance"], dec("666.67"))
+expect("e2", equal[1]["payment"], dec("340.00"))
+expect("e3", equal[2]["payment"], dec("336.67"))
+expect("ec3", equal[2]["principal"], dec("333.34"))
+expect("eb3", equal[2]["balance"], dec("0.00"))
+
+actual = finance.schedule(principal, rate, 3, start, day_count="act/365")
+expect("a1", actual[0]["interest"], dec("10.19"))
+expect("ac1", actual[0]["principal"], dec("329.83"))
+expect("a2", actual[1]["interest"], dec("6.17"))
+expect("a3", actual[2]["payment"], dec("339.75"))
+expect("ai3", actual[2]["interest"], dec("3.43"))
+expect("ab3", actual[2]["balance"], dec("0.00"))
+
+zero = finance.schedule(dec("1200"), dec("0"), 12, start)
+expect("z1", zero[0]["payment"], dec("100.00"))
+expect("z1b", zero[0]["balance"], dec("1100.00"))
+expect("zn", zero[11]["payment"], dec("100.00"))
+expect("znb", zero[11]["balance"], dec("0.00"))
+
+long = finance.schedule(dec("10000"), dec("10"), 12, start)
+expect("long-sum", sum([row["principal"] for row in long]), dec("10000"))
+expect("long-last", long[11]["payment"], dec("879.13"))
+expect("long-int", long[11]["interest"], dec("7.27"))
+expect("long-pr", long[11]["principal"], dec("871.86"))
+
+calendar = {"weekend": ["sat", "sun"], "holidays": [], "workdays": [], "rest_days": []}
+moved = finance.schedule(principal, rate, 1, date(2026, 1, 31), calendar=calendar)
+expect("moved", moved[0]["date"], date(2026, 3, 2))
+plain = finance.schedule(principal, rate, 1, date(2026, 1, 31))
+expect("clamped", plain[0]["date"], date(2026, 2, 28))
+shifted = finance.schedule(principal, rate, 1, date(2026, 1, 31), day_count="act/365", calendar=calendar)
+expect("shifted-int", shifted[0]["interest"], dec("9.86"))
+
+flows = [dec("100"), dec("200"), dec("300")]
+expect("npv", round(finance.npv(dec("10"), flows), 8), dec("481.59278738"))
+expect("npv-rate", finance.npv_problem(dec("-100"), flows), "ставка -100 % і нижче не має сенсу")
+
+invest = [dec("-100"), dec("60"), dec("60")]
+near("irr", finance.irr(invest), dec("13.06623863"), dec("0.0001"))
+near("irr-guess", finance.irr(invest, guess=dec("10")), finance.irr(invest), dec("0"))
+near("irr-npv", finance.npv(finance.irr(invest), invest), dec("0"), dec("0.001"))
+expect("irr-flat", finance.irr_problem([dec("1"), dec("2")]), "немає зміни знака")
+expect("irr-many", finance.irr_problem([dec("-1"), dec("3"), dec("-1")]), "кілька змін знака")
+expect("irr-guess-bad", finance.irr_problem(invest, guess="10"), "очікується початкове наближення")
+
+line = finance.straight_line(dec("1000"), dec("0"), 3, start)
+expect("s1", line[0]["amount"], dec("333.33"))
+expect("s1d", line[0]["date"], date(2027, 1, 15))
+expect("s1b", line[0]["book"], dec("666.67"))
+expect("s2", line[1]["amount"], dec("333.33"))
+expect("s2b", line[1]["book"], dec("333.34"))
+expect("s3", line[2]["amount"], dec("333.34"))
+expect("s3b", line[2]["book"], dec("0"))
+expect("s3d", line[2]["date"], date(2029, 1, 15))
+kept = finance.straight_line(dec("1000"), dec("100"), 3, start)
+expect("k1", kept[0]["amount"], dec("300.00"))
+expect("k3", kept[2]["book"], dec("100"))
+expect("salvage", finance.straight_line_problem(dec("10"), dec("11"), 1, start), "ліквідаційна вартість більша за первісну")
+expect("ver", finance.VERSION, "0.1.0")
+|end
+Ануїтет |( money(finance.annuity_payment(principal, rate, 3), "UAH") ).
+Перший платіж |( money(rows[0]["payment"], "UAH") ).

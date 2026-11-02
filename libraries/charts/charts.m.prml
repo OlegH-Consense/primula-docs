@@ -1,0 +1,361 @@
+---
+kind: module
+---
+|% charts — bar, line and pie SVG for |figure(svg=…).
+|% Only rect, line, polyline, path and text. Axis steps are 1, 2 or 5
+|% times a power of ten. There is no text-width primitive, so long labels
+|% may overlap; that limit is stated in README.md.
+|import("std/math")
+|code:
+VERSION = "0.1.0"
+
+# Distinct in grey as well as in colour: the document is printed.
+_COLORS = ["#222222", "#6e6e6e", "#b0b0b0", "#3f6b4e", "#8a6232", "#2c4a6e"]
+_LEFT = 18
+_RIGHT = 4
+_TOP = 8
+_BOTTOM = 16
+
+
+def _fmt(value):
+    """Two digits after the point, so the SVG text does not depend on binary floats."""
+    return f"{round(value, 2):.2f}"
+
+
+def _esc(text):
+    """XML text escapes. Quotes are not needed: text sits in element bodies."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def _mm(value):
+    """Millimetres of a length string such as "120mm"."""
+    return length(value) / mm
+
+
+def chart_problem(rows, x, y):
+    """Why rows cannot be drawn, or "". y is a field name or a list of them."""
+    if type(rows) != "list" or len(rows) == 0:
+        return "очікується непорожній список"
+    if type(x) != "str" or x == "":
+        return "очікується поле підпису"
+    if type(y) == "str":
+        names = [y]
+    elif type(y) == "list" and len(y) > 0:
+        names = y
+    else:
+        return "очікується поле або список полів"
+    for name in names:
+        if type(name) != "str" or name == "":
+            return "очікується поле значення"
+    for row in rows:
+        for name in names:
+            if type(row[name]) != "decimal":
+                return "очікується число"
+    return ""
+
+
+def _columns(rows, x, y):
+    """Labels and one list of decimals per series, or a reason."""
+    reason = chart_problem(rows, x, y)
+    if reason != "":
+        return {"labels": None, "columns": None, "reason": reason}
+    if type(y) == "str":
+        names = [y]
+    else:
+        names = y
+    labels = []
+    columns = []
+    for name in names:
+        columns.append([])
+    for row in rows:
+        labels.append(_esc(str(row[x])))
+        index = 0
+        for name in names:
+            columns[index].append(row[name])
+            index = index + 1
+    return {"labels": labels, "columns": columns, "reason": ""}
+
+
+def _step(span):
+    """A 1, 2 or 5 step near span/4."""
+    raw = span / 4
+    if raw <= 0:
+        raw = dec(1)
+    power = dec(1)
+    if raw >= 1:
+        while raw >= power * 10:
+            power = power * 10
+    else:
+        while raw < power:
+            power = power / 10
+    mant = raw / power
+    if mant <= 1:
+        return power
+    if mant <= 2:
+        return 2 * power
+    if mant <= 5:
+        return 5 * power
+    return 10 * power
+
+
+def _frame(values, width, height, title):
+    """Plot box and the snapped axis range. values is one flat list."""
+    lo = min(values)
+    hi = max(values)
+    if lo > 0:
+        lo = dec(0)
+    if hi < 0:
+        hi = dec(0)
+    if hi == lo:
+        hi = lo + 1
+    step = _step(hi - lo)
+    lo = math.floor(lo / step) * step
+    hi = math.ceil(hi / step) * step
+    if hi == lo:
+        hi = lo + step
+    top = _TOP
+    if title is not None:
+        top = top + 6
+    plot_w = width - _LEFT - _RIGHT
+    plot_h = height - top - _BOTTOM
+    return {"lo": lo, "hi": hi, "step": step, "top": top, "plot_w": plot_w, "plot_h": plot_h}
+
+
+def _y(value, frame):
+    """SVG y of a data value. The axis y grows downward."""
+    return frame["top"] + (frame["hi"] - value) / (frame["hi"] - frame["lo"]) * frame["plot_h"]
+
+
+def _palette(colors):
+    """The colour list, or the default palette."""
+    if colors is None:
+        return _COLORS
+    return colors
+
+
+def _open(width, height, body):
+    """An SVG document with a size in millimetres."""
+    w = _fmt(width)
+    h = _fmt(height)
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}mm" height="{h}mm" viewBox="0 0 {w} {h}">{body}</svg>'
+
+
+def _axis(frame, font):
+    """Grid, tick labels and the left and bottom axes."""
+    parts = []
+    tick = frame["lo"]
+    guard = 0
+    while tick <= frame["hi"] and guard < 12:
+        y = _fmt(_y(tick, frame))
+        x0 = _fmt(_LEFT)
+        x1 = _fmt(_LEFT + frame["plot_w"])
+        parts.append(f'<line x1="{x0}" y1="{y}" x2="{x1}" y2="{y}" stroke="#d0d0d0" stroke-width="0.3"/>')
+        parts.append(f'<text x="{_fmt(_LEFT - 1)}" y="{y}" text-anchor="end" font-size="3" font-family="{font}">{_esc(num(tick))}</text>')
+        tick = tick + frame["step"]
+        guard = guard + 1
+    y0 = _fmt(_y(frame["lo"], frame))
+    y1 = _fmt(_y(frame["hi"], frame))
+    x0 = _fmt(_LEFT)
+    x1 = _fmt(_LEFT + frame["plot_w"])
+    parts.append(f'<line x1="{x0}" y1="{y1}" x2="{x0}" y2="{y0}" stroke="#222222" stroke-width="0.4"/>')
+    parts.append(f'<line x1="{x0}" y1="{y0}" x2="{x1}" y2="{y0}" stroke="#222222" stroke-width="0.4"/>')
+    return "".join(parts)
+
+
+def _title(title, width, font):
+    """The title line, or an empty string."""
+    if title is None:
+        return ""
+    return f'<text x="{_fmt(width / 2)}" y="5" text-anchor="middle" font-size="3.5" font-family="{font}">{_esc(str(title))}</text>'
+
+
+def _labels(labels, frame, font):
+    """Category names centred under each slot."""
+    count = len(labels)
+    slot = frame["plot_w"] / count
+    y = _fmt(_y(frame["lo"], frame) + 4)
+    parts = []
+    index = 0
+    for label in labels:
+        x = _fmt(_LEFT + slot * (index + dec("0.5")))
+        parts.append(f'<text x="{x}" y="{y}" text-anchor="middle" font-size="3" font-family="{font}">{label}</text>')
+        index = index + 1
+    return "".join(parts)
+
+
+def bar(rows, x, y, width="120mm", height="70mm", title=None, colors=None, stacked=False, font="Liberation Sans"):
+    """A bar chart. y is one field or a list of fields.
+
+    Several fields sit side by side, or one on top of another when stacked
+    is true. Stacking refuses a negative value. The zero line is the base
+    of every bar.
+    """
+    got = _columns(rows, x, y)
+    if got["reason"] != "":
+        fail(f"charts: {got['reason']}")
+    flat = []
+    for column in got["columns"]:
+        for value in column:
+            if stacked and value < 0:
+                fail("charts: накопичення від'ємних значень не зібрано")
+            flat.append(value)
+    w = _mm(width)
+    h = _mm(height)
+    frame = _frame(flat, w, h, title)
+    palette = _palette(colors)
+    count = len(got["labels"])
+    series = len(got["columns"])
+    slot = frame["plot_w"] / count
+    if stacked:
+        bar_w = slot * dec("0.7")
+        group = bar_w
+    else:
+        group = slot * dec("0.7")
+        bar_w = group / series
+    parts = [_title(title, w, font), _axis(frame, font), _labels(got["labels"], frame, font)]
+    index = 0
+    while index < count:
+        if stacked:
+            acc = dec(0)
+            series_index = 0
+            for column in got["columns"]:
+                acc = acc + column[index]
+                y0 = _y(acc - column[index], frame)
+                y1 = _y(acc, frame)
+                rect_y = y1
+                if y0 < y1:
+                    rect_y = y0
+                color = palette[series_index % len(palette)]
+                bx = _LEFT + slot * index + (slot - bar_w) / 2
+                parts.append(f'<rect x="{_fmt(bx)}" y="{_fmt(rect_y)}" width="{_fmt(bar_w)}" height="{_fmt(abs(y0 - y1))}" fill="{color}"/>')
+                series_index = series_index + 1
+        else:
+            series_index = 0
+            origin = _LEFT + slot * index + (slot - group) / 2
+            for column in got["columns"]:
+                value = column[index]
+                y0 = _y(dec(0), frame)
+                y1 = _y(value, frame)
+                rect_y = y1
+                if y0 < y1:
+                    rect_y = y0
+                color = palette[series_index % len(palette)]
+                bx = origin + bar_w * series_index
+                parts.append(f'<rect x="{_fmt(bx)}" y="{_fmt(rect_y)}" width="{_fmt(bar_w)}" height="{_fmt(abs(y0 - y1))}" fill="{color}"/>')
+                series_index = series_index + 1
+        index = index + 1
+    return _open(w, h, "".join(parts))
+
+
+def line(rows, x, y, width="120mm", height="70mm", title=None, colors=None, font="Liberation Sans"):
+    """A line chart. y is one field or a list of fields."""
+    got = _columns(rows, x, y)
+    if got["reason"] != "":
+        fail(f"charts: {got['reason']}")
+    flat = []
+    for column in got["columns"]:
+        for value in column:
+            flat.append(value)
+    w = _mm(width)
+    h = _mm(height)
+    frame = _frame(flat, w, h, title)
+    palette = _palette(colors)
+    count = len(got["labels"])
+    slot = frame["plot_w"] / count
+    parts = [_title(title, w, font), _axis(frame, font), _labels(got["labels"], frame, font)]
+    series_index = 0
+    for column in got["columns"]:
+        points = ""
+        index = 0
+        for value in column:
+            px = _fmt(_LEFT + slot * (index + dec("0.5")))
+            py = _fmt(_y(value, frame))
+            if index > 0:
+                points = points + " "
+            points = points + px + "," + py
+            index = index + 1
+        color = palette[series_index % len(palette)]
+        parts.append(f'<polyline points="{points}" fill="none" stroke="{color}" stroke-width="0.6"/>')
+        series_index = series_index + 1
+    return _open(w, h, "".join(parts))
+
+
+def pie_problem(rows, label, value):
+    """Why a pie chart cannot be drawn, or ""."""
+    if type(value) != "str":
+        return "для круга очікується одне поле"
+    reason = chart_problem(rows, label, value)
+    if reason != "":
+        return reason
+    total = dec(0)
+    for row in rows:
+        if row[value] < 0:
+            return "від'ємна частка"
+        total = total + row[value]
+    if total <= 0:
+        return "сума часток не додатна"
+    return ""
+
+
+def pie(rows, label, value, width="80mm", height="80mm", title=None, colors=None, font="Liberation Sans"):
+    """A pie chart. A negative value and a non-positive sum are refused.
+
+    One slice is two semicircles: a single SVG arc cannot turn a full circle.
+    """
+    reason = pie_problem(rows, label, value)
+    if reason != "":
+        fail(f"charts: {reason}")
+    got = _columns(rows, label, value)
+    total = dec(0)
+    for item in got["columns"][0]:
+        total = total + item
+    w = _mm(width)
+    h = _mm(height)
+    palette = _palette(colors)
+    cx = w * dec("0.38")
+    cy = h * dec("0.55")
+    radius = h * dec("0.32")
+    if title is not None:
+        cy = cy + 2
+    parts = [_title(title, w, font)]
+    angle = -math.pi / 2
+    index = 0
+    count = len(got["columns"][0])
+    for item in got["columns"][0]:
+        sweep = float(item / total) * 2 * math.pi
+        color = palette[index % len(palette)]
+        if count == 1:
+            parts.append(_disk(cx, cy, radius, color))
+        else:
+            parts.append(_slice(cx, cy, radius, angle, angle + sweep, color))
+        lx = _fmt(w * dec("0.72"))
+        ly = _fmt(cy - radius + 5 + index * 5)
+        parts.append(f'<rect x="{lx}" y="{_fmt(cy - radius + 2 + index * 5)}" width="3" height="3" fill="{color}"/>')
+        parts.append(f'<text x="{_fmt(w * dec("0.72") + 4)}" y="{ly}" font-size="3" font-family="{font}">{got["labels"][index]}</text>')
+        angle = angle + sweep
+        index = index + 1
+    return _open(w, h, "".join(parts))
+
+
+def _point(cx, cy, radius, angle):
+    """A point on the circle. angle is radians, 0 at the right, y downward."""
+    x = cx + radius * dec(math.cos(angle))
+    y = cy + radius * dec(math.sin(angle))
+    return _fmt(x) + "," + _fmt(y)
+
+
+def _slice(cx, cy, radius, start, end, color):
+    """One pie slice as a path. The large-arc flag is 1 past half a turn."""
+    large = 0
+    if end - start > math.pi:
+        large = 1
+    return f'<path d="M {_fmt(cx)} {_fmt(cy)} L {_point(cx, cy, radius, start)} A {_fmt(radius)} {_fmt(radius)} 0 {large} 1 {_point(cx, cy, radius, end)} Z" fill="{color}"/>'
+
+
+def _disk(cx, cy, radius, color):
+    """A full circle drawn as two semicircle arcs."""
+    r = _fmt(radius)
+    left = _fmt(cx - radius) + "," + _fmt(cy)
+    right = _fmt(cx + radius) + "," + _fmt(cy)
+    return f'<path d="M {left} A {r} {r} 0 1 1 {right} A {r} {r} 0 1 1 {left} Z" fill="{color}"/>'
+|end

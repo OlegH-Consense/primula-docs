@@ -1,0 +1,10 @@
+---
+doc: {title: "Приклад vcs", language: uk-UA}
+---
+|import("lib/vcs")
+|code:
+rows = vcs.changes(load_json("data/changes.json"))
+|end
+Бібліотека vcs |( vcs.VERSION ). Аркуш нижче зібраний із файлу JSON, не з форми ДСТУ чи ЄСКД.
+|table(data=rows, fields=["number", "date", "author", "sections", "reason", "files"], titles=["№", "Дата", "Автор", "Розділи", "Підстава", "Файли"], cols=["12mm", "28mm", "35mm", "30mm", "*", "30mm"], header=1):
+|end table

@@ -26,7 +26,7 @@ This package is the prototype of stage 13 of the project plan
 #: Version of the translator (PEP 440).  0.2.0 is the first public release
 #: (GitHub, 26.10.2026); 0.2.x — fixes, 0.3.0 — the next iteration, ``.devN`` —
 #: builds between releases.  The stage is recorded in the build report.
-__version__ = "0.3.0.dev11"
+__version__ = "0.3.0"
 
 #: Prototype stage of the project plan implemented by this version.
 PROTOTYPE_STAGE = "19.2"

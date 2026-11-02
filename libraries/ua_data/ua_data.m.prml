@@ -1,0 +1,197 @@
+---
+kind: module
+---
+|% ua_data — Ukrainian rates, minimums, CPI and the workday calendar.
+|% Each row has a start date and a source. A date outside the checked
+|% horizon fails; the last row is not reused past known_through.
+|% A document imports the module with |import("lib/ua_data").
+|code:
+VERSION = "0.1.0"
+
+# Date of the last check of the files in data/. Not a value of any series.
+DATA_AS_OF = "2026-10-31"
+
+_DISCOUNT = load_yaml("data/discount.yaml")
+_VAT = load_yaml("data/vat.yaml")
+_WAGE = load_yaml("data/min_wage.yaml")
+_SUB = load_yaml("data/subsistence.yaml")
+_CPI = load_yaml("data/cpi.yaml")
+_CAL_2024 = load_yaml("data/calendar-2024.yaml")
+_CAL_2025 = load_yaml("data/calendar-2025.yaml")
+_CAL_2026 = load_yaml("data/calendar-2026.yaml")
+
+
+def _num(value):
+    """Decimal from a YAML number or a numeric string."""
+    if type(value) == "str":
+        return dec(value)
+    return value
+
+
+def _day_problem(day):
+    """Reason when day is not a date, or ""."""
+    if type(day) != "datetime":
+        return "очікується дата"
+    return ""
+
+
+def _row_on(rows, known, day):
+    """The row in force on day, or a reason.
+
+    rows are {from, value, source}. known is the last date the file claims
+    to cover. A later date is a missing update, not the last row.
+    """
+    reason = _day_problem(day)
+    if reason != "":
+        return {"row": None, "reason": reason}
+    if day > known:
+        return {"row": None, "reason": "ряд підтверджено лише до " + str(known)}
+    best = None
+    for row in rows:
+        since = row["from"]
+        if since <= day and (best is None or since >= best["from"]):
+            best = row
+    if best is None:
+        return {"row": None, "reason": "немає значення на цю дату"}
+    return {"row": best, "reason": ""}
+
+
+def series(name):
+    """The checked pack {known_through, rows} for a step series.
+
+    name is "discount", "vat", "min_wage", "min_wage_hour" or
+    "subsistence:<group>" with group general, child_0_6, child_6_18,
+    able, unable. "cpi" is not a step series: use cpi_on.
+    """
+    if name == "discount":
+        return _DISCOUNT
+    if name == "vat":
+        return _VAT
+    if name == "min_wage":
+        return {"known_through": _WAGE.known_through, "rows": _WAGE.monthly}
+    if name == "min_wage_hour":
+        return {"known_through": _WAGE.known_through, "rows": _WAGE.hourly}
+    if name.startswith("subsistence:"):
+        group = name[len("subsistence:"):]
+        rows = _sub_rows(group)
+        if rows is None:
+            fail(f"ua_data: невідома група прожиткового мінімуму «{group}»")
+        return {"known_through": _SUB.known_through, "rows": rows}
+    fail(f"ua_data: невідомий ряд «{name}»")
+
+
+def _sub_rows(group):
+    """Rows of one subsistence group, or None when the group is unknown."""
+    if group == "general":
+        return _SUB.general
+    if group == "child_0_6":
+        return _SUB["child_0_6"]
+    if group == "child_6_18":
+        return _SUB["child_6_18"]
+    if group == "able":
+        return _SUB.able
+    if group == "unable":
+        return _SUB.unable
+    return None
+
+
+def value_problem(pack, day):
+    """Why pack has no value on day, or ""."""
+    return _row_on(pack["rows"], pack["known_through"], day)["reason"]
+
+
+def value_on(pack, day):
+    """Decimal value of the step series pack on day. Outside the horizon, fail."""
+    got = _row_on(pack["rows"], pack["known_through"], day)
+    if got["reason"] != "":
+        fail(f"ua_data: {got['reason']}")
+    return _num(got["row"]["value"])
+
+
+def source_on(pack, day):
+    """Source text of the row in force on day."""
+    got = _row_on(pack["rows"], pack["known_through"], day)
+    if got["reason"] != "":
+        fail(f"ua_data: {got['reason']}")
+    return got["row"]["source"]
+
+
+def discount_rate_on(day):
+    """NBU key policy rate on day, percent per year."""
+    return value_on(series("discount"), day)
+
+
+def vat_rate_on(day):
+    """Standard VAT rate on day, percent. Not the 7 % or 14 % rates."""
+    return value_on(series("vat"), day)
+
+
+def min_wage_on(day):
+    """Monthly minimum wage on day, hryvnias."""
+    return value_on(series("min_wage"), day)
+
+
+def min_wage_hour_on(day):
+    """Hourly minimum wage on day, hryvnias."""
+    return value_on(series("min_wage_hour"), day)
+
+
+def subsistence_on(day, group="able"):
+    """Subsistence minimum of group on day, hryvnias per month."""
+    return value_on(series("subsistence:" + group), day)
+
+
+def _cpi_row(day):
+    """The CPI row of the calendar month of day, or a reason."""
+    reason = _day_problem(day)
+    if reason != "":
+        return {"row": None, "reason": reason}
+    for row in _CPI.rows:
+        month = row["month"]
+        if month.year == day.year and month.month == day.month:
+            return {"row": row, "reason": ""}
+    return {"row": None, "reason": "немає індексу за цей місяць"}
+
+
+def cpi_problem(day):
+    """Why the CPI of the month of day is unknown, or ""."""
+    return _cpi_row(day)["reason"]
+
+
+def cpi_on(day):
+    """CPI of the month of day, percent to the previous month (100.7 means 100.7 %)."""
+    got = _cpi_row(day)
+    if got["reason"] != "":
+        fail(f"ua_data: {got['reason']}")
+    return _num(got["row"]["value"])
+
+
+def cpi_rows():
+    """The CPI rows {month, value, source}. A missing month is not filled in."""
+    return _CPI.rows
+
+
+def calendar_problem(year):
+    """Why year has no calendar file, or "". Years 2024, 2025 and 2026 only."""
+    if type(year) != "decimal":
+        return "очікується рік"
+    if year != int(year):
+        return "очікується рік"
+    y = int(year)
+    if y == 2024 or y == 2025 or y == 2026:
+        return ""
+    return "календар цього року не зібрано"
+
+
+def calendar(year):
+    """Workday calendar of year for is_workday and workdays (stdlib 5)."""
+    reason = calendar_problem(year)
+    if reason != "":
+        fail(f"ua_data: {reason}")
+    y = int(year)
+    if y == 2024:
+        return _CAL_2024
+    if y == 2025:
+        return _CAL_2025
+    return _CAL_2026
+|end

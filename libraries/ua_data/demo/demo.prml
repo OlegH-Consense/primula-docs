@@ -1,0 +1,15 @@
+---
+doc: {title: "Приклад ua_data", language: uk-UA}
+---
+|import("lib/ua_data")
+|code:
+day1 = date(2026, 1, 1)
+work = "ні"
+if is_workday(day1, calendar=ua_data.calendar(2026)):
+    work = "так"
+|end
+Бібліотека ua_data |(ua_data.VERSION), дані звірено |(ua_data.DATA_AS_OF).
+Облікова ставка на 31 жовтня 2026 року — |( num(ua_data.discount_rate_on(date(2026, 10, 31)), digits=1) ) %.
+Мінімальна зарплата — |( money(ua_data.min_wage_on(date(2026, 10, 31)), "UAH") ), ПДВ |( num(ua_data.vat_rate_on(date(2026, 10, 31)), digits=0) ) %.
+ІСЦ за вересень 2026 року — |( num(ua_data.cpi_on(date(2026, 9, 1)), digits=1) ) %.
+1 січня 2026 року — |( weekday(day1) ), робочий день: |( work ).

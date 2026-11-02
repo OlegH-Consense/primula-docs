@@ -1,0 +1,379 @@
+---
+kind: module
+---
+|% codes — EAN-13, ISBN and Luhn check digits, plus an EAN-13 SVG.
+|% L/G/R patterns and the first-digit parity are the table on the
+|% Wikipedia page "International Article Number", fetched 2026-10-31.
+|% ISO/IEC 15420 was not opened. Code 128 is not drawn: its patterns
+|% were not fetched. The quiet zone is a parameter, not a GS1 minimum.
+|code:
+VERSION = "0.1.0"
+
+# 7-module patterns. R is the complement of L; G is R reversed.
+# Transcribed from the page named above, not recomputed from that rule.
+_L = ["0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011"]
+_G = ["0100111", "0110011", "0011011", "0100001", "0011101", "0111001", "0000101", "0010001", "0001001", "0010111"]
+_R = ["1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100"]
+
+# First digit of an EAN-13 selects L or G for the next six digits.
+# The left group always starts with L. The right six digits are always R.
+_PARITY = ["LLLLLL", "LLGLGG", "LLGGLG", "LLGGGL", "LGLLGG", "LGGLLG", "LGGGLL", "LGLGLG", "LGLGGL", "LGGLGL"]
+
+
+def _fail(value, reason):
+    """Stop with a codes: message that quotes the input."""
+    fail(f"codes: «{value}»: {reason}")
+
+
+def _digits_text(value):
+    """Digit string with spaces and hyphens removed, or None.
+
+    A number is rejected on purpose: it would already have lost leading zeros.
+    """
+    if type(value) != "str":
+        return None
+    s = "".join(value.split()).replace("-", "")
+    if s == "" or not s.isdigit():
+        return None
+    return s
+
+
+def _ints(text):
+    """Decimal digits of a digit string, leftmost first."""
+    return [int(ch) for ch in text]
+
+
+def _ean_sum(nums):
+    """Weighted sum. The leftmost digit has weight 1, the next weight 3.
+
+    The same weights, counted from the right, put weight 3 on odd data
+    positions and weight 1 on even ones. Both descriptions are the same
+    sum for a 12-digit body.
+    """
+    total = 0
+    i = 0
+    for n in nums:
+        if i % 2 == 0:
+            total = total + n
+        else:
+            total = total + 3 * n
+        i = i + 1
+    return total
+
+
+def _ean_digit(nums):
+    """EAN check digit of a 12-digit body. nums are integers."""
+    return (10 - _ean_sum(nums) % 10) % 10
+
+
+def ean13_check_problem(digits):
+    """Why a 12-digit body cannot receive an EAN-13 check digit, or ""."""
+    s = _digits_text(digits)
+    if s is None or len(s) != 12:
+        return "очікується 12 цифр"
+    return ""
+
+
+def ean13_check(digits):
+    """The EAN-13 check digit of a 12-digit body, as one character."""
+    reason = ean13_check_problem(digits)
+    if reason != "":
+        _fail(digits, reason)
+    return str(_ean_digit(_ints(_digits_text(digits))))
+
+
+def ean13_problem(code):
+    """Why the text is not an EAN-13 / GTIN-13, or "" when the check matches."""
+    s = _digits_text(code)
+    if s is None or len(s) != 13:
+        return "очікується 13 цифр"
+    nums = _ints(s)
+    body = [nums[i] for i in range(12)]
+    if _ean_digit(body) != nums[12]:
+        return "не збігається контрольний розряд"
+    return ""
+
+
+def is_ean13(code):
+    """Whether the text is an EAN-13 with a matching check digit."""
+    return ean13_problem(code) == ""
+
+
+def _modules(nums):
+    """95 modules of a valid 13-digit code, without a quiet zone.
+
+    Structure: 101, six left digits (L or G by the first digit), 01010,
+    six right digits (always R), 101.
+    """
+    parity = _PARITY[nums[0]]
+    parts = ["101"]
+    i = 0
+    while i < 6:
+        digit = nums[i + 1]
+        if parity[i] == "L":
+            parts.append(_L[digit])
+        else:
+            parts.append(_G[digit])
+        i = i + 1
+    parts.append("01010")
+    i = 0
+    while i < 6:
+        parts.append(_R[nums[i + 7]])
+        i = i + 1
+    parts.append("101")
+    return "".join(parts)
+
+
+def ean13_modules(code):
+    """95 characters, "1" for a bar and "0" for a space. No quiet zone."""
+    reason = ean13_problem(code)
+    if reason != "":
+        _fail(code, reason)
+    return _modules(_ints(_digits_text(code)))
+
+
+def _fmt(value):
+    """Two digits after the point, so the SVG does not depend on binary floats."""
+    return f"{round(value, 2):.2f}"
+
+
+def _mm(value):
+    """Millimetres of a length string such as "0.33mm"."""
+    return length(value) / mm
+
+
+def _length_problem(value):
+    """Reason when value is not a positive length string, or ""."""
+    if type(value) != "str" or value == "":
+        return "очікується довжина"
+    if _mm(value) <= 0:
+        return "довжина має бути додатною"
+    return ""
+
+
+def _quiet_problem(quiet):
+    """Reason when quiet is not a non-negative whole number of modules, or ""."""
+    if type(quiet) != "decimal" or quiet != int(quiet) or quiet < 0:
+        return "очікується невід'ємне ціле число модулів"
+    return ""
+
+
+def _flag_problem(text):
+    """Reason when the caption flag is not a boolean, or ""."""
+    if text != True and text != False:
+        return "очікується ознака підпису"
+    return ""
+
+
+def _font_problem(font):
+    """Reason when font is not a non-empty string, or ""."""
+    if type(font) != "str" or font == "":
+        return "очікується назва шрифту"
+    return ""
+
+
+def ean13_svg_problem(code, height="15mm", module="0.33mm", quiet=0, text=True, font="Liberation Sans"):
+    """Why the barcode cannot be drawn, or ""."""
+    reason = ean13_problem(code)
+    if reason != "":
+        return reason
+    reason = _length_problem(height)
+    if reason != "":
+        return reason
+    reason = _length_problem(module)
+    if reason != "":
+        return reason
+    reason = _quiet_problem(quiet)
+    if reason != "":
+        return reason
+    reason = _flag_problem(text)
+    if reason != "":
+        return reason
+    return _font_problem(font)
+
+
+def _bars(bits, origin, module_mm, bar_h):
+    """One rect per run of dark modules. origin is the left edge, in millimetres."""
+    parts = []
+    x = origin
+    i = 0
+    count = len(bits)
+    while i < count:
+        if bits[i] == "1":
+            j = i
+            while j < count and bits[j] == "1":
+                j = j + 1
+            width = (j - i) * module_mm
+            parts.append(f'<rect x="{_fmt(x)}" y="0.00" width="{_fmt(width)}" height="{_fmt(bar_h)}" fill="#000000"/>')
+            x = x + width
+            i = j
+        else:
+            x = x + module_mm
+            i = i + 1
+    return "".join(parts)
+
+
+def _attr(text):
+    """XML attribute escapes."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
+def ean13_svg(code, height="15mm", module="0.33mm", quiet=0, text=True, font="Liberation Sans"):
+    """SVG of an EAN-13 for |img(svg=…) or |figure(svg=…).
+
+    quiet is a margin of that many modules on each side. The default is 0:
+    the page used for the patterns does not state a quiet-zone minimum, and
+    the ISO text was not opened. text draws the 13 digits on one line under
+    the bars; it is a reading aid, not the GS1 human-readable layout.
+    module and height are lengths ("0.33mm", "15mm").
+    """
+    reason = ean13_svg_problem(code, height=height, module=module, quiet=quiet, text=text, font=font)
+    if reason != "":
+        _fail(code, reason)
+    bits = _modules(_ints(_digits_text(code)))
+    module_mm = _mm(module)
+    bar_h = _mm(height)
+    origin = quiet * module_mm
+    width = (dec("95") + quiet * 2) * module_mm
+    total_h = bar_h
+    body = _bars(bits, origin, module_mm, bar_h)
+    if text:
+        total_h = bar_h + dec("4")
+        label = _digits_text(code)
+        cx = _fmt(width / 2)
+        ty = _fmt(bar_h + dec("3.2"))
+        body = body + f'<text x="{cx}" y="{ty}" font-family="{_attr(font)}" font-size="2.80" text-anchor="middle">{label}</text>'
+    w = _fmt(width)
+    h = _fmt(total_h)
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}mm" height="{h}mm" viewBox="0 0 {w} {h}">{body}</svg>'
+
+
+def _luhn_total(nums, double_rightmost):
+    """Luhn sum. From the right, every second digit is doubled.
+
+    A doubled digit above 9 loses 9, which is the same as adding its digits.
+    double_rightmost is True when the check digit is not yet in nums: after
+    it is appended it occupies the rightmost place and is not doubled, so
+    the current rightmost digit is.
+    """
+    total = 0
+    i = len(nums) - 1
+    double = double_rightmost
+    while i >= 0:
+        n = nums[i]
+        if double:
+            n = n * 2
+            if n > 9:
+                n = n - 9
+        total = total + n
+        if double:
+            double = False
+        else:
+            double = True
+        i = i - 1
+    return total
+
+
+def luhn_check_problem(digits):
+    """Why a check digit cannot be computed for this body, or ""."""
+    s = _digits_text(digits)
+    if s is None:
+        return "очікується цифри"
+    return ""
+
+
+def luhn_check(digits):
+    """The Luhn check digit of a digit string that does not yet include it."""
+    reason = luhn_check_problem(digits)
+    if reason != "":
+        _fail(digits, reason)
+    total = _luhn_total(_ints(_digits_text(digits)), True)
+    return str((10 - total % 10) % 10)
+
+
+def luhn_problem(code):
+    """Why the text does not pass the Luhn check, or "" when it does."""
+    s = _digits_text(code)
+    if s is None:
+        return "очікується цифри"
+    if _luhn_total(_ints(s), False) % 10 != 0:
+        return "не збігається контрольний розряд"
+    return ""
+
+
+def is_luhn(code):
+    """Whether the text passes the Luhn check, including its last digit."""
+    return luhn_problem(code) == ""
+
+
+def _isbn_compact(value):
+    """ISBN with spaces and hyphens removed, last X uppercased, or None."""
+    if type(value) != "str":
+        return None
+    return "".join(value.split()).replace("-", "").upper()
+
+
+def _isbn10_ok(text):
+    """Whether a 10-character ISBN-10 has check digit sum ≡ 0 (mod 11).
+
+    Weights are 10 down to 1. The last character may be X, value 10.
+    """
+    total = 0
+    i = 0
+    for ch in text:
+        if ch == "X":
+            n = 10
+        else:
+            n = int(ch)
+        total = total + n * (10 - i)
+        i = i + 1
+    return total % 11 == 0
+
+
+def isbn_problem(text):
+    """Why the text is not an ISBN-10 or an ISBN-13, or "".
+
+    Hyphen places are not checked: the group-range tables are not in this
+    version. An ISBN-13 is accepted when its 13 digits pass the EAN check.
+    The 978/979 prefix is not required here; ISO 2108 was not opened.
+    """
+    s = _isbn_compact(text)
+    if s is None or s == "":
+        return "очікується ISBN"
+    if len(s) == 10:
+        if not s[:9].isdigit() or (not s[9].isdigit() and s[9] != "X"):
+            return "очікується ISBN-10"
+        if _isbn10_ok(s):
+            return ""
+        return "не збігається контрольний розряд"
+    if len(s) == 13:
+        if not s.isdigit():
+            return "очікується ISBN-13"
+        nums = _ints(s)
+        body = [nums[i] for i in range(12)]
+        if _ean_digit(body) != nums[12]:
+            return "не збігається контрольний розряд"
+        return ""
+    return "очікується ISBN-10 або ISBN-13"
+
+
+def is_isbn(text):
+    """Whether the text is a valid ISBN-10 or ISBN-13."""
+    return isbn_problem(text) == ""
+
+
+def isbn13(text):
+    """13 digits. An ISBN-10 is prefixed with 978 and given a new EAN check digit.
+
+    A valid ISBN-13 is returned without hyphens. The prefix 978 is the one
+    that turns the published example 0-306-40615-2 into 9780306406157.
+    """
+    reason = isbn_problem(text)
+    if reason != "":
+        _fail(text, reason)
+    s = _isbn_compact(text)
+    if len(s) == 13:
+        return s
+    body = "978" + s[:9]
+    return body + str(_ean_digit(_ints(body)))
+|end

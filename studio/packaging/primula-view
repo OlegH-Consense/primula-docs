@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Quick view of a Primula document: "primula view" (stage 24.1) under a short name for file
+# managers, e.g. Midnight Commander (~/.config/mc/mc.ext.ini): View=primula-view %f
+# The launcher of the translator, "primula", lies next to this file (also behind a symbolic link).
+set -euo pipefail
+here="$(cd -- "$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")" && pwd)"
+exec "${here}/primula" view "$@"

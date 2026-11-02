@@ -1,0 +1,36 @@
+---
+doc: {title: "charts: перевірка", language: uk-UA}
+---
+|% 100×60 mm, values 10 and 20. The axis snaps to 0..20 with step 5.
+|% Slot 39 mm, bar 27.30 mm, first bar x=23.85 y=26 height=18.
+|import("../charts")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+rows = [{"label": "А", "qty": dec("10")}, {"label": "Б", "qty": dec("20")}]
+image = charts.bar(rows, "label", "qty", width="100mm", height="60mm")
+if image.find('<rect x="23.85" y="26.00" width="27.30" height="18.00" fill="#222222"/>') < 0:
+    fail(f"bar: {image}")
+expect("empty", charts.chart_problem([], "label", "qty"), "очікується непорожній список")
+expect("num", charts.chart_problem([{"label": "А", "qty": "10"}], "label", "qty"), "очікується число")
+curve = charts.line(rows, "label", "qty", width="100mm", height="60mm")
+if curve.find("<polyline ") < 0:
+    fail(f"line: {curve}")
+parts = [{"label": "А", "qty": dec("1")}, {"label": "Б", "qty": dec("3")}]
+disk = charts.pie([{"label": "А", "qty": dec("1")}], "label", "qty")
+wheel = charts.pie(parts, "label", "qty")
+if disk.find("<path ") < 0 or wheel.find("<path ") < 0:
+    fail("pie")
+expect("neg", charts.pie_problem([{"label": "А", "qty": dec("-1")}], "label", "qty"), "від'ємна частка")
+expect("zero", charts.pie_problem([{"label": "А", "qty": dec("0")}], "label", "qty"), "сума часток не додатна")
+expect("ver", charts.VERSION, "0.1.0")
+|end
+|figure(svg=image):
+Стовпці 10 і 20
+|end figure
+|figure(svg=wheel):
+Частки 1 і 3
+|end figure
+Бібліотека |( charts.VERSION ).

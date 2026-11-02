@@ -1,0 +1,147 @@
+---
+kind: document
+primula: {version: "1.1"}
+doc:
+  title: "Договір поставки"   # заголовок ODT
+  identifier: "Д-2026-017"
+  language: uk-UA
+  created: 2026-10-12
+params:
+  delivery_days: 5
+  vat_rate: 20
+  buyer: {name: "ТОВ «Покупець»", code: "12345678"}
+---
+|% Тестовий файл підсвічування Primula v1.1: охоплює всі лексичні конструкції.
+|import("std/math")
+|let(tax = 20, export=True)
+
+|code:
+# обчислення в ядрі (підмножина Python)
+items = load_csv("data/items.csv", types={"qty": "decimal", "price": "money"})
+net = sum(it.qty * it.price for it in items)  # сума без ПДВ
+def with_tax(x, rate=20):
+    return x * (100 + rate) / 100 if x > 0 else None
+total = with_tax(net, vat_rate)
+|end
+
+|comment:
+Блоковий коментар: |unknown_command{ тут не перевіряється }.
+|end
+
+|.DocumentTitle: ДОГОВІР ПОСТАВКИ № |(doc.identifier)
+|.DatePlace: |(project.city), |(fmt_date(build_date(), "contract"))
+
+|.Preamble:
+|(project.seller.name) (далі — |.DefinedTerm{«Постачальник»}) і |(buyer.name)
+(далі — |.DefinedTerm{«Покупець»}) уклали цей договір про таке.
+|end.Preamble
+
+|<(id="subject") Предмет договору
+|<< Підрозділ другого рівня
+|<(level=3) Заголовок із параметром рівня
+
+|>(id="delivery") Постачальник передає Покупцеві товар згідно зі специфікацією (|@("app-spec", "label")).
+|> Загальна вартість товару становить |(money_full(total, "UAH")), зокрема ПДВ |(money(vat(net, vat_rate), "UAH")).
+
+|>(id="docs"):
+Перший абзац пункту з |*{жирним}, |/{курсивом}, |_{підкресленням} і |—{закресленим}.
+
+Другий абзац: H|,{2}O, м|^{2}, |`{X300-EU}, |"{цитата |"{вкладена}}, |?{УТОЧНИТИ}.
+Неподільний пробіл 5|~шт., розрив рядка|\
+далі. Екранування: ||, |{, |}, а також роздільник |seller|;ом.
+|- Матеріали;
+|-- вкладений елемент;
+|# Нумерований елемент.
+|end>
+
+|>> Вкладений пункт із |.Strong{символьним стилем} та |.(style_name){обчислюваним}.
+|.Body(before="l", after="s"): Абзац із параметрами стилю.
+
+|!("danger", hazard="Висока напруга"):
+Дотик до струмопровідних частин призводить до смерті.
+|- Вимкніть живлення.
+|end!
+
+|!("note") Короткий одно-рядковий блок.
+
+|if(delivery_days > 3):
+Поставка здійснюється протягом |(delivery_days) |(plural(delivery_days, "дня", "днів", "днів")).
+|elif(delivery_days == 0):
+Поставка негайна.
+|else:
+Поставка в той самий день.
+|endif
+
+Текст із вбудованою умовою: |if(vat_rate > 0){з ПДВ}|else{без ПДВ} та цикл |for(x in [1, 2]){|(x) }.
+
+|for(it in items):
+|- |(it.name): |(it.qty)
+|endfor
+
+|def signature(name, role="директор"):
+|(name), |(role)
+|enddef
+
+|signature("Іваненко І. І.", role="Постачальник")
+|signature{тіло макросу}
+|Постачальник|;ом (користувацька команда кирилицею)
+|field.page з |field.pages
+
+|<(number=False) Реквізити і підписи сторін
+
+|table(cols=["50%", "50%"], style="TableParties"):
+|: ПОСТАЧАЛЬНИК |& ПОКУПЕЦЬ
+|: |(project.seller.name)|\ Код ЄДРПОУ |(project.seller.code) |& |(buyer.name)|\ Код ЄДРПОУ |(buyer.code)
+|end table
+
+|appendix(id="app-spec", title="Специфікація"):
+|set(paragraph="Note", list="DashList")
+|table(cols=[col("*"), col("15mm..25mm", id="qty", type="decimal", align="right"),
+             col("20mm..35mm", id="price", type="money", align="right")],
+       style="TableServices", footer=1):
+|: Найменування |& Кількість |& Ціна, грн
+|for(it in items):
+|: |(it.name) |& |(it.qty) |& |(it.price) |& |=(this_row("qty") * this_row("price"))
+|endfor
+|:|&(span=3, align="right") Разом без ПДВ |& |=(sum(column("sum", rows=body_rows())))
+|:(when=has("wifi")) Умовний рядок |& значення
+|end table
+|end appendix
+
+|figure(key="scheme", width="120mm", id="fig-scheme"):
+Схема підключення пристрою |(model)
+|end figure
+
+|include("fragments/warranty.f.prml")
+|include(key="safety.general")
+|img("logo.png", height="8mm") у тексті, |footnote{Виноска з |*{розміткою}.}
+|fmt(color="#C00000", bold=True){пряме форматування}
+
+|verbatim:
+Буквальний текст: |<не розмітка> ||| |(x)
+|end
+
+|verbatim(end="EOF"):
+Тут можна писати |end без закриття.
+EOF
+
+|% Додано в 0.3 (етап 20.1): посилання, паралельні потоки, дані, зображення з коду.
+|link("https://example.org"){посилання}
+|toc_entry("Розділ без нумерації")
+|parallel(tracks=[track("uk", lang="uk"), track("en", lang="en")], parity="structure"):
+|segment(span="all"):
+|.DocumentTitle: Назва / Title
+|end segment
+|end
+|code:
+rows = load_xlsx("data/акти.xlsx")
+tekst = load_text("assets/logo.svg")
+code = qr_svg(base64url("payload"), size="20mm")
+|end
+
+|% Помилки, які має підсвічувати редактор:
+|– помилка: en dash замість em dash
+|$ зарезервовано
+| пробіл після вертикальної риски
+
+Кінець файлу. Ім'я, зв'язок, п'ять — апостроф не має ламати підсвічування.

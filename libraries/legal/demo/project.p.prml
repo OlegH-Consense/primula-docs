@@ -1,0 +1,12 @@
+---
+kind: project
+name: legal-demo
+language: uk-UA
+---
+# Example project. Two development symlinks live in lib/:
+#   lib/legal   → ../../.        this library
+#   lib/ua_data → ../../../ua_data  the rate and CPI library
+# A bare ".." in the link target is rejected (P2613). "../../." is the
+# two-level form of "../." and is accepted as a development symlink
+# (warning P2639, decision 136). The document imports
+# lib/legal/legal and lib/ua_data/ua_data.

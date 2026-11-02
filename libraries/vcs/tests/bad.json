@@ -1,0 +1,9 @@
+[
+  {
+    "hash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "date": "2026-03-01",
+    "author": "Тест Автор",
+    "message": "Зміна abc: текст",
+    "files": ["doc.prml"]
+  }
+]

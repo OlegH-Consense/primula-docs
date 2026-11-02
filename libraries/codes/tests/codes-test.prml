@@ -1,0 +1,51 @@
+---
+doc: {title: "codes: перевірка", language: uk-UA}
+---
+|% Published examples. EAN patterns: Wikipedia "International Article Number",
+|% fetched 2026-10-31. The 95-bit strings were built from that L/G/R table.
+|% 5901234123457 is the illustrated number; 4006381333931 is the Stabilo
+|% example on the same page. ISBN 0-306-40615-2 and Luhn 79927398713 are
+|% the usual published examples; the ISO texts were not opened.
+|import("../codes")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+expect("c7", codes.ean13_check("590123412345"), "7")
+expect("c1", codes.ean13_check("400638133393"), "1")
+expect("hyphen", codes.ean13_check("590-123412345"), "7")
+expect("short", codes.ean13_check_problem("123"), "очікується 12 цифр")
+expect("ok", codes.is_ean13("5901234123457"), True)
+expect("bad", codes.ean13_problem("5901234123458"), "не збігається контрольний розряд")
+expect("len", codes.ean13_problem("590123412345"), "очікується 13 цифр")
+bits = codes.ean13_modules("5901234123457")
+expect("n", len(bits), 95)
+expect("b590", bits, "10100010110100111011001100100110111101001110101010110011011011001000010101110010011101000100101")
+expect("b400", codes.ean13_modules("4006381333931"), "10100011010100111010111101111010001001011001101010100001010000101000010111010010000101100110101")
+image = codes.ean13_svg("5901234123457", height="10mm", module="1mm", quiet=0, text=False)
+if image.find('<rect x="0.00" y="0.00" width="1.00" height="10.00" fill="#000000"/>') < 0:
+    fail(f"bar: {image}")
+if image.find('<rect x="8.00" y="0.00" width="2.00" height="10.00" fill="#000000"/>') < 0:
+    fail(f"run: {image}")
+shifted = codes.ean13_svg("5901234123457", height="10mm", module="1mm", quiet=1, text=True)
+if shifted.find('<rect x="1.00" y="0.00" width="1.00" height="10.00" fill="#000000"/>') < 0:
+    fail(f"quiet: {shifted}")
+if shifted.find(">5901234123457</text>") < 0:
+    fail("caption")
+expect("quiet", codes.ean13_svg_problem("5901234123457", quiet=dec("-1")), "очікується невід'ємне ціле число модулів")
+expect("luhn3", codes.luhn_check("7992739871"), "3")
+expect("luhn", codes.is_luhn("79927398713"), True)
+expect("luhn-bad", codes.luhn_problem("79927398710"), "не збігається контрольний розряд")
+expect("luhn-empty", codes.luhn_problem(""), "очікується цифри")
+expect("luhn59", codes.is_luhn("59"), True)
+expect("isbn", codes.isbn13("0-306-40615-2"), "9780306406157")
+expect("isbn13", codes.isbn13("978-0-306-40615-7"), "9780306406157")
+expect("isbn-bad", codes.isbn_problem("0-306-40615-3"), "не збігається контрольний розряд")
+expect("isbn-x", codes.isbn_problem("0-306-40615-X"), "не збігається контрольний розряд")
+expect("ver", codes.VERSION, "0.1.0")
+|end
+|figure(svg=shifted):
+Навчальний EAN-13
+|end figure
+Контрольна цифра |( codes.ean13_check("590123412345") ), ISBN |( codes.isbn13("0-306-40615-2") ).

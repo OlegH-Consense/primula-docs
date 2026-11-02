@@ -1,0 +1,52 @@
+{
+ "name": "primula",
+ "displayName": "Primula",
+ "description": "Syntax highlighting for Primula documents (.prml)",
+ "version": "0.1.0",
+ "publisher": "primula-docs",
+ "license": "Apache-2.0",
+ "engines": {
+  "vscode": "^1.60.0"
+ },
+ "categories": [
+  "Programming Languages"
+ ],
+ "contributes": {
+  "languages": [
+   {
+    "id": "primula",
+    "aliases": [
+     "Primula",
+     "primula"
+    ],
+    "extensions": [
+     ".prml"
+    ],
+    "configuration": "./language-configuration.json"
+   },
+   {
+    "id": "primula-code",
+    "aliases": [
+     "Primula (code)"
+    ],
+    "filenamePatterns": [
+     "*.s.prml",
+     "*.p.prml"
+    ],
+    "configuration": "./language-configuration.json"
+   }
+  ],
+  "grammars": [
+   {
+    "language": "primula",
+    "scopeName": "source.primula",
+    "path": "./syntaxes/primula.tmLanguage.json"
+   },
+   {
+    "language": "primula-code",
+    "scopeName": "source.primula-code",
+    "path": "./syntaxes/primula-code.tmLanguage.json"
+   }
+  ]
+ }
+}

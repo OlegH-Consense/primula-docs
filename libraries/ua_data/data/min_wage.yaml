@@ -1,0 +1,13 @@
+# Monthly and hourly minimum wage, hryvnias.
+# 2026: art. 8 of the Law of 03.12.2025 No. 4695-IX, print text on
+# zakon.rada.gov.ua, read 2026-10-31.
+# 2025: art. 8 of the Law of 19.11.2024 No. 4059-IX, as quoted by
+# zarplata.co.ua and ukrainepravo.com; the rada print of that law was
+# not opened in this session. 2024 and earlier are not in this release.
+known_through: 2026-12-31
+monthly:
+  - {from: 2025-01-01, value: "8000", source: "ст. 8 Закону України від 19.11.2024 № 4059-IX"}
+  - {from: 2026-01-01, value: "8647", source: "ст. 8 Закону України від 03.12.2025 № 4695-IX"}
+hourly:
+  - {from: 2025-01-01, value: "48", source: "ст. 8 Закону України від 19.11.2024 № 4059-IX"}
+  - {from: 2026-01-01, value: "52", source: "ст. 8 Закону України від 03.12.2025 № 4695-IX"}

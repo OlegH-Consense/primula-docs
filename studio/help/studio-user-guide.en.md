@@ -1,4 +1,4 @@
-<!-- translation: source=studio/help/studio-user-guide.ru.md sections=102a2e80 09aded6b c9c99595 60173bf9 5d2c4641 b2721889 829c0307 08c81250 975c2730 9a252b16 e7fea4fd 97dda5de ccfb36ed -->
+<!-- translation: source=studio/help/studio-user-guide.ru.md sections=102a2e80 09aded6b 5c621767 60173bf9 5d2c4641 b2721889 829c0307 08c81250 975c2730 9a252b16 e7fea4fd 97dda5de ccfb36ed -->
 # Primula Studio — quick help
 
 Primula Studio is an editor of documents in the Primula markup language (`.prml`) and an interface for building them into ODT and PDF. The `primula` translator does the build: Studio runs it as a separate program and shows its messages and the resulting PDF.
@@ -29,7 +29,7 @@ Studio keeps its data in the service directory `.primula-studio/` in the project
 - A new project opens at once; a new document opens in a tab.
 - Your own templates go to `~/.config/primula-docs/templates/` (**File → New → Open the folder of user templates**); the format is described in `studio/templates/README.md` of the source tree.
 
-The context menu of the Files panel: **New in this folder** (document, fragment, module, styles module, folder), **Copy under a new name…** (a file or a folder; for a copied folder Studio offers to replace the old name with the new one in its files — this is how `orders/cso270101-1` becomes the next order), **Open in an external application** (for example, a PDF in the system viewer), **Rename…**, **Move to trash** (when the trash of the partition is unavailable, deleting for good is offered), **Open the folder in the file manager**. Open tabs follow a rename; a file with unsaved changes cannot be renamed or deleted.
+The context menu of the Files panel: **New in this folder** (document, fragment, module, styles module, folder), **File summary…** (functions and constants of a module, styles of a styles module, targets of a project — the same as `primula describe`; also in the tab menu), **Copy under a new name…** (a file or a folder; for a copied folder Studio offers to replace the old name with the new one in its files — this is how `orders/cso270101-1` becomes the next order), **Open in an external application** (for example, a PDF in the system viewer), **Rename…**, **Move to trash** (when the trash of the partition is unavailable, deleting for good is offered), **Open the folder in the file manager**. Open tabs follow a rename; a file with unsaved changes cannot be renamed or deleted.
 
 ## Files and tabs
 

@@ -1,0 +1,9 @@
+---
+kind: project
+name: ua-data-demo
+language: uk-UA
+---
+# Example project. lib points at the library directory (the parent).
+# The target is written "../." rather than "..": this translator rejects a
+# bare ".." in the resolved path (P2613) and accepts this link as a
+# development symlink (warning P2639, decision 136).

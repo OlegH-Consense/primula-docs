@@ -1,0 +1,23 @@
+# Subsistence minimum, hryvnias per month, by demographic group.
+# 2026 amounts are art. 7 of the Law of 03.12.2025 No. 4695-IX
+# (zakon.rada.gov.ua print, read 2026-10-31).
+# 2025 amounts are the same article of the Law of 19.11.2024 No. 4059-IX
+# as quoted by ukrainepravo.com and expertus; that print was not opened here.
+# The special bases used only for judges, prosecutors and the Chornobyl
+# court supplement are not in this file.
+known_through: 2026-12-31
+general:
+  - {from: 2025-01-01, value: "2920", source: "ст. 7 Закону України від 19.11.2024 № 4059-IX"}
+  - {from: 2026-01-01, value: "3209", source: "ст. 7 Закону України від 03.12.2025 № 4695-IX"}
+child_0_6:
+  - {from: 2025-01-01, value: "2563", source: "ст. 7 Закону України від 19.11.2024 № 4059-IX"}
+  - {from: 2026-01-01, value: "2817", source: "ст. 7 Закону України від 03.12.2025 № 4695-IX"}
+child_6_18:
+  - {from: 2025-01-01, value: "3196", source: "ст. 7 Закону України від 19.11.2024 № 4059-IX"}
+  - {from: 2026-01-01, value: "3512", source: "ст. 7 Закону України від 03.12.2025 № 4695-IX"}
+able:
+  - {from: 2025-01-01, value: "3028", source: "ст. 7 Закону України від 19.11.2024 № 4059-IX"}
+  - {from: 2026-01-01, value: "3328", source: "ст. 7 Закону України від 03.12.2025 № 4695-IX"}
+unable:
+  - {from: 2025-01-01, value: "2361", source: "ст. 7 Закону України від 19.11.2024 № 4059-IX"}
+  - {from: 2026-01-01, value: "2595", source: "ст. 7 Закону України від 03.12.2025 № 4695-IX"}

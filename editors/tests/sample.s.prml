@@ -1,0 +1,12 @@
+---
+kind: styles
+name: "Базові стилі договорів"
+---
+# Модуль стилів: після заголовка — код (підмножина Python), коментарі — #.
+paragraph_style("Clause", font="Times New Roman", size=12, before="l", after="s")
+quotes("de", ("„", "“"), ("‚", "‘"))
+
+def indented(base, level=2):
+    return derive(base, indent=level * 5 * mm) if level > 0 else base
+
+structure_styles = {"clause": {1: "Clause", 2: "ClauseContinuation"}, "strong": "Strong"}

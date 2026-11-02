@@ -1,0 +1,6 @@
+# Standard-library calendar (section 5) for 2025.
+# Same legal position as calendar-2024.yaml: martial law, no art. 73 days off.
+weekend: [sat, sun]
+holidays: []
+workdays: []
+rest_days: []

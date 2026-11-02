@@ -1,10 +1,47 @@
-<!-- translation: source=docs/author/ru/11-libraries.md sections=1204bd77 f1560e95 f2cb4f76 1ff531d8 578f709b 1a348c17 9bb43b07 c435100e -->
+<!-- translation: source=docs/author/ru/11-libraries.md sections=1204bd77 38fce731 f1560e95 f2cb4f76 1ff531d8 578f709b 1a348c17 9bb43b07 4e53dd06 c435100e -->
 <!-- spec: 10.1 10.3 10.5 12 -->
 # Libraries: development and use
 
 A Primula library is a directory of `.m.prml` modules and their data used by several projects: checking requisites, names in grammatical cases, payment schedules, a payment QR code. It is developed, tested and released apart from the translator and from the documents: a library is ordinary Primula text, it does not change the language and does not need a build of the translator.
 
 A ready sample is `examples/11-library`: the library `shared/ua-iban` (IBAN UA: checking, groups of four characters, building) and the project `project/` that links it with a symbolic link.
+
+## The libraries of the kit
+
+The repository and the installation package (`share/primula-docs/libraries/`) hold ready libraries of version 0.1.0. Each is a directory with its own `README.md` (functions, sources of the rules, the date they were checked, limits), tests and an example in `demo/`.
+
+| Library | What it does | Main functions |
+| --- | --- | --- |
+| `ua_ids` | checks and formats ЄДРПОУ, РНОКПП, IBAN UA | `edrpou`, `rnokpp`, `iban_grouped`, `iban_make`, `party_code` |
+| `names` | full names in cases, initials, signature, positions | `case`, `initials`, `signature`, `position_case` |
+| `ua_data` | NBU and VAT rates, minimum wage, subsistence minimum, CPI, calendar — with the date of effect | `discount_rate_on`, `vat_rate_on`, `min_wage_on`, `cpi_on`, `calendar` |
+| `legal` | penalty, 3 % per annum, inflation losses, terms | `penalty`, `claim_table`, `annual3`, `inflation_losses`, `deadline` |
+| `finance` | annuity, payment schedule, NPV and IRR, straight-line depreciation | `annuity_payment`, `schedule`, `npv`, `irr`, `straight_line` |
+| `payment_qr` | payment QR by the rules of the NBU (hryvnia) | `payload`, `svg`, `link` |
+| `epc_qr` | SEPA payment QR (euro), EPC069-12 | `payload`, `svg` |
+| `codes` | check digits of EAN-13, ISBN, Luhn; EAN-13 bar code | `ean13_check`, `isbn13`, `luhn_check`, `ean13_svg` |
+| `charts` | bars, line and pie for `\|figure(svg=…)` | `bar`, `line`, `pie` |
+| `stats` | median, mode, variance, percentile, moving average | `median`, `mode`, `variance`, `percentile` |
+| `electronics` | E3–E96 series, divider, connections, power, tolerance | `series`, `nearest`, `divider`, `parallel` |
+| `vcs` | the change table of a technical document from the Git history | `changes` |
+
+A single library is connected by a link `lib` to its directory and imported as `lib/<name>` (as its `README.md` says); with several libraries each has its own link `lib/<name>` and the import `lib/<name>/<name>` (see "Using a library in a project"):
+
+```sh
+ln -s ~/.local/share/primula-docs/libraries/ua_ids lib/ua_ids
+```
+
+```prml skip
+|import("lib/ua_ids/ua_ids")
+ЄДРПОУ |(ua_ids.edrpou(код)), IBAN |(ua_ids.iban_grouped(рахунок)).
+```
+
+What to know:
+
+- A module cannot import a neighbouring library (`../` is forbidden), so `legal` gets the data as an argument: `legal.penalty(борг, початок, сплата, ua_data.series("discount"))`.
+- `ua_data` keeps values with a start date and a source. A date after the last record of a series is an error, not a silent "last value": the data must be kept up to date (a new row with a new date; old rows do not change). The data of the library was checked on 31.10.2026, the calendar covers 2024–2026.
+- `legal` calculates by the formulas and the data of the library; it is not legal advice. The legal grounds of the calculation and their sources are listed in its `README.md` (the laws were checked against the texts on zakon.rada.gov.ua; the positions of the courts come from the announcements of the Supreme Court and from reviews, not from the full texts of the decisions): check them before using the result in a claim.
+- Functions with the suffix `_problem` return the reason as text (an empty string when all is well) and stop nothing; functions without it stop the build on an error.
 
 ## What a library can do
 
@@ -145,6 +182,18 @@ def vat_on(day):
 ```
 
 A new value is added as a row with a new date; old rows do not change.
+
+## What is inside a file: primula describe
+
+`primula describe FILE` shows a summary of a file that is not built into a document.
+
+```sh
+primula describe lib/ua_ids/ua_ids.m.prml        # functions, constants, version of a module
+primula describe styles/проєкт.s.prml            # extends, defaults, defined styles
+primula describe project.p.prml --format json    # for editors and Studio
+```
+
+For a module it prints the leading `|%` comment, `VERSION`, the public functions with the signature and the first line of the description (a docstring, or the comment above `def`), the public constants and the number of private names; the code is not run. So write a docstring for every function: it goes into the summary. `primula view` shows the same summary for a module, a styles module and a project.
 
 ## Release
 

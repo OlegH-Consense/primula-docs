@@ -237,6 +237,8 @@ private:
     bool createFromTemplate(const FileTemplate &tpl, const QString &directory, const QHash<QString, QString> &values,
                             const QString &language, QString *errorMessage);
     void showFilesMenu(const QString &path, const QPoint &position);
+    /// "File summary…": `primula describe` of a Primula file in a read-only window (stage 18.9).
+    void showFileSummary(const QString &path);
     void newFolderDialog(const QString &directory);
     void copyDialog(const QString &path);
     void renameDialog(const QString &path);
