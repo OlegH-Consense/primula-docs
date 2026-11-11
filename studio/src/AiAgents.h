@@ -18,6 +18,7 @@ struct AiAgent
     QString label;           ///< history marker of the answers (AiExchange::backend)
     QString program;         ///< the default program (name in PATH or a path)
     QStringList arguments;   ///< one item per argument; "{prompt}" when prompt == "arg"
+    QStringList writeArguments;   ///< the arguments of a run that may write files in its working directory (stage 27); empty — the tool has no write mode
     QStringList skillArguments;   ///< flags and values that replace (or are added to) the arguments when the agent loads the skill
     QString prompt = QStringLiteral("stdin");   ///< "stdin" or "arg"
     QString format = QStringLiteral("text");    ///< output: "text", "json" or "jsonl"
@@ -51,7 +52,9 @@ public:
     static QString program(const AiAgent &agent);
     /// The arguments of the process; {prompt} is replaced when the agent takes the prompt in an argument.
     /// @param skill  the request lets the agent load the skill: the skill arguments are applied.
-    static QStringList commandArguments(const AiAgent &agent, const QString &prompt, bool skill = false);
+    /// @param write  the run may write files in its working directory (a project made by AI, stage 27): the
+    ///               writeArguments are the base instead of the read-only arguments.
+    static QStringList commandArguments(const AiAgent &agent, const QString &prompt, bool skill = false, bool write = false);
     /// The answer of the process output.
     /// @return false with error when the tool reports an error or gives nothing.
     static bool parseOutput(const AiAgent &agent, const QByteArray &output, QString *response, QString *error);

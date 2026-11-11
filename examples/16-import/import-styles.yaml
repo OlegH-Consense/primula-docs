@@ -1,0 +1,4 @@
+# The map of the Word styles of the documents of this folder (primula import --styles, or this file next to the result).
+paragraphs:
+  "Пункт": {clause: 1}
+  "Службовий": ignore

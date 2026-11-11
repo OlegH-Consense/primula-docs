@@ -1,0 +1,6 @@
+---
+kind: project
+name: bib
+language: uk-UA
+---
+# The directory of the library is the root for the test documents in tests/ (they import ../bib).

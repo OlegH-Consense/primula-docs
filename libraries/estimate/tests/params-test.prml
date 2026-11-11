@@ -1,0 +1,12 @@
+---
+doc: {title: "estimate: параметри документа", language: uk-UA}
+params: {currency: EUR}
+---
+|% The currency of the table comes from the parameter of the document: param("currency").
+|import("../estimate")
+|code:
+items = [{"name": "Болт", "qty": dec("1"), "price": dec("10")}]
+|end
+|estimate.table(items)
+
+Разом: |estimate.total_words(items).

@@ -1,0 +1,36 @@
+---
+doc: {title: "Реферат: бібліографічні посилання", language: uk-UA, created: 2026-11-11}
+params:
+  bib_order: mention
+---
+|% Example 14: numbered citations and the list of references by DSTU 8302:2015 with the library bib
+|% (libraries/bib, linked as lib; warning P2639). The parameter bib_order: mention makes the library
+|% number the sources by the first citation in the text and list only the cited ones: the library
+|% uses the accumulator of the document collect()/collected() (decision 143), so the document is
+|% evaluated twice. Change bib_order to alphabet or given to see the other orders.
+|import("lib/bib")
+|code:
+джерела = [
+    {"key": "melnyk", "type": "book", "authors": ["Мельник Л. Г."], "title": "Екологічна економіка", "subtitle": "підручник",
+     "place": "Суми", "publisher": "Університетська книга", "year": dec("2010"), "pages": dec("346")},
+    {"key": "kizima", "type": "article", "authors": ["Кізіма Я. О."], "title": "Біокомп'ютерні технології та методики",
+     "journal": "Вісник НТУУ «КПІ»", "year": dec("2013"), "issue": dec("1"), "pages": "55–57"},
+    {"key": "pdp", "type": "act", "title": "Про захист персональних даних", "kind": "Закон України", "date": "01.06.2010",
+     "number": "2297-VI", "url": "https://zakon.rada.gov.ua/laws/show/2297-17", "accessed": "01.11.2026"},
+    {"key": "russell", "type": "book", "authors": ["Russell S.", "Norvig P."], "title": "Artificial intelligence : a modern approach",
+     "place": "Hoboken", "publisher": "Pearson", "year": dec("2021"), "edition": "4th ed.", "pages": dec("1136")},
+    {"key": "unused", "type": "web", "title": "Джерело, яке в тексті не згадано", "url": "https://example.org/unused", "accessed": "05.11.2026"},
+]
+реєстр = bib.registry(джерела)
+|end
+|<(number=False) Реферат
+
+Спочатку закон: |bib.cite(реєстр, "pdp"). Потім стаття: |bib.cite(реєстр, "kizima", pages="56"). Огляд підручників — |bib.cite(реєстр, ["melnyk", "russell"]). Закон ще раз: |bib.cite(реєстр, "pdp", pages="12").
+
+У порядку згадки номери 1, 2, 3, 4 стоять за першою ж згадкою, хоча за алфавітом перше джерело було б іншим.
+
+|<(number=False) Список використаних джерел
+
+|bib.references(реєстр)
+
+Не процитовано: |(", ".join(bib.unused(реєстр))).

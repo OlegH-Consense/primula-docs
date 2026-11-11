@@ -11,6 +11,7 @@
 // their categories are apart (functionCategories(), ids with the prefix "fn:"), their
 // section is "stdlib:N" for the standard library document.
 
+#include <QJsonArray>
 #include <QJsonObject>
 #include <QList>
 #include <QStringList>
@@ -35,6 +36,10 @@ public:
         QString receiver;   ///< str, list, dict for a method, else empty
         QString signature;  ///< money(x, code, currency_style="short", lang=None)
         QString where;      ///< any, styles (styles code), cell (table formula), project
+        // A command that a library module defines with |def (stage 28.0):
+        bool library = false;
+        QString source;     ///< absolute path of the module file
+        int line = 0;       ///< line of |def in the file
     };
     struct Category
     {
@@ -66,6 +71,13 @@ public:
     const QList<Category> &categories() const { return m_categories; }
     const QList<Category> &functionCategories() const { return m_functionCategories; }
     const QList<Entry> &entries() const { return m_entries; }
+    /// Commands of the modules that the inspected document imports (`primula check --dump-commands`,
+    /// key library_commands): kept apart from the catalogue of the language and shown as the categories
+    /// "Library: <module>" after it. An empty list removes them. The list survives setJson().
+    /// @param commands  the JSON array of the translator.
+    /// @param baseDir  the directory of the document (the files are given relative to it).
+    /// @return true when the set of library entries changed (the palette and menus need a refill).
+    bool setLibraryCommands(const QJsonArray &commands, const QString &baseDir);
     /// Index of the function name (method of any receiver when method, of std/math when
     /// module), or -1. Methods and functions share names (split, count): method decides.
     int functionIndex(const QString &name, bool method, bool module) const;
@@ -82,4 +94,10 @@ private:
     QList<Category> m_functionCategories;
     QList<Entry> m_entries;
     QList<HeaderKey> m_headerKeys;
+    // The base part (the language) ends here; the library entries and categories follow it.
+    void applyLibrary();
+    int m_baseEntries = 0;
+    int m_baseCategories = 0;
+    QJsonArray m_library;
+    QString m_libraryBase;
 };

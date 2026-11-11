@@ -1,0 +1,17 @@
+---
+doc: {title: "Приклад estimate", language: uk-UA}
+---
+|import("lib/estimate")
+|code:
+items = [
+    {"section": "Підготовчі роботи", "name": "Розмітка ділянки", "unit": "м²", "qty": dec("120"), "price": dec("15.50")},
+    {"section": "Підготовчі роботи", "name": "Вивіз ґрунту", "unit": "м³", "qty": dec("8"), "price": dec("310")},
+    {"section": "Бетонні роботи", "name": "Бетон В25", "unit": "м³", "qty": dec("12.5"), "price": dec("2850.40")},
+    {"section": "Бетонні роботи", "name": "Арматура | 12 мм", "unit": "т", "qty": dec("0.8"), "price": dec("32400")},
+]
+|end
+|< Кошторис
+
+|estimate.table(items, vat=dec("20"), discount=dec("5"))
+
+Загальна вартість — |estimate.total_words(items, vat=dec("20"), discount=dec("5")).

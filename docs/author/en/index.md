@@ -1,4 +1,4 @@
-<!-- translation: source=docs/author/ru/index.md sections=2e58fbdc 65c51b15 a9526cee 00bf2b23 -->
+<!-- translation: source=docs/author/ru/index.md sections=2e58fbdc ed5fa76d a9526cee 00bf2b23 -->
 <!-- spec: 1 2 14 -->
 # Primula author guide
 
@@ -21,6 +21,7 @@ The normative documents are the specification `primula-spec-v1.1-draft.ru.md` an
 | [Parallel texts](09-parallel.md) | bilingual agreement, protocol of disagreements: tracks and segments, language and numbering of a track, correspondence check, confirmation of a translation |
 | [Code: the Python dialect](10-code.md) | `decimal` numbers, strings, collections, records, dates, functions, lazy immutable global names, modules and export from a fragment (`@export`), values in the text, what the core does not have |
 | [Libraries: development and use](11-libraries.md) | a library of modules and data, what it can and cannot use, the directory layout, test documents with `fail()`, linking by a symbolic link, a copy or a Git submodule (decision 136), data with a date of effect, release |
+| [Importing documents](12-import.md) | `primula import`: DOCX, ODT, DOC, Markdown, HTML → a Primula draft; recognition of the structure, Word styles, `import-styles.yaml`, what to do after the import |
 
 Appendices (generated, not edited by hand): [constructs](generated/constructs.md), [functions of expressions](generated/functions.md), [header keys](generated/header-keys.md), [messages](generated/diagnostics.md), [styles of the kit](generated/styles.md). Terms follow the [glossary](../glossary.md).
 

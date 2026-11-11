@@ -195,6 +195,7 @@
 | P2636 | error | 13.9d | `the heading gets level {level} after level_shift={shift}; the deepest level is 6` | 10.2, 10.7, П3 |
 | P2637 | error | Э2 | `'{name}' is not defined in the fragment and cannot be exported` | 10.4, решение 135 |
 | P2638 | warning | Э2 | `'@export' in a module has no effect: every name of a module without a leading '_' is public` | 10.3, решение 135 |
+| P2640 | error | 28 | `collection '{name}' differs between the two passes: it depends on its own result (collected() was read before collect() changed it)` | 4.6, решение 143 |
 | P2639 | warning | 18.1 | `'{path}' lies outside the project: the symbolic link '{link}' leads to '{target}'; keep that directory together with the project to rebuild the document` | 10.1, решение 136 |
 | P2701 | warning | 13.9 | `the standard library does not support the document language '{lang}'; English forms are used` | библ. 1, решение 115 |
 | P2702 | error | 13.9 | `unknown language '{lang}' in lang=; supported: {allowed}` | библ. 1, решение 115 |
@@ -359,6 +360,11 @@
 | P8101 | warning | 19.1 | `'{construct}' has no counterpart in the export and is left out (page layout: headers, footers, page numbers)` | 14.1, решение 139 |
 | P8102 | error | 19.1 | `the export to this format needs pandoc: pandoc is not found (https://pandoc.org; --to json writes the AST without it)` | 14.1, решение 139 |
 | P8103 | error | 19.1 | `pandoc failed: {reason}` | 14.1, решение 139 |
+| P8201 | error | 19.3 | `the import needs pandoc: pandoc is not found (https://pandoc.org)` | 14.1, решение 146 |
+| P8202 | error | 19.3 | `the import failed: {reason}` | 14.1, решение 146 |
+| P8203 | error | 19.3 | `unknown format of the source '{suffix}': use --from (docx, odt, rtf, gfm, html, epub, markdown) or a known extension` | 14.1, решение 146 |
+| P8204 | error | 19.3 | `'{file}' is an old Word file: LibreOffice (soffice) is needed to convert it to DOCX and was not found` | 14.1, решение 146 |
+| P8205 | error | 19.3 | `'{file}' already exists: it is not replaced (use --force or -o)` | 14.1, решение 146 |
 | P9101 | error | 13.10 | `unknown admonition kind '{kind}'; allowed: {allowed}` | 9.1, решение 116 |
 | P9102 | error | 13.10 | `the admonition is empty: no text, hazard= or consequence=` | 9.1, решение 116 |
 | P9103 | warning | 13.10 | `'{kind}' without hazard=: name the kind and source of the hazard` | 9.1, 14.2, решение 116 |

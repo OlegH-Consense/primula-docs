@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "description": "AI agents of Primula Studio: command-line tools that receive the prompt and return an answer (File -> Settings -> AI tool). Built in; the user file (~/.config/primula-docs/agents.json, the same format) adds agents or replaces a built-in one with the same id. Fields: id (a-z, 0-9, -, _); name (shown in Settings); label (history marker of the answers); program (name in PATH or a path; File -> Settings overrides it); arguments (a list, one item per argument); skillArguments - flags with values that replace the same flags of arguments (or are added) when the request lets the agent load the skill primula-docs; prompt: stdin (the prompt is written to stdin) or arg (the item {prompt} of arguments is replaced by the prompt); output.format: text (stdout as is), json (one JSON object; with several lines the last one), jsonl (one event per line). output.field - the dotted path of the answer text in the object or event (item.text); output.ok - fields that must have these values when present, otherwise the answer is an error; output.errorField - the path of the error text; output.match - fields that choose the event of jsonl (the last such event is the answer); output.errorMatch/errorField - the events that carry an error (jsonl); output.textFallback - a stdout that is not JSON is the answer. Every agent must run read-only: it must not change files and run commands (see studio/tools/check_ai_agent.py).",
+  "description": "AI agents of Primula Studio: command-line tools that receive the prompt and return an answer (File -> Settings -> AI tool). Built in; the user file (~/.config/primula-docs/agents.json, the same format) adds agents or replaces a built-in one with the same id. Fields: id (a-z, 0-9, -, _); name (shown in Settings); label (history marker of the answers); program (name in PATH or a path; File -> Settings overrides it); arguments (a list, one item per argument); skillArguments - flags with values that replace the same flags of arguments (or are added) when the request lets the agent load the skill primula-docs; prompt: stdin (the prompt is written to stdin) or arg (the item {prompt} of arguments is replaced by the prompt); output.format: text (stdout as is), json (one JSON object; with several lines the last one), jsonl (one event per line). output.field - the dotted path of the answer text in the object or event (item.text); output.ok - fields that must have these values when present, otherwise the answer is an error; output.errorField - the path of the error text; output.match - fields that choose the event of jsonl (the last such event is the answer); output.errorMatch/errorField - the events that carry an error (jsonl); output.textFallback - a stdout that is not JSON is the answer. writeArguments (optional): the whole argument list of a run that may write files in its working directory only, used for a project made by AI (the work goes to a temporary copy that Studio shows before anything is written to the user project; the tool must not run commands); an agent without it cannot make projects. Every other run must be read-only: it must not change files and run commands (see studio/tools/check_ai_agent.py).",
   "agents": [
     {
       "id": "codex",
@@ -8,6 +8,7 @@
       "label": "codex-exec",
       "program": "codex",
       "arguments": ["exec", "--ephemeral", "--json", "--sandbox", "read-only", "--skip-git-repo-check", "-"],
+      "writeArguments": ["exec", "--ephemeral", "--json", "--sandbox", "workspace-write", "--skip-git-repo-check", "-"],
       "prompt": "stdin",
       "output": {
         "format": "jsonl",
@@ -23,6 +24,7 @@
       "label": "claude-print",
       "program": "claude",
       "arguments": ["-p", "--output-format", "json", "--no-session-persistence", "--tools", "Read,Grep,Glob", "--permission-mode", "dontAsk"],
+      "writeArguments": ["-p", "--output-format", "json", "--no-session-persistence", "--tools", "Read,Write,Edit,Glob,Grep", "--permission-mode", "acceptEdits"],
       "skillArguments": ["--tools", "Read,Grep,Glob,Skill"],
       "prompt": "stdin",
       "output": {
@@ -41,6 +43,7 @@
       "arguments": ["-p", "-", "--output-format", "json", "--no-auto-update", "--permission-mode", "dontAsk",
                     "--allow", "Read", "--allow", "Grep", "--deny", "Bash", "--deny", "Edit", "--deny", "MCPTool",
                     "--deny", "WebFetch", "--deny", "WebSearch", "--disable-web-search", "--no-subagents"],
+      "writeArguments": ["-p", "-", "--output-format", "json", "--no-auto-update", "--permission-mode", "dontAsk", "--allow", "Read", "--allow", "Grep", "--allow", "Edit", "--allow", "Write", "--deny", "Bash", "--deny", "MCPTool", "--deny", "WebFetch", "--deny", "WebSearch", "--disable-web-search", "--no-subagents"],
       "prompt": "stdin",
       "output": {
         "format": "json",

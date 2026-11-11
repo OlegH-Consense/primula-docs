@@ -220,6 +220,15 @@ class DiagnosticSink:
             self.warning_count += 1
         return diagnostic
 
+    def snapshot(self) -> tuple[int, int, int]:
+        """The state to return to with :meth:`restore` (the first pass of ``collected()``, decision 143)."""
+        return len(self.diagnostics), self.error_count, self.warning_count
+
+    def restore(self, state: tuple[int, int, int]) -> None:
+        """Forget the diagnostics recorded after :meth:`snapshot`."""
+        count, self.error_count, self.warning_count = state
+        del self.diagnostics[count:]
+
     def extend(self, diagnostics: Iterable[Diagnostic]) -> None:
         """Record several diagnostics in order."""
         for diagnostic in diagnostics:

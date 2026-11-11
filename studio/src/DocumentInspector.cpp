@@ -81,7 +81,8 @@ void DocumentInspector::start(const Request &request)
     }
     const QDir root(request.root);
     QStringList arguments{QStringLiteral("check"), root.relativeFilePath(request.document),
-                          QStringLiteral("--dump-structure"), QStringLiteral("--dump-styles")};
+                          QStringLiteral("--dump-structure"), QStringLiteral("--dump-styles"),
+                          QStringLiteral("--dump-commands")};
     arguments << request.extra;
     if (!request.buffers.isEmpty()) {
         if (!m_buffers || !m_buffers->isValid()) {

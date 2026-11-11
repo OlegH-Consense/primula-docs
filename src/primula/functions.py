@@ -566,6 +566,33 @@ FUNCTIONS: tuple[Function, ...] = (
                                     "разметка Primula из строки (content)"),
           (_p("text", "string", ("markup text", "текст розмітки", "текст разметки")),), "content",
           'markup("|*{" + name + "}")', False),
+    _core("param", "core", "10.6", ("a parameter of the document by name (also inside a module: its settings), "
+                                    "or the default (decision 144)",
+                                    "параметр документа за назвою (і в модулі: його налаштування), "
+                                    "або значення за замовчуванням (рішення 144)",
+                                    "параметр документа по имени (и в модуле: его настройки), "
+                                    "или значение по умолчанию (решение 144)"),
+          (_p("name", "string", ("parameter name", "назва параметра", "название параметра")),
+           _p("default", "any", ("value when there is no such parameter", "значення, коли такого параметра немає",
+                                 "значение, когда такого параметра нет"))),
+          "any", 'param("currency", "UAH")', False),
+    _core("collect", "core", "4.6", ("add a value to a collection of the document; the result is empty content "
+                                     "(decision 143)",
+                                     "додати значення до накопичувача документа; результат — порожній вміст "
+                                     "(рішення 143)",
+                                     "добавить значение в накопитель документа; результат — пустое содержимое "
+                                     "(решение 143)"),
+          (_p("name", "string", ("collection name", "назва накопичувача", "название накопителя")),
+           _p("value", "any", ("the value (frozen)", "значення (заморожується)", "значение (замораживается)"))),
+          "content", '|(collect("cited", key))', False),
+    _core("collected", "core", "4.6", ("the values of a collection after the whole document, in the order of collect(); "
+                                       "evaluates the document twice, [] in the first pass (decision 143)",
+                                       "значення накопичувача після всього документа, у порядку collect(); "
+                                       "документ обчислюється двічі, у першому проході [] (рішення 143)",
+                                       "значения накопителя после всего документа, в порядке collect(); "
+                                       "документ вычисляется дважды, в первом проходе [] (решение 143)"),
+          (_p("name", "string", ("collection name", "назва накопичувача", "название накопителя")),), "list",
+          'collected("cited")', False),
     _core("img", "core", "8.6", ("image value for watermark=, |img(value), |figure(value); a path or svg=",
                                  "значення-зображення для watermark=, |img(значення), |figure(значення); шлях або svg=",
                                  "значение-изображение для watermark=, |img(значение), |figure(значение); путь или svg="),

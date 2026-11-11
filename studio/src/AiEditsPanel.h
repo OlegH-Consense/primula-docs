@@ -5,11 +5,13 @@
 // The panel does not touch the document itself: MainWindow gives it the text, the check and takes
 // the request to apply (a tab of an AI answer, AiHistoryPane).
 
+#include "AiCompare.h"
 #include "AiEdits.h"
 
 #include <QWidget>
 #include <functional>
 
+class QCheckBox;
 class QLabel;
 class QListWidget;
 class QListWidgetItem;
@@ -36,6 +38,13 @@ public:
     /// The document the edits belong to: its current text and the check of a changed text.
     /// An empty checker (no translator, not a Primula file) leaves the edits unchecked.
     void setDocument(const QString &name, TextProvider text, Checker check);
+    /// The comparison with the answers of the other tools (stage 22.7): one verdict per edit; the tool is
+    /// the one that gave this answer. An empty list removes the marks.
+    void setComparison(const QString &tool, const QList<AiCompare::Verdict> &verdicts);
+    /// The verdict of an edit (Single without a comparison).
+    AiCompare::Verdict verdictAt(int row) const { return row < m_verdicts.size() ? m_verdicts.at(row) : AiCompare::Verdict(); }
+    /// Choose exactly the ready edits that every tool proposed in the same form.
+    void chooseAgreed();
     /// Locate the edits in the current text of the document and show their statuses.
     void refresh();
     /// Edits that are applied (the row numbers); they are marked and cannot be chosen again.
@@ -66,6 +75,10 @@ private:
     QList<bool> m_applied;
     QList<int> m_newErrors;   ///< per edit: -1 not checked, else the number of new errors it brings
     QList<QStringList> m_messages;   ///< per edit: the new errors
+    QList<AiCompare::Verdict> m_verdicts;
+    QString m_tool;
+    QCheckBox *m_onlyDifferences = nullptr;
+    QPushButton *m_chooseAgreed = nullptr;
     QString m_name;
     TextProvider m_text;
     Checker m_check;
@@ -76,6 +89,8 @@ private:
     QPushButton *m_checkButton = nullptr;
 
     void rebuild();
+    void showComparison(int row);
+    QString compareText(int row) const;
     void showDetail();
     void updateButtons();
     void contextMenu(const QPoint &position);

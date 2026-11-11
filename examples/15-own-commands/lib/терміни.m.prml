@@ -1,0 +1,39 @@
+---
+kind: module
+---
+|% terms — own commands of a document in a module: a term in the text and the glossary of the document.
+|% The comments above |def are the description that Studio shows in the palette and in the hint.
+|% Example 15: a command of a module, the accumulator collect()/collected() and param() in a module.
+|code:
+def _terms():
+    """The terms of the document without repeats, by the alphabet (the accumulator of the document)."""
+    found = {}
+    for term in collected("терміни"):
+        if term["слово"] not in found:
+            found[term["слово"]] = term
+    return sorted([found[k] for k in found], key=_term_key)
+
+
+def _term_key(term):
+    return sort_key(term["слово"], lang="uk")
+|end
+
+|% A term in the text: written in italics, the explanation goes to the glossary (see словник).
+|% слово: the term as it stands in the text
+|% пояснення: the explanation for the glossary (the first one wins when the term repeats)
+|def термін(слово, пояснення):
+  |(collect("терміни", {"слово": слово, "пояснення": пояснення}))|/{|(слово)}
+|enddef
+
+|% The glossary of the terms of the document in the alphabetical order, as a table.
+|% заголовок: the heading of the glossary; the parameter словник_заголовок of the document, else "Словник термінів"
+|def словник(заголовок=None):
+  |<(number=False) |(заголовок or param("словник_заголовок", "Словник термінів"))
+
+  |table(cols=["40mm", "*"], header=1):
+  |: Термін |& Пояснення
+  |for(t in _terms()):
+  |: |(t["слово"]) |& |(t["пояснення"])
+  |endfor
+  |end table
+|enddef

@@ -45,7 +45,7 @@ from primula.core.program import Action, Program
 from primula.core.scope import Env, GlobalScope
 from primula.core.values import (
     Builtin, BoundMethod, Content, DateTime, Function, Length, ModuleValue, PDict, PList, Record,
-    from_data, to_repr, to_str, type_name,
+    freeze, from_data, to_repr, to_str, type_name,
 )
 from primula.diagnostics import Diagnostic, DiagnosticSink, error, warning
 from primula.evaluate.data import ImageValue, checked_svg, make_data_builtins, make_image_builtins
@@ -110,6 +110,9 @@ class EvalOptions:
     targets: list[Any] | None = None
     #: ``--param`` of the root document: name -> (value, text as written) (14.1, П2).
     params: dict[str, tuple[Any, str]] = field(default_factory=dict)
+    #: The collections of the first pass that ``collected()`` returns in the second one
+    #: (name -> values; decision 143), or ``None`` in the first pass.
+    collected: dict[str, list[Any]] | None = None
 
 
 @dataclass(eq=False)
@@ -244,10 +247,16 @@ class DocumentEvaluator:
                     **make_column_builtins(), **make_table_builtins(), **make_image_builtins(loader),
                     **parallel_model.make_parallel_builtins(),
                     "has": Builtin("has", self._has), "markup": Builtin("markup", self._markup),
+                    "param": Builtin("param", self._fn_param), "collect": Builtin("collect", self._fn_collect), "collected": Builtin("collected", self._fn_collected),
                     "build": Builtin("build", self._build_target), "batch_mode": Builtin("batch_mode", self._batch_mode)}
         self.interp = Interpreter(EvalContext(meter=Meter(self.options.limits, deadline=self.options.deadline),
                                               build_date=self.options.build_date,
                                               sink=self.sink, extra_builtins=builtins))
+        #: ``collect(name, value)`` of this pass, and whether ``collected()`` asked for the other pass (decision 143).
+        self.collections: dict[str, list[Any]] = {}
+        self.collected_used = False
+        #: Names of the parameters of the root document (header, project; the values come from its scope) for ``param()`` (decision 144).
+        self.root_params: set[str] = set()
         self.actions: list[tuple[Program, Action, FileState]] = []
         self.conditions: list[tuple[str, bool, Span]] = []
         self.excluded_ids: dict[str, tuple[str, Span]] = {}
@@ -339,6 +348,8 @@ class DocumentEvaluator:
         target = self.options.target
         values = target.params if target is not None else self._param_options(state)
         params = self._define_header(state, None, values=values)
+        project = self.options.project
+        self.root_params = set(params) | (set(project.params) if project is not None else set())
         self._define_doc(state)
 
         # Phase 1: definitions.
@@ -1457,6 +1468,10 @@ class DocumentEvaluator:
                 if not isinstance(name, str) or name.startswith("_") or name not in module.scope.definitions:
                     self.report(core_error("P2624", span, name=to_str(name), module=path_text))
                     continue
+                if name in RESERVED_NAMES:
+                    # A macro named like a built-in command stays behind the namespace (decision 142).
+                    self.report(core_error("P1235", span, name=name))
+                    continue
                 state.scope.define(name, lambda n=name, m=module: m.scope.lookup(n, span), span)
             return
         # The base of the file name without the extension and the
@@ -1489,6 +1504,38 @@ class DocumentEvaluator:
         if not isinstance(features, (PList, tuple)) or not all(isinstance(f, str) for f in features):
             raise core_error("P2626", span)
         return args[0] in features
+
+    def _fn_param(self, interp: Any, args: list[Any], kwargs: dict[str, Any], span: Any) -> Any:
+        """``param(name, default=None)`` — a parameter of the root document, also inside a module (decision 144)."""
+        if not 1 <= len(args) <= 2 or set(kwargs) - {"default"} or not isinstance(args[0], str):
+            raise core_error("P2322", span, function="param", problem="expected a name (a string) and an optional default")
+        default = args[1] if len(args) == 2 else kwargs.get("default")
+        name = nfkc(args[0])
+        if name not in self.root_params or self.document_root is None:
+            return default
+        return self.document_root.scope.lookup(name, span)
+
+    def _fn_collect(self, interp: Any, args: list[Any], kwargs: dict[str, Any], span: Any) -> Content:
+        """``collect(name, value)`` — add a value to the collection ``name`` of the document (decision 143).
+
+        The value is frozen.  The result is empty content, so the call can stand in the text: ``|(collect("n", x))``.
+        """
+        if len(args) != 2 or kwargs or not isinstance(args[0], str) or not args[0]:
+            raise core_error("P2322", span, function="collect", problem="expected a name (a string) and a value")
+        self.collections.setdefault(args[0], []).append(freeze(args[1]))
+        return content_inline([])
+
+    def _fn_collected(self, interp: Any, args: list[Any], kwargs: dict[str, Any], span: Any) -> PList:
+        """``collected(name)`` — the values of the collection after the whole document (decision 143).
+
+        The document is evaluated twice when this is called: the first pass collects, the second one sees
+        the finished collections (``[]`` in the first pass, whose output and messages are dropped).
+        """
+        if len(args) != 1 or kwargs or not isinstance(args[0], str) or not args[0]:
+            raise core_error("P2322", span, function="collected", problem="expected a name (a string)")
+        self.collected_used = True
+        seed = self.options.collected or {}
+        return freeze(PList(list(seed.get(args[0], ()))))
 
     def _document_of(self, span: Any) -> FileState:
         """The document (root or part) of the file at ``span``; the current one otherwise."""

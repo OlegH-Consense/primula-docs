@@ -48,6 +48,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 from fractions import Fraction
+from pathlib import Path
 from typing import Any
 
 #: Version of the dump format; a change of meaning of a field increases it.
@@ -56,8 +57,8 @@ DUMP_SCHEMA = 1
 _TEXT_LIMIT = 80
 
 
-def make_dump(result: Any, *, file: str, structure: bool, styles: bool, messages: list[dict[str, Any]]
-              ) -> dict[str, Any]:
+def make_dump(result: Any, *, file: str, structure: bool, styles: bool, messages: list[dict[str, Any]],
+              library_commands: list[dict[str, Any]] | None = None) -> dict[str, Any]:
     """The JSON object of ``--dump-structure``/``--dump-styles``.
 
     Args:
@@ -66,6 +67,9 @@ def make_dump(result: Any, *, file: str, structure: bool, styles: bool, messages
         structure: include the structure (``--dump-structure``).
         styles: include the styles (``--dump-styles``).
         messages: diagnostics of the run in the JSON form (14.2).
+        library_commands: the commands that the modules imported by the document define with
+            ``|def`` (``--dump-commands``, stage 28.0; :func:`primula.libcommands.document_commands`),
+            or ``None`` when not asked for.
 
     Returns:
         A JSON-compatible dictionary (see the module description).
@@ -78,6 +82,8 @@ def make_dump(result: Any, *, file: str, structure: bool, styles: bool, messages
     if styles:
         system = getattr(evaluation, "styles", None) if evaluation is not None else None
         data["styles"] = _styles(system) if system is not None else None
+    if library_commands is not None:
+        data["library_commands"] = library_commands
     data["messages"] = messages
     return data
 

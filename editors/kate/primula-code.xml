@@ -64,6 +64,8 @@
       <item>character_style</item>
       <item>cm</item>
       <item>col</item>
+      <item>collect</item>
+      <item>collected</item>
       <item>column</item>
       <item>count</item>
       <item>date</item>
@@ -102,6 +104,7 @@
       <item>numbering</item>
       <item>page_style</item>
       <item>paragraph_style</item>
+      <item>param</item>
       <item>placeholders</item>
       <item>pt</item>
       <item>quotes</item>

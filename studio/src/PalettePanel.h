@@ -32,6 +32,8 @@ signals:
     void insertRequested(int index);
     /// Open the specification at section (e.g. "4.2").
     void sectionRequested(const QString &section);
+    /// Open the file of a library command at the line of its |def (stage 28.0).
+    void definitionRequested(const QString &path, int line);
 
 private:
     void fill();

@@ -6,7 +6,8 @@ is nothing to show in a viewer; this command tells what is inside::
     module    the leading comment, ``VERSION``, public functions with their
               signatures and one-line descriptions, constants, the number of
               private names (the code is not run: the source is read with
-              :mod:`ast`)
+              :mod:`ast`), and the commands defined with ``|def`` (macros:
+              signature, kind of body, description from the ``|%`` comment above)
     styles    ``extends``, ``defaults`` and the styles the module defines
               (name, kind, parent), found through the style system
     project   name, language, parameters, keys, styles, targets
@@ -144,8 +145,10 @@ def describe_module(body: str, line_offset: int, problems: list[str]) -> dict[st
                     version = str(node.value.value)
                 constants.append({"name": name, "value": shown,
                                   "summary": _first_paragraph(_comment_above(lines, node.lineno)), "line": line})
+    from primula.libcommands import scan_macros
+
     return {"summary": comment, "version": version, "functions": functions, "constants": constants,
-            "private": private}
+            "macros": scan_macros(body, line_offset), "private": private}
 
 
 def describe_styles(path: Path, header_data: dict[Any, Any], manager: SourceManager,
@@ -249,6 +252,12 @@ def render_text(data: dict[str, Any], catalog: Catalog) -> str:
             out += ["", *data["summary"]]
         if data.get("version"):
             out.append(t("describe.version", version=data["version"]))
+        macros = data.get("macros") or []
+        if macros:
+            out += ["", t("describe.macros", n=len(macros))]
+            for m in macros:
+                out.append(f"  |{m['signature']}" + (f" — {m['summary']}" if m["summary"] else f"  [{t('describe.undocumented')}]"))
+                out += [f"      {p['name']} — {p['summary']}" for p in m["params"] if p.get("summary")]
         out += ["", t("describe.functions", n=len(data["functions"]))]
         for f in data["functions"]:
             out.append(f"  {f['signature']}" + (f" — {f['summary']}" if f["summary"] else f"  [{t('describe.undocumented')}]"))

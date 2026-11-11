@@ -5,6 +5,7 @@
 
 #include <QApplication>
 #include <QClipboard>
+#include <QFileInfo>
 #include <QFontDatabase>
 #include <QMenu>
 #include <QHeaderView>
@@ -71,9 +72,13 @@ PalettePanel::PalettePanel(QWidget *parent) : QWidget(parent)
             copy(Snippet::expand(entry.snippet).text);
         });
         menu.addSeparator();
-        menu.addAction(entry.section.isEmpty() ? tr("Specification section") : CommandCatalog::sectionLabel(entry.section),
-                       this, [this, entry] { emit sectionRequested(entry.section); })
-            ->setEnabled(!entry.section.isEmpty());
+        if (entry.library)
+            menu.addAction(tr("Open the definition (%1:%2)").arg(QFileInfo(entry.source).fileName()).arg(entry.line), this,
+                           [this, entry] { emit definitionRequested(entry.source, entry.line); });
+        else
+            menu.addAction(entry.section.isEmpty() ? tr("Specification section") : CommandCatalog::sectionLabel(entry.section),
+                           this, [this, entry] { emit sectionRequested(entry.section); })
+                ->setEnabled(!entry.section.isEmpty());
         menu.exec(m_tree->viewport()->mapToGlobal(point));
     });
 }

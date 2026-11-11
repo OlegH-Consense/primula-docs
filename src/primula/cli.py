@@ -212,6 +212,7 @@ def build_parser(catalog: Catalog) -> argparse.ArgumentParser:
     # Structure and styles for editors and Primula Studio (14.1; stage 14.2, Т1, Т2).
     check.add_argument("--dump-structure", action="store_true", help=t("cli.help.dump_structure"))
     check.add_argument("--dump-styles", action="store_true", help=t("cli.help.dump_styles"))
+    check.add_argument("--dump-commands", action="store_true", help=t("cli.help.dump_commands"))
     # Unsaved editor buffers: the text of FILE is read from BUFFER (Т3).
     check.add_argument("--overlay", action="append", default=[], metavar=t("cli.metavar.overlay"),
                        help=t("cli.help.overlay"))
@@ -223,6 +224,7 @@ def build_parser(catalog: Catalog) -> argparse.ArgumentParser:
     catalogue.add_argument("--lang", choices=SUPPORTED_LANGUAGES, help=t("cli.help.lang"))
     catalogue.add_argument("--functions", action="store_true", help=t("cli.help.commands_functions"))
     catalogue.add_argument("--header", action="store_true", help=t("cli.help.commands_header"))
+    catalogue.add_argument("--document", type=Path, metavar=t("cli.metavar.file"), help=t("cli.help.commands_document"))
 
     # The evaluator console (stage 14.15; decision 128).
     console = commands.add_parser("console", parents=[evaluation], help=t("cli.help.console"),
@@ -272,6 +274,21 @@ def build_parser(catalog: Catalog) -> argparse.ArgumentParser:
     describe.add_argument("file", type=Path, metavar=file_, help=t("cli.help.file"))
     describe.add_argument("--lang", choices=SUPPORTED_LANGUAGES, help=t("cli.help.lang"))
     describe.add_argument("--format", choices=("text", "json"), default="text", help=t("cli.help.format"))
+
+    imp = commands.add_parser("import", help=t("cli.help.import"), description=t("cli.help.import"),
+                              epilog=t("cli.epilog.import"), formatter_class=raw)
+    imp.add_argument("source", type=Path, metavar=file_, help=t("cli.help.import_source"))
+    imp.add_argument("-o", "--output", type=Path, metavar=file_, help=t("cli.help.import_output"))
+    imp.add_argument("--from", dest="format_from", metavar="FORMAT", help=t("cli.help.import_from"))
+    imp.add_argument("--language", default="uk-UA", metavar="LANG", help=t("cli.help.import_language"))
+    imp.add_argument("--media", default="assets", metavar="DIR", help=t("cli.help.import_media"))
+    imp.add_argument("--force", action="store_true", help=t("cli.help.import_force"))
+    imp.add_argument("--keep-numbers", action="store_true", help=t("cli.help.import_keep_numbers"))
+    imp.add_argument("--no-structure", action="store_true", help=t("cli.help.import_no_structure"))
+    imp.add_argument("--styles", type=Path, metavar=file_, help=t("cli.help.import_styles"))
+    imp.add_argument("--list-styles", action="store_true", help=t("cli.help.import_list_styles"))
+    imp.add_argument("--write-styles", type=Path, metavar=file_, help=t("cli.help.import_write_styles"))
+    imp.add_argument("--lang", choices=SUPPORTED_LANGUAGES, help=t("cli.help.lang"))
 
     fmt = commands.add_parser("fmt", parents=[common], help=t("cli.help.fmt"),
                               description=t("cli.help.fmt"), epilog=t("cli.epilog.fmt"),
@@ -413,7 +430,8 @@ def _run_command(args: argparse.Namespace, sink: DiagnosticSink, manager: Source
     """
     from primula.evaluate.project import is_project_file
 
-    dumps = bool(getattr(args, "dump_structure", False) or getattr(args, "dump_styles", False))
+    dumps = bool(getattr(args, "dump_structure", False) or getattr(args, "dump_styles", False)
+                 or getattr(args, "dump_commands", False))
     if args.command in ("build", "check") and is_project_file(args.file):
         if dumps:
             # The structure and the styles belong to a document (Studio asks for each one).
@@ -611,10 +629,23 @@ def main(argv: Sequence[str] | None = None, *, err: TextIO | None = None,
         from primula.header_keys import render_text as render_header
 
         data = catalogue(catalog.language)
+        if args.document is not None:
+            from primula.libcommands import document_commands
+
+            # The commands that the modules imported by the document define with |def (stage 28.0).
+            data["library_commands"] = document_commands(args.document)
         text = render_header(data) if args.header else render_functions(data) if args.functions else render_text(data)
+        if args.format == "text" and data.get("library_commands"):
+            text += "\n" + catalog.text("commands.library") + "\n" + "".join(
+                f"  |{c['name']}{c['signature'][len(c['macro']):]}"
+                + (f" — {c['summary']}" if c["summary"] else "") + "\n" for c in data["library_commands"])
         print(json.dumps(data, ensure_ascii=False, indent=1) if args.format == "json" else text,
               file=output, end="\n" if args.format == "json" else "")
         return EXIT_OK
+    if args.command == "import":
+        from primula.importer.run import run_import
+
+        return run_import(args, catalog, stream, output)
     if args.command == "describe":
         from primula.describe import describe, render_text
 
@@ -629,7 +660,7 @@ def main(argv: Sequence[str] | None = None, *, err: TextIO | None = None,
     if args.command == "console":
         return _console(args, catalog, stream, output, sys.stdin if inp is None else inp)
     if args.format == "json" and any(getattr(args, name, False) for name in (
-            "dump_tree", "dump_parsed", "dump_project", "dump_structure", "dump_styles")):
+            "dump_tree", "dump_parsed", "dump_project", "dump_structure", "dump_styles", "dump_commands")):
         parser.error(catalog.text("cli.format.dump"))
     #: Messages of --format json: those of the targets of a project are added by batch.py.
     args.json_messages = []
@@ -642,9 +673,15 @@ def main(argv: Sequence[str] | None = None, *, err: TextIO | None = None,
     build_date = getattr(args, "build_date", None) or datetime.date.today()
 
     stopped: str | None = None
+    library_commands: list[dict[str, object]] | None = None
     try:
         if not sink.has_errors:
             result = _run_command(args, sink, manager, stream, output, catalog)
+        if getattr(args, "dump_commands", False):
+            # Read while the overlays (unsaved buffers) are still set.
+            from primula.libcommands import document_commands
+
+            library_commands = document_commands(args.file)
     except TooManyErrors as exc:
         # The run stops, but the diagnostics so far and the report are kept.
         stopped = catalog.text("cli.too_many_errors", limit=exc.args[0])
@@ -680,11 +717,12 @@ def main(argv: Sequence[str] | None = None, *, err: TextIO | None = None,
             sink.emit(error("P0103", None, at_file=str(args.report), path=str(args.report),
                             reason=exc.strerror or str(exc)))
 
-    if getattr(args, "dump_structure", False) or getattr(args, "dump_styles", False):
+    if (getattr(args, "dump_structure", False) or getattr(args, "dump_styles", False)
+            or getattr(args, "dump_commands", False)):
         from primula.dumps import make_dump
 
         data = make_dump(args.dump_result, file=str(args.file), structure=args.dump_structure,
-                         styles=args.dump_styles,
+                         styles=args.dump_styles, library_commands=library_commands,
                          messages=[to_json(diagnostic, catalog) for diagnostic in sink.ordered()])
         print(json.dumps(data, ensure_ascii=False, indent=1), file=output)
     if args.format == "json":

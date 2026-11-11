@@ -20,7 +20,7 @@ skill adds what is specific to libraries.
   `docs/libraries/<name>.md` in the Primula source tree.
 - Libraries that already exist are in `libraries/` of the source tree and in
   `share/primula-docs/libraries/` of an installation (ua_ids, names, ua_data, legal,
-  finance, payment_qr, epc_qr, codes, charts, stats, electronics, vcs). Look at what
+  finance, payment_qr, epc_qr, codes, charts, stats, electronics, vcs, estimate, bib). Look at what
   one contains before writing another: `primula describe libraries/<name>/<name>.m.prml`
   lists its public functions with signatures and descriptions, constants and the
   version (the code is not run). Write a docstring for every public function: it is the

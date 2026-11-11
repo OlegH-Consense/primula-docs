@@ -1,5 +1,7 @@
 #include "AiController.h"
 
+#include "AiProject.h"
+
 #include "AiEdits.h"
 
 // ----------------------------------------------------------------------
@@ -49,7 +51,8 @@ void CliAgentBackend::start(const AiRequest &request, const AiAgent &agent)
     m_agent = agent;
     const QByteArray prompt = AiController::makePrompt(request);
     m_process.setWorkingDirectory(request.projectDirectory);
-    m_process.start(AiAgents::program(m_agent), AiAgents::commandArguments(m_agent, QString::fromUtf8(prompt), request.useSkill));
+    m_process.start(AiAgents::program(m_agent), AiAgents::commandArguments(m_agent, QString::fromUtf8(prompt), request.useSkill,
+                                                                           request.createProject && !request.filesInAnswer));
     if (!m_process.waitForStarted(3000))
         return;
     if (m_agent.prompt == QStringLiteral("stdin"))
@@ -83,6 +86,14 @@ QByteArray AiController::makePrompt(const AiRequest &request)
                                         : QStringLiteral("\n\n") + title + QStringLiteral(":\n---\n") + body.trimmed() + QStringLiteral("\n---");
     };
     QString prompt;
+    if (request.createProject)
+        prompt += QString::fromLatin1(request.changeProject ? "You are changing a project" : "You are creating a project")
+                  + QStringLiteral(" in the Primula markup language (.prml files, translated to ODT). Write in the language of the user "
+                                   "task. Preserve Primula constructs (commands |name(...), short forms such as |> |< |*{...}, "
+                                   "environments closed by |end).\n\n")
+                  + (request.changeProject ? AiProject::instructionsForChange()
+                     : request.filesInAnswer ? AiProject::instructionsInAnswer() : AiProject::instructions());
+    else
     prompt += QStringLiteral(
         "You are assisting with a document in the Primula markup language (.prml files, translated to "
         "ODT). Do not edit files or run commands. Answer with a concrete proposed text or editorial advice, "

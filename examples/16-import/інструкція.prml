@@ -1,0 +1,31 @@
+---
+doc:
+  title: "Керівництво користувача"
+  language: uk-UA
+  creator: "Відділ документації"
+---
+|< Вступ
+
+Цей документ описує |*{роботу} з |/{системою}; докладніше — на |link("https://example.org/docs"){сайті}.
+
+|<< Вимоги
+
+|- Python 3.11
+|- PyYAML |`{6.0}
+
+|<< Встановлення
+
+|# Завантажте пакет.
+|# Виконайте |`{./install.sh}.
+
+|table(cols=["10*", "10*"], header=1):
+|: Параметр |& Значення
+|: Порт |& 8080
+|:|&(span=2) Примітка
+|end table
+
+|.Preformatted:
+|verbatim:
+primula build doc.prml
+|end
+|end.Preformatted

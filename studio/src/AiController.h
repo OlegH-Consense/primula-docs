@@ -29,6 +29,9 @@ struct AiRequest
     QString messages;       ///< messages of the last check or build (AiContext::messages)
     QString projectDirectory;
     bool useSkill = false;       ///< the agent loads the local skill primula-docs instead of getting the reference
+    bool changeProject = false;  ///< with filesInAnswer: the request changes an existing project (AiProject::instructionsForChange)
+    bool filesInAnswer = false;  ///< with createProject: the tool delivers the files in the answer (AiProject::parseFiles), not by writing
+    bool createProject = false;  ///< the tool writes a project into projectDirectory (a work directory; AiProject, stage 27)
     bool proposeEdits = false;   ///< ask for ORIGINAL/REPLACEMENT blocks that Studio can apply (AiEdits)
 };
 

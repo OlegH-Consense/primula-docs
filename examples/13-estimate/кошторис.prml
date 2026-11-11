@@ -1,0 +1,31 @@
+---
+doc: {title: "Кошторис на влаштування майданчика", language: uk-UA, created: 2026-11-11}
+params:
+  ставка_пдв: 20
+  знижка: 5
+  currency: UAH
+---
+|% Example 13: an estimate with the library estimate (libraries/estimate, linked as lib; warning P2639).
+|% The command |estimate.table is a macro of the module: it is called through the namespace of the module
+|% (the name table is also a built-in command, decision 142). The currency comes from the parameter
+|% currency of the document: the module reads it with param() (decision 144).
+|import("lib/estimate")
+|code:
+позиції = [
+    {"section": "Підготовчі роботи", "name": "Розмітка ділянки", "unit": "м²", "qty": dec("120"), "price": dec("15.50")},
+    {"section": "Підготовчі роботи", "name": "Вивіз ґрунту", "unit": "м³", "qty": dec("8"), "price": dec("310")},
+    {"section": "Бетонні роботи", "name": "Бетон В25", "unit": "м³", "qty": dec("12.5"), "price": dec("2850.40")},
+    {"section": "Бетонні роботи", "name": "Арматура | 12 мм", "unit": "т", "qty": dec("0.8"), "price": dec("32400")},
+    {"section": "Бетонні роботи", "name": "Опалубка щитова", "unit": "м²", "qty": dec("46.5"), "price": dec("118.75")},
+]
+підсумок = estimate.totals(позиції, vat=ставка_пдв, discount=знижка)
+|end
+|<(number=False) Кошторис на влаштування майданчика
+
+Загальна вартість робіт з урахуванням знижки |(num(знижка)) % і ПДВ |(num(ставка_пдв)) % становить |estimate.total_words(позиції, vat=ставка_пдв, discount=знижка).
+
+Це число стоїть у тексті раніше за таблицю: воно рахується з даних (|(len(позиції)) позицій у |(len(estimate.sections(позиції))) розділах), а не з комірок таблиці, тому порядок у документі не має значення.
+
+|estimate.table(позиції, vat=ставка_пдв, discount=знижка)
+
+Знижка склала |(money(підсумок["discount"], "UAH")), ПДВ — |(money(підсумок["vat"], "UAH")).

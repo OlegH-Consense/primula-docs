@@ -1,0 +1,18 @@
+---
+doc: {title: "bib: параметри документа", language: uk-UA}
+params: {bib_order: given}
+---
+|% The setting of the library comes from the parameter of the document: param("bib_order").
+|import("../bib")
+|code:
+sources = [
+    {"key": "b", "type": "web", "title": "Б", "url": "u"},
+    {"key": "a", "type": "web", "title": "А", "url": "u"},
+]
+reg = bib.registry(sources)
+if reg["keys"] != ["b", "a"]:
+    fail("bib_order=given: отримано " + str(reg["keys"]))
+if bib.registry(sources, order="alphabet")["keys"] != ["a", "b"]:
+    fail("явний order має перевагу")
+|end
+Перевірено.

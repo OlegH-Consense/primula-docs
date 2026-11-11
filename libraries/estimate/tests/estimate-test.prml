@@ -1,0 +1,64 @@
+---
+doc: {title: "estimate: перевірка", language: uk-UA}
+---
+|% Hand figures. Rounding of a line: 3 × 0.335 = 1.005 → 1.01 (half away from zero).
+|% Set A: 1.01 + 2 × 10.10 = 21.21. VAT 20 %: 4.242 → 4.24, total 25.45.
+|% With a 10 % discount: 2.121 → 2.12, taxable 19.09, VAT 3.818 → 3.82, total 22.91.
+|% Set B (the demo): 1 860 + 2 480 = 4 340; 35 630 + 25 920 = 61 550; net 65 890;
+|% 5 % → 3 294.50; 62 595.50; VAT 12 519.10; total 75 114.60.
+|import("../estimate")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+a = [
+    {"name": "Болт", "unit": "шт", "qty": dec("3"), "price": dec("0.335")},
+    {"name": "Гайка", "unit": "шт", "qty": dec("2"), "price": dec("10.10")},
+]
+expect("line-round", estimate.line_total(a[0]), dec("1.01"))
+expect("line", estimate.line_total(a[1]), dec("20.20"))
+expect("A-sections", estimate.sections(a), [""])
+expect("A-section-total", estimate.section_total(a, ""), dec("21.21"))
+expect("A-plain", estimate.totals(a), {"net": dec("21.21"), "discount": dec("0"), "taxable": dec("21.21"), "vat": dec("0"), "total": dec("21.21")})
+expect("A-vat", estimate.totals(a, vat=dec("20")), {"net": dec("21.21"), "discount": dec("0"), "taxable": dec("21.21"), "vat": dec("4.24"), "total": dec("25.45")})
+expect("A-vat0", estimate.totals(a, vat=dec("0"))["total"], dec("21.21"))
+expect("A-discount", estimate.totals(a, vat=dec("20"), discount=dec("10")), {"net": dec("21.21"), "discount": dec("2.12"), "taxable": dec("19.09"), "vat": dec("3.82"), "total": dec("22.91")})
+expect("A-discount-only", estimate.totals(a, discount=dec("10"))["total"], dec("19.09"))
+
+b = [
+    {"section": "Підготовчі роботи", "name": "Розмітка ділянки", "unit": "м²", "qty": dec("120"), "price": dec("15.50")},
+    {"section": "Підготовчі роботи", "name": "Вивіз ґрунту", "unit": "м³", "qty": dec("8"), "price": dec("310")},
+    {"section": "Бетонні роботи", "name": "Бетон В25", "unit": "м³", "qty": dec("12.5"), "price": dec("2850.40")},
+    {"section": "Бетонні роботи", "name": "Арматура | 12 мм", "unit": "т", "qty": dec("0.8"), "price": dec("32400")},
+]
+expect("B-sections", estimate.sections(b), ["Підготовчі роботи", "Бетонні роботи"])
+expect("B-s1", estimate.section_total(b, "Підготовчі роботи"), dec("4340.00"))
+expect("B-s2", estimate.section_total(b, "Бетонні роботи"), dec("61550.00"))
+expect("B-totals", estimate.totals(b, vat=dec("20"), discount=dec("5")),
+       {"net": dec("65890.00"), "discount": dec("3294.50"), "taxable": dec("62595.50"), "vat": dec("12519.10"), "total": dec("75114.60")})
+expect("B-sum-of-sections", estimate.section_total(b, "Підготовчі роботи") + estimate.section_total(b, "Бетонні роботи"), dec("65890.00"))
+
+# The reasons (the Ukrainian text is what an author sees).
+expect("ok", estimate.problem(b, dec("20"), dec("5")), "")
+expect("ok-none", estimate.problem(a), "")
+expect("empty", estimate.problem([]), "очікується непорожній список позицій")
+expect("not-list", estimate.problem("x"), "очікується непорожній список позицій")
+expect("not-record", estimate.problem([1]), "позиція 1: очікується запис")
+expect("no-name", estimate.problem([{"qty": dec("1"), "price": dec("1")}]), "позиція 1: немає найменування")
+expect("qty-text", estimate.problem([{"name": "x", "qty": "1", "price": dec("1")}]), "позиція 1: очікується число: кількість")
+expect("price-neg", estimate.problem([{"name": "x", "qty": dec("1"), "price": dec("-1")}]), "позиція 1: від'ємне значення: ціна")
+expect("second", estimate.problem([a[0], {"name": "y", "qty": dec("1")}]), "позиція 2: очікується число: ціна")
+expect("section-type", estimate.problem([{"name": "x", "qty": dec("1"), "price": dec("1"), "section": 5}]), "позиція 1: очікується рядок: section")
+expect("vat-range", estimate.problem(a, vat=dec("120")), "відсоток поза межами 0–100: ПДВ")
+expect("discount-range", estimate.problem(a, discount=dec("-1")), "відсоток поза межами 0–100: знижка")
+|end
+Таблиця з розділами:
+
+|estimate.table(b, vat=dec("20"), discount=dec("5"))
+
+Без розділів і без ПДВ, без номерів, свої підписи:
+
+|estimate.table(a, numbered=False, currency="EUR", labels={"name": "Description", "net": "Total"})
+
+Разом словами: |estimate.total_words(b, vat=dec("20"), discount=dec("5")).

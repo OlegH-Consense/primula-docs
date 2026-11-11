@@ -1,0 +1,104 @@
+---
+doc: {title: "bib: перевірка", language: uk-UA}
+---
+|% Entries are written by hand in the form of DSTU 8302:2015 (see README.md for what was not checked
+|% against the text of the standard). Alphabet: Cyrillic first (Г < Ґ < Д < Е < Є), then Latin.
+|import("../bib")
+|code:
+def expect(name, got, wanted):
+    if got != wanted:
+        fail(f"{name}: отримано {repr(got)}, очікувалося {repr(wanted)}")
+
+book = {"key": "m", "type": "book", "authors": ["Мельник Л. Г."], "title": "Екологічна економіка", "subtitle": "підручник",
+        "place": "Суми", "publisher": "Університетська книга", "year": dec("2010"), "pages": dec("346")}
+expect("book", bib.entry(book),
+       "Мельник Л. Г. Екологічна економіка : підручник / Л. Г. Мельник. Суми : Університетська книга, 2010. 346 с.")
+expect("book-no-responsibility", bib.entry(book, responsibility=False),
+       "Мельник Л. Г. Екологічна економіка : підручник. Суми : Університетська книга, 2010. 346 с.")
+two = {"key": "r", "type": "book", "authors": ["Рассел С.", "Норвіг П."], "title": "Штучний інтелект", "place": "Київ",
+       "publisher": "Діалектика", "year": dec("2021"), "edition": "4-те вид."}
+expect("two-authors", bib.entry(two), "Рассел С., Норвіг П. Штучний інтелект / С. Рассел, П. Норвіг. 4-те вид. Київ : Діалектика, 2021.")
+four = {"key": "f", "type": "book", "authors": ["Алексеєнко А. А.", "Бойко Б. Б.", "Власенко В. В.", "Гнатюк Г. Г."], "title": "Збірник", "publisher": "Книга", "year": dec("2000")}
+expect("four-authors", bib.entry(four), "Збірник / А. А. Алексеєнко, Б. Б. Бойко, В. В. Власенко [та ін.]. Книга, 2000.")
+noauthor = {"key": "n", "type": "book", "title": "Енциклопедія", "place": "Київ", "publisher": "УРЕ", "year": dec("1990"), "pages": dec("10")}
+expect("no-author", bib.entry(noauthor), "Енциклопедія. Київ : УРЕ, 1990. 10 с.")
+question = {"key": "q", "type": "book", "title": "Що робити?", "publisher": "Х", "year": dec("1863")}
+expect("question-mark", bib.entry(question), "Що робити? Х, 1863.")
+article = {"key": "a", "type": "article", "authors": ["Кізіма Я. О."], "title": "Біокомп'ютерні технології", "journal": "Вісник КПІ",
+           "year": dec("2013"), "volume": dec("5"), "issue": dec("1"), "pages": "55–57"}
+expect("article", bib.entry(article), "Кізіма Я. О. Біокомп'ютерні технології. Вісник КПІ. 2013. Т. 5, № 1. С. 55–57.")
+expect("article-minimal", bib.entry({"key": "a", "type": "article", "title": "Стаття", "journal": "Журнал", "year": dec("2020")}),
+       "Стаття. Журнал. 2020.")
+web = {"key": "w", "type": "web", "title": "Primula", "url": "https://x.org/p", "accessed": "05.11.2026"}
+expect("web", bib.entry(web), "Primula. URL: https://x.org/p (дата звернення: 05.11.2026).")
+act = {"key": "l", "type": "act", "title": "Про захист персональних даних", "kind": "Закон України", "date": "01.06.2010", "number": "2297-VI"}
+expect("act", bib.entry(act), "Про захист персональних даних : Закон України від 01.06.2010 № 2297-VI.")
+expect("english", bib.entry(book, {"total": "p.", "range": "pp.", "cite_page": "p.", "et_al": "et al.", "accessed": "accessed",
+                                     "volume": "Vol.", "issue": "No.", "from": "dated"}),
+       "Мельник Л. Г. Екологічна економіка : підручник / Л. Г. Мельник. Суми : Університетська книга, 2010. 346 p.")
+
+# Numbering: alphabetical — Cyrillic first, Ґ after Г, Latin last; "given" keeps the order of the list.
+mixed = [
+    {"key": "e", "type": "web", "authors": ["Єва А."], "title": "є", "url": "u"},
+    {"key": "s", "type": "web", "authors": ["Smith J."], "title": "s", "url": "u"},
+    {"key": "g2", "type": "web", "authors": ["Ґава Б."], "title": "g2", "url": "u"},
+    {"key": "g1", "type": "web", "authors": ["Гора В."], "title": "g1", "url": "u"},
+    {"key": "a", "type": "web", "authors": ["Adams D."], "title": "a", "url": "u"},
+    {"key": "t", "type": "web", "title": "Адреса", "url": "u"},
+]
+reg = bib.registry(mixed)
+expect("alphabet", reg["keys"], ["t", "g1", "g2", "e", "a", "s"])
+expect("numbers", [reg["numbers"][k] for k in ["t", "g1", "g2", "e", "a", "s"]], [1, 2, 3, 4, 5, 6])
+expect("given", bib.registry(mixed, order="given")["keys"], ["e", "s", "g2", "g1", "a", "t"])
+
+# Citations.
+expect("cite", bib.cite_text(reg, "g1"), "[2]")
+expect("cite-page", bib.cite_text(reg, "g1", pages="45"), "[2, с. 45]")
+expect("cite-range", bib.cite_text(reg, "g1", pages="45–47"), "[2, с. 45–47]")
+expect("cite-list", bib.cite_text(reg, ["s", "t", "e"]), "[6; 1; 4]")
+expect("cite-english", bib.cite_text(bib.registry(mixed, labels={"cite_page": "p."}), "t", pages="3"), "[1, p. 3]")
+expect("bar-in-title", bib.registry([{"key": "x", "type": "web", "title": "A|B", "url": "u"}])["entries"]["x"], "A|B. URL: u.")
+
+# The reasons.
+ok = [book, article, web, act]
+expect("ok", bib.problem(ok), "")
+expect("empty", bib.problem([]), "очікується непорожній список джерел")
+expect("not-record", bib.problem([1]), "джерело 1: очікується запис")
+expect("no-key", bib.problem([{"type": "web"}]), "джерело 1: немає поля key")
+expect("dup", bib.problem([web, web]), "джерело 2: повторний ключ w")
+expect("type", bib.problem([{"key": "k", "type": "film", "title": "t"}]), "джерело k: тип має бути одним із book, article, web, act")
+expect("no-title", bib.problem([{"key": "k", "type": "web"}]), "джерело k: немає поля title")
+expect("no-url", bib.problem([{"key": "k", "type": "web", "title": "t"}]), "джерело k: немає поля url")
+expect("no-publisher", bib.problem([{"key": "k", "type": "book", "title": "t", "year": dec("2000")}]), "джерело k: немає поля publisher")
+expect("no-year", bib.problem([{"key": "k", "type": "book", "title": "t", "publisher": "p"}]), "джерело k: немає поля year (число)")
+expect("year-text", bib.problem([{"key": "k", "type": "article", "title": "t", "journal": "j", "year": "2000"}]), "джерело k: немає поля year (число)")
+expect("no-journal", bib.problem([{"key": "k", "type": "article", "title": "t", "year": dec("2000")}]), "джерело k: немає поля journal")
+expect("no-kind", bib.problem([{"key": "k", "type": "act", "title": "t"}]), "джерело k: немає поля kind")
+expect("authors", bib.problem([{"key": "k", "type": "web", "title": "t", "url": "u", "authors": "Іваненко І."}]), "джерело k: authors — список рядків «Прізвище І. Б.»")
+|end
+У тексті |bib.cite(reg, "g1", pages="3"), у переліку:
+
+|bib.references(reg)
+
+Власна коротка форма документа (макрос поверх реєстру): |c("s"), |c("t", pages="9").
+
+|def c(key, pages=None):
+  |(bib.cite_text(reg, key, pages))
+|enddef
+
+|% Mention order (collect/collected: the document is evaluated twice): numbers by the first citation,
+|% only the cited sources in the list, unused() names the rest.
+|code:
+reg2 = bib.registry(mixed, order="mention")
+
+def check_mention():
+    expect("mention-keys", reg2["keys"], ["s", "t", "g1"])
+    expect("mention-numbers", [reg2["numbers"]["s"], reg2["numbers"]["t"], reg2["numbers"]["g1"]], [1, 2, 3])
+    expect("mention-unused", bib.unused(reg2), ["e", "g2", "a"])
+    return ""
+|end
+Згадки: |bib.cite(reg2, "s"), |bib.cite(reg2, ["t", "s"]), |bib.cite(reg2, "g1", pages="12").
+
+|bib.references(reg2)
+
+|(check_mention())

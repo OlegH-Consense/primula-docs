@@ -4,6 +4,7 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QSet>
@@ -236,5 +237,61 @@ bool CommandCatalog::setJson(const QJsonObject &json, QString *error)
         if (error) *error = Text::tr("The catalogue of constructs is empty.");
         return false;
     }
+    m_baseEntries = int(m_entries.size());
+    m_baseCategories = int(m_categories.size());
+    applyLibrary();
     return true;
+}
+
+bool CommandCatalog::setLibraryCommands(const QJsonArray &commands, const QString &baseDir)
+{
+    if (commands == m_library && baseDir == m_libraryBase) return false;
+    m_library = commands;
+    m_libraryBase = baseDir;
+    if (!isLoaded()) return true;   // applied by setJson() later
+    applyLibrary();
+    return true;
+}
+
+void CommandCatalog::applyLibrary()
+{
+    // Drop the previous library part (it is always the tail), then append the current one.
+    while (m_entries.size() > m_baseEntries) m_entries.removeLast();
+    while (m_categories.size() > m_baseCategories) m_categories.removeLast();
+    for (const QJsonValue &value : m_library) {
+        const QJsonObject item = value.toObject();
+        const QString name = item.value(QStringLiteral("name")).toString();
+        if (name.isEmpty()) continue;
+        // One category per module: the namespace, or the file name for names imported one by one.
+        const QString module = QFileInfo(item.value(QStringLiteral("file")).toString()).fileName().section(QLatin1Char('.'), 0, 0);
+        const QString categoryId = QStringLiteral("lib:") + module;
+        bool known = false;
+        for (const Category &category : m_categories) known = known || category.id == categoryId;
+        if (!known) m_categories.append({categoryId, Text::tr("Library: %1").arg(module)});
+        Entry entry;
+        entry.library = true;
+        entry.label = QStringLiteral("|") + name;
+        entry.category = categoryId;
+        entry.summary = item.value(QStringLiteral("summary")).toString();
+        entry.snippet = item.value(QStringLiteral("snippet")).toString();
+        entry.name = name;
+        entry.signature = QStringLiteral("|") + name + item.value(QStringLiteral("signature")).toString()
+                                                           .mid(item.value(QStringLiteral("macro")).toString().size());
+        entry.source = QDir(m_libraryBase).absoluteFilePath(item.value(QStringLiteral("file")).toString());
+        entry.line = item.value(QStringLiteral("line")).toInt();
+        // A command may be called with a body {…} or as an environment only when its macro takes one.
+        const QString body = item.value(QStringLiteral("body")).toString();
+        QString argumentLines;
+        for (const QJsonValue &param : item.value(QStringLiteral("params")).toArray()) {
+            const QString text = param.toObject().value(QStringLiteral("summary")).toString();
+            if (!text.isEmpty())
+                argumentLines += QStringLiteral("\n  ") + param.toObject().value(QStringLiteral("name")).toString()
+                                 + QStringLiteral(" — ") + text;
+        }
+        entry.tooltip = entry.signature + (entry.summary.isEmpty() ? QString() : QLatin1Char('\n') + entry.summary)
+                        + argumentLines
+                        + (body == QStringLiteral("required") ? QLatin1Char('\n') + Text::tr("The call needs a body: {…}") : QString())
+                        + QLatin1Char('\n') + Text::tr("Defined in %1, line %2").arg(QFileInfo(entry.source).fileName()).arg(entry.line);
+        m_entries.append(entry);
+    }
 }

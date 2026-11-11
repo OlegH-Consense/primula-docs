@@ -28,7 +28,7 @@ This package is the prototype of stage 13 of the project plan
 #: grows with every version that is committed, published or not.  A release is a
 #: git tag and an entry of the CHANGELOG, so numbers may be skipped.  The stage
 #: is recorded in the build report.
-__version__ = "0.4.16"
+__version__ = "0.4.31"
 
 #: Prototype stage of the project plan implemented by this version.
 PROTOTYPE_STAGE = "23.6"

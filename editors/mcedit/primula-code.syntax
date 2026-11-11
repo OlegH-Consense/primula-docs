@@ -60,6 +60,8 @@ context default
   keyword whole character_style brightcyan
   keyword whole cm brightcyan
   keyword whole col brightcyan
+  keyword whole collect brightcyan
+  keyword whole collected brightcyan
   keyword whole column brightcyan
   keyword whole count brightcyan
   keyword whole date brightcyan
@@ -98,6 +100,7 @@ context default
   keyword whole numbering brightcyan
   keyword whole page_style brightcyan
   keyword whole paragraph_style brightcyan
+  keyword whole param brightcyan
   keyword whole placeholders brightcyan
   keyword whole pt brightcyan
   keyword whole quotes brightcyan

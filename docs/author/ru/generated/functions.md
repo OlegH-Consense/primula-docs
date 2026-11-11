@@ -156,6 +156,9 @@
 | `debug(*values)` | записать значения в отчёт сборки, а не в документ | `debug(total)` | 12.9 |
 | `has(feature)` | есть ли у варианта изделия функция (keys: проекта, --feature) | `has("wifi")` | 9.2 |
 | `markup(text)` | разметка Primula из строки (content) | `markup("\|*{" + name + "}")` | 4.2 |
+| `param(name, default)` | параметр документа по имени (и в модуле: его настройки), или значение по умолчанию (решение 144) | `param("currency", "UAH")` | 10.6 |
+| `collect(name, value)` | добавить значение в накопитель документа; результат — пустое содержимое (решение 143) | `\|(collect("cited", key))` | 4.6 |
+| `collected(name)` | значения накопителя после всего документа, в порядке collect(); документ вычисляется дважды, в первом проходе [] (решение 143) | `collected("cited")` | 4.6 |
 | `img(path, svg, **options)` | значение-изображение для watermark=, \|img(значение), \|figure(значение); путь или svg= | `img("assets/stamp.png")` | 8.6 |
 | `col(width, id, type, **props)` | столбец таблицы: col(width, id=…, type=…, align=…) | `col("20mm..35mm", id="sum", type="money", align="right")` | 6.3 |
 | `track(id, lang, title, **props)` | поток \|parallel: track(id, lang=…, title=…, width=…, primary=…) | `track("note", title="Коментар", width="28%", numbered=False, optional=True)` | 7.7 |

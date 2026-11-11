@@ -13,7 +13,10 @@
 # library-invoice.*, a document using the shared library 11-library/shared/ua-iban
 # through the link 11-library/project/lib, warning P2639 expected; example 12:
 # payment-qr-invoice.*, an invoice with the NBU payment QR code of the library
-# libraries/payment_qr),
+# libraries/payment_qr; example 13: estimate.*, an estimate with the library libraries/estimate;
+# example 14: bibliography.*, citations and references with libraries/bib (the accumulator
+# collect/collected); example 15: own-commands.*, a module with own commands and a glossary;
+# example 16: import-*.*, the documents that "primula import" made from Markdown, HTML and DOCX),
 # basics.tree.txt (evaluated document tree), project.report.json (example 7:
 # a project, its targets go to 07-project/out/), two variants built with options:
 # basics-print (an extra styles layer, --style) and manual-review (all
@@ -66,6 +69,13 @@ done
 build 10-code/code code || status=1
 build 11-library/project/рахунок library-invoice || status=1
 build 12-payment-qr/рахунок payment-qr-invoice || status=1
+build 13-estimate/кошторис estimate || status=1
+build 14-bibliography/реферат bibliography || status=1
+build 15-own-commands/власні-команди own-commands || status=1
+# Example 16: the documents made by "primula import" from the sources next to them are built like any other.
+build 16-import/договір import-contract || status=1
+build 16-import/інструкція import-manual || status=1
+build 16-import/акт import-act || status=1
 build 01-basics/basics basics-print --style std/styles/default --style styles/print.s.prml || status=1
 build 03-manual/manual manual-review --review || status=1
 
@@ -95,4 +105,8 @@ echo "=== 11-library/shared/ua-iban: tests of the library"
 PRIMULA="$launcher" "$here/11-library/shared/ua-iban/run-tests.sh" || status=1
 echo "=== libraries/payment_qr: tests of the library"
 PRIMULA="$launcher" "$here/../libraries/payment_qr/run-tests.sh" || status=1
+for library in estimate bib; do
+    echo "=== libraries/$library: tests of the library"
+    PRIMULA="$launcher" "$here/../libraries/$library/run-tests.sh" || status=1
+done
 exit $status

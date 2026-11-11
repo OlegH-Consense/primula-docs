@@ -2,6 +2,7 @@
 
 #include <optional>
 
+#include "AiProject.h"
 #include "CommandCatalog.h"
 
 // The workspace of Primula Studio (stages 14.3, 14.3а, 14.4).
@@ -184,6 +185,9 @@ private:
     QAction *m_backupsAction = nullptr;
     QAction *m_backupBeforeSaveAction = nullptr;
     QAction *m_aiHistoryAction = nullptr;
+    QAction *m_aiChangeProjectAction = nullptr;
+    QAction *m_aiCompareAction = nullptr;   ///< the answers of the last request to several tools (22.7)
+    QList<QPair<QString, QString>> m_lastAiAnswers;   ///< tool, answer text of the last request
     QAction *m_aiContextAction = nullptr;
     QAction *m_newOrderAction = nullptr;
     QFontComboBox *m_fontCombo = nullptr;
@@ -204,6 +208,14 @@ private:
     void seedExamples();
     void rebuildRecentMenu();
     void openProjectDialog();
+    void createProjectWithAi();
+    /// File → Import a document…: the document of another format → a Primula draft (stage 19.3.4); source empty — ask for it.
+    void importDocument(const QString &source = QString(), const QString &directory = QString());
+    void changeProjectWithAi();
+    /// Put the changes of the AI dialog into the project: a backup first, open files change in the editor (unsaved),
+    /// the others are written, a deleted file goes to the trash (stage 27, the second step).
+    /// @return the number of changes applied.
+    int applyAiProjectChanges(const QList<AiProject::File> &changes);
     void openFileDialog();
     void showSettings();
     /// Export a document through pandoc (primula export, decision 139): FORMAT is a pandoc writer;
@@ -296,6 +308,7 @@ private:
     /// Run the dumps now: the current document, with every modified editor buffer as an overlay.
     void inspectDocument();
     void inspectionFinished(const QString &document, const QJsonObject &dump, const QString &errorMessage);
+    void setLibraryCommands(const QJsonArray &commands, const QString &baseDir);
     int pdfPageForCursor() const;
 
     // External changes
@@ -310,6 +323,7 @@ private:
     /// Save the answer of one tool to the history and open it as a tab; null when it has no tab.
     AiHistoryPane *storeAiResult(AiExchange exchange, const QString &response);
     void showAiResults();
+    void compareAiAnswers();
     /// The text of path: the open editor's, else the file's (empty when unreadable).
     QString fileText(const QString &path);
     /// Primula context of an AI request (stage 14.10): the project file, the messages of the

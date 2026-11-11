@@ -61,6 +61,12 @@ RESERVED_NAMES = (frozenset({"if", "elif", "else", "endif", "for", "endfor", "de
                              "let", "code", "end", "comment", "verbatim"})
                   | frozenset(keyword.kwlist) | BUILTIN_COMMANDS)
 
+#: Names of built-in commands that a module may still give to its own macros: the macro is
+#: called through the namespace of the module (``|estimate.table``), so it does not hide the
+#: built-in command (decision 142).  Keywords of the language and control words stay reserved.
+MODULE_MACRO_NAMES = BUILTIN_COMMANDS - frozenset({"if", "elif", "else", "for", "def", "let", "code", "comment",
+                                                    "verbatim", "import", "include", "document"}) - frozenset(keyword.kwlist)
+
 #: Kinds of blocks allowed directly in a table and in a row (grammar 3.5).
 _TABLE_KINDS = frozenset({L.Kind.ROW, L.Kind.IF, L.Kind.FOR, L.Kind.CODE, L.Kind.COMMENT,
                           L.Kind.COMMENT_BLOCK, L.Kind.BLANK})
@@ -767,7 +773,7 @@ class BlockParser(InlineParser):
                 self.pos = close + 1
                 if self.peek() == ":" and L.at_line_end(self.text, self.pos + 1):
                     header_ok = True
-                    if name in RESERVED_NAMES:
+                    if name in RESERVED_NAMES and not (self.header.kind == "module" and name in MODULE_MACRO_NAMES):
                         # Python keywords would also fail ast.parse; one
                         # message about the name is enough.
                         self.emit(error("P1235", self.span(name_start, name_end), name=name))

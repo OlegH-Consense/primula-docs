@@ -1,4 +1,4 @@
-<!-- translation: source=docs/author/ru/11-libraries.md sections=1204bd77 38fce731 f1560e95 f2cb4f76 1ff531d8 578f709b 1a348c17 9bb43b07 4e53dd06 c435100e -->
+<!-- translation: source=docs/author/ru/11-libraries.md sections=1204bd77 c5370488 f1560e95 f2cb4f76 1ff531d8 578f709b 1a348c17 9bb43b07 4e53dd06 c435100e 58de54c0 -->
 <!-- spec: 10.1 10.3 10.5 12 -->
 # Libraries: development and use
 
@@ -17,6 +17,8 @@ The repository and the installation package (`share/primula-docs/libraries/`) ho
 | `ua_data` | NBU and VAT rates, minimum wage, subsistence minimum, CPI, calendar — with the date of effect | `discount_rate_on`, `vat_rate_on`, `min_wage_on`, `cpi_on`, `calendar` |
 | `legal` | penalty, 3 % per annum, inflation losses, terms | `penalty`, `claim_table`, `annual3`, `inflation_losses`, `deadline` |
 | `finance` | annuity, payment schedule, NPV and IRR, straight-line depreciation | `annuity_payment`, `schedule`, `npv`, `irr`, `straight_line` |
+| `estimate` | estimate: totals by sections, discount, VAT, amount in words; commands `\|estimate.table(…)`, `\|estimate.total_words(…)` | `table`, `total_words`, `totals`, `section_total` |
+| `bib` | bibliography by DSTU 8302:2015: numbered citations `[3, с. 45]` and the list of references; commands `\|bib.cite(…)`, `\|bib.references(…)` | `registry`, `cite`, `references`, `entry` |
 | `payment_qr` | payment QR by the rules of the NBU (hryvnia) | `payload`, `svg`, `link` |
 | `epc_qr` | SEPA payment QR (euro), EPC069-12 | `payload`, `svg` |
 | `codes` | check digits of EAN-13, ISBN, Luhn; EAN-13 bar code | `ean13_check`, `isbn13`, `luhn_check`, `ean13_svg` |
@@ -202,3 +204,13 @@ For a module it prints the leading `|%` comment, `VERSION`, the public functions
 - Do not put real personal data and requisites into the examples of a library — use values that are obviously for training.
 
 For developing a library with AI there is the skill `skills/primula-library`: it follows the same scheme — module, tests, check with the translator.
+
+## Commands of a module: `|def`, `param`, the accumulator
+
+A module can define not only functions but **commands**: a `|def` macro is called as `|module.command(…)` (`|estimate.table(…)`, `|bib.cite(…)`). The name of a macro may coincide with the name of a built-in command (`table`, `list`): the call always has the namespace, the built-in command is not touched.
+
+- The description of a command and its parameters is the `|%` comments right above `|def`; a line `|% name: text` describes a parameter. Studio shows them in the Palette, the hint and the completion, and `primula describe module` and `primula commands --document FILE` give them to other programs.
+- The settings of a library come from the parameters of the document with the function `param("name", default)` (for example `currency` of `estimate`, `bib_order` of `bib`): a macro does not see the variables of the document, but it sees the parameters.
+- Values that depend on the whole document (the numbers of references by the order of the first reference, a list of terms) are collected by the accumulator: `collect("name", value)` in the text and `collected("name")` after the whole document; if `collected` is called, the document is evaluated twice (section 4.6 of the specification).
+
+Samples are the examples `examples/13-estimate` (an estimate), `14-bibliography` (references by the order of mention) and `15-own-commands` (an own command and a glossary).

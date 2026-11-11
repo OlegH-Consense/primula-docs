@@ -69,13 +69,15 @@ def translator_files(source):
 EXAMPLE_ENTRIES = ('01-basics/basics.prml', '02-contract/contract.prml', '03-manual/manual.prml',
                    '04-errors/syntax.prml', '05-loan/loan.prml', '06-safety/safety.prml',
                    '07-project/project.p.prml', '08-styles/business.prml', '09-parallel/agreement.prml',
-                   '10-code/code.prml', '11-library/project/рахунок.prml', '12-payment-qr/рахунок.prml')
+                   '10-code/code.prml', '11-library/project/рахунок.prml', '12-payment-qr/рахунок.prml',
+                   '13-estimate/кошторис.prml', '14-bibliography/реферат.prml', '15-own-commands/власні-команди.prml',
+                   '16-import/договір.prml')
 
 
 def example_files(source):
     """The examples without their build results (out/, build/) and the source-tree runner.
 
-    Symbolic links of the examples (``lib`` of examples 11 and 12, decision 136) are
+    Symbolic links of the examples (``lib`` of examples 11–14, decision 136) are
     followed: the package holds copies of the linked libraries, so the examples build
     after installation without the links (the manifest admits regular files only).
     """
@@ -83,6 +85,10 @@ def example_files(source):
     found = []
     for directory, subdirectories, names in os.walk(root, followlinks=True):
         subdirectories.sort()
+        # A link to a directory above (``demo/lib`` -> ``..`` of a linked library) would never end.
+        here = os.path.realpath(directory)
+        subdirectories[:] = [d for d in subdirectories if not os.path.islink(os.path.join(directory, d))
+                             or not here.startswith(os.path.realpath(os.path.join(directory, d)))]
         for name in names:
             path = Path(directory)/name
             relative = path.relative_to(root)

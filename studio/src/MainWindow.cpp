@@ -1,9 +1,12 @@
 #include "MainWindow.h"
 
 #include "AiAgents.h"
+#include "AiChangeDialog.h"
+#include "ImportDialog.h"
 #include "AiContext.h"
 #include "AiController.h"
 #include "AiHistoryPane.h"
+#include "AiProjectDialog.h"
 #include "AiRecipes.h"
 #include "BackupsDialog.h"
 #include "AiWorkspace.h"
@@ -36,6 +39,7 @@
 #include <QStandardPaths>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QTextBrowser>
 #include <QDir>
 #include <QDirIterator>
 #include <QDockWidget>
@@ -428,6 +432,8 @@ void MainWindow::createUi()
     tabifyDockWidget(m_stylesDock, m_paletteDock);
     connect(m_palettePanel, &PalettePanel::insertRequested, this, &MainWindow::insertConstruct);
     connect(m_palettePanel, &PalettePanel::sectionRequested, this, &MainWindow::showSpecification);
+    connect(m_palettePanel, &PalettePanel::definitionRequested, this,
+            [this](const QString &path, int line) { navigateTo(path, line, 1); });
     // Hints and completion in Primula editors (14.8a): the catalogue, the styles and the IDs
     // of the last inspection. A failed catalogue is not retried on every hover.
     EditorAssist::Providers providers;
@@ -574,6 +580,10 @@ void MainWindow::createActions()
     openProjectAction->setShortcut(QKeySequence::Open);
     auto *openFileAction = fileMenu->addAction(tr("Open &file…"), this, &MainWindow::openFileDialog);
     openFileAction->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_O));
+    auto *aiProjectAction = fileMenu->addAction(tr("Create a project with &AI…"), this, &MainWindow::createProjectWithAi);
+    aiProjectAction->setObjectName(QStringLiteral("aiNewProjectAction"));
+    auto *importAction = fileMenu->addAction(tr("&Import a document…"), this, [this] { importDocument(); });
+    importAction->setObjectName(QStringLiteral("importDocumentAction"));
     m_recentMenu = fileMenu->addMenu(tr("Recent projects"));
     fileMenu->addSeparator();
     m_saveAction = fileMenu->addAction(tr("&Save"), this, [this] { if (auto *pane = currentEditor()) saveEditor(pane); });
@@ -750,6 +760,11 @@ void MainWindow::createActions()
     m_aiAction = aiMenu->addAction(tr("Ask AI about the document…"), this, &MainWindow::showAiDialog);
     m_aiAction->setShortcut(QKeySequence(Qt::CTRL | Qt::ALT | Qt::Key_Return));
     m_aiHistoryAction = aiMenu->addAction(tr("Show AI history"), this, &MainWindow::showAiHistory);
+    m_aiChangeProjectAction = aiMenu->addAction(tr("Change the project with AI…"), this, &MainWindow::changeProjectWithAi);
+    m_aiChangeProjectAction->setObjectName(QStringLiteral("aiChangeProjectAction"));
+    m_aiCompareAction = aiMenu->addAction(tr("Compare the answers of the last request…"), this, &MainWindow::compareAiAnswers);
+    m_aiCompareAction->setObjectName(QStringLiteral("aiCompareAction"));
+    m_aiCompareAction->setEnabled(false);
     m_aiContextAction = aiMenu->addAction(tr("Edit AI context of the project"), this, &MainWindow::editAiContext);
 
     auto *helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -919,6 +934,7 @@ void MainWindow::clearWorkspace()
     m_previewDocument.clear();
     m_structure = {};
     m_structureDocument.clear();
+    setLibraryCommands({}, QString());
     m_inspectTimer->stop();
     m_inspector->cancel();
     m_structurePanel->clear();
@@ -1107,6 +1123,108 @@ void MainWindow::rebuildRecentMenu()
     }
     if (m_recentMenu->actions().isEmpty())
         m_recentMenu->addAction(tr("No recent projects"))->setEnabled(false);
+}
+
+void MainWindow::changeProjectWithAi()
+{
+    if (!hasProject()) {
+        QMessageBox::information(this, tr("Change the project with AI"), tr("Open a project first (File → Open project or document…)."));
+        return;
+    }
+    AiRequest context;
+    const QString level = QSettings().value(QStringLiteral("ai/context"), QStringLiteral("reference")).toString();
+    addPrimulaContext(&context, level == QStringLiteral("none") ? AiContext::Level::None : AiContext::Level::Reference, {}, false, false);
+    context.rules = AiContext::rules();
+    if (!m_project.aiContextPath().isEmpty()) context.projectContext = fileText(m_project.aiContextPath());
+    AiChangeDialog dialog(context, m_project.root(), this);
+    if (dialog.exec() != QDialog::Accepted) return;
+    applyAiProjectChanges(dialog.chosenChanges());
+}
+
+int MainWindow::applyAiProjectChanges(const QList<AiProject::File> &changes)
+{
+    if (!hasProject()) return 0;
+    const QDir root(m_project.root());
+    QList<AiProject::File> allowed;
+    QStringList refused;
+    for (const AiProject::File &change : changes) {
+        if (AiProject::changeAllowed(m_project.root(), change.path)) allowed.append(change);
+        else refused << change.path;
+    }
+    // The files that exist are backed up first: Undo does not outlive the editor, a backup does.
+    QStringList existing;
+    for (const AiProject::File &change : allowed)
+        if (QFileInfo::exists(root.filePath(change.path))) existing << root.filePath(change.path);
+    QString backupError;
+    if (!existing.isEmpty() && !backupFiles(existing, QStringLiteral("before-ai-apply"), tr("AI: change of the project"), true, &backupError)
+        && QMessageBox::question(this, tr("Change the project with AI"),
+                                 tr("A backup of the files could not be made:\n%1\n\nApply the changes anyway?").arg(backupError)) != QMessageBox::Yes)
+        return 0;
+    int applied = 0, inEditor = 0;
+    QStringList failed;
+    for (const AiProject::File &change : allowed) {
+        const QString absolute = root.filePath(change.path);
+        EditorPane *pane = editorFor(absolute);
+        if (change.remove) {
+            // To the trash like every deletion of Studio (an open file with unsaved changes stops it).
+            QString error;
+            if (QFileInfo::exists(absolute) && !removePath(absolute, true, &error)) failed << change.path;
+            else ++applied;
+        } else if (pane) {
+            // An open file changes in the editor as one step that Undo takes back; it is not saved.
+            QTextCursor cursor(pane->editor()->document());
+            cursor.beginEditBlock();
+            cursor.select(QTextCursor::Document);
+            cursor.insertText(QString::fromUtf8(change.data));
+            cursor.endEditBlock();
+            ++applied;
+            ++inEditor;
+        } else {
+            QString error;
+            if (!AiProject::write(m_project.root(), {change}, &error)) failed << change.path;
+            else ++applied;
+        }
+    }
+    QString message = tr("Applied %n change(s) of the project.", nullptr, applied);
+    if (inEditor) message += QLatin1Char(' ') + tr("%n open file(s) are changed in the editor and not saved (Undo takes the change back).", nullptr, inEditor);
+    if (!failed.isEmpty() || !refused.isEmpty())
+        QMessageBox::warning(this, tr("Change the project with AI"),
+                             tr("Not applied: %1").arg((failed + refused).join(QStringLiteral(", "))));
+    statusBar()->showMessage(message, 15000);
+    scheduleInspection();
+    return applied;
+}
+
+void MainWindow::importDocument(const QString &source, const QString &directory)
+{
+    QString chosen = source;
+    if (chosen.isEmpty()) {
+        chosen = QFileDialog::getOpenFileName(this, tr("Document to import"), hasProject() ? m_project.root() : QDir::homePath(),
+                                              ImportDialog::fileFilter());
+        if (chosen.isEmpty()) return;
+    }
+    ImportDialog dialog(chosen, directory, interfaceLanguage(), this);
+    if (dialog.exec() != QDialog::Accepted || !dialog.resultWritten()) return;
+    if (QFileInfo(dialog.resultPath()).isFile()) openProject(dialog.resultPath());
+}
+
+void MainWindow::createProjectWithAi()
+{
+    // A project from nothing (stage 27): the tool writes in a temporary directory; the user sees the files
+    // and the check before anything reaches the disk. The context is the language reference and the rules.
+    AiRequest context;
+    const QString level = QSettings().value(QStringLiteral("ai/context"), QStringLiteral("reference")).toString();
+    addPrimulaContext(&context, level == QStringLiteral("none") ? AiContext::Level::None : AiContext::Level::Reference, {}, false, false);
+    context.rules = AiContext::rules();
+    context.projectContext.clear();
+    const QString parent = QSettings().value(QStringLiteral("ai/projectParent"),
+                                             QStandardPaths::writableLocation(QStandardPaths::HomeLocation)).toString();
+    AiProjectDialog dialog(context, parent, this);
+    if (dialog.exec() != QDialog::Accepted || dialog.createdEntry().isEmpty()) return;
+    QSettings().setValue(QStringLiteral("ai/projectParent"), QFileInfo(dialog.targetDirectory()).absolutePath());
+    const QString entry = dialog.createdEntry();
+    if (QFileInfo(entry).isFile()) openProject(entry);
+    else statusBar()->showMessage(tr("The project is created in %1.").arg(QDir::toNativeSeparators(entry)), 8000);
 }
 
 void MainWindow::openProjectDialog()
@@ -2342,6 +2460,12 @@ void MainWindow::inspectDocument()
     m_inspector->request(m_project.root(), document, buffers, parameterArguments(document));
 }
 
+void MainWindow::setLibraryCommands(const QJsonArray &commands, const QString &baseDir)
+{
+    if (!m_catalog.setLibraryCommands(commands, baseDir) || !m_catalog.isLoaded()) return;
+    m_palettePanel->setCatalog(&m_catalog);   // refills; the Insert menu is filled when it opens
+}
+
 void MainWindow::inspectionFinished(const QString &document, const QJsonObject &dump, const QString &errorMessage)
 {
     if (!hasProject()) return;
@@ -2365,6 +2489,9 @@ void MainWindow::inspectionFinished(const QString &document, const QJsonObject &
     } else {
         m_structurePanel->setStale(reason);
     }
+    // Commands of the imported library modules (28.0): the palette, menu and completion follow the imports.
+    if (dump.contains(QStringLiteral("library_commands")))
+        setLibraryCommands(dump.value(QStringLiteral("library_commands")).toArray(), QFileInfo(document).absolutePath());
     const QJsonObject styles = dump.value(QStringLiteral("styles")).toObject();
     if (!styles.isEmpty()) m_stylesPanel->setStyles(styles);
     else m_stylesPanel->setStale(reason);
@@ -2791,6 +2918,9 @@ void MainWindow::showAiResults()
     // Every answer is a tab of its own, in the order the tools were chosen; the failures are told together.
     QStringList failures;
     AiHistoryPane *first = nullptr;
+    QList<AiHistoryPane *> panes;
+    QStringList labels;
+    m_lastAiAnswers.clear();
     for (const QString &id : m_aiAgentOrder) {
         const AiAgentResult result = m_aiResults.value(id);
         const AiAgent agent = AiAgents::byId(id);
@@ -2802,7 +2932,29 @@ void MainWindow::showAiResults()
         exchange.backend = agent.label;
         AiHistoryPane *pane = storeAiResult(exchange, result.response);
         if (pane && !first) first = pane;
+        if (pane) {
+            panes.append(pane);
+            labels.append(agent.name);
+            m_lastAiAnswers.append({agent.name, result.response});
+        }
     }
+    // Several answers: every edit is marked as agreed, differing or proposed by some tools only (22.7).
+    QList<AiCompare::Answer> answers;
+    QList<AiEditsPanel *> panels;
+    for (int i = 0; i < panes.size(); ++i) {
+        AiEditsPanel *panel = panes.at(i)->editsPanel();
+        if (!panel || panel->count() == 0) continue;
+        AiCompare::Answer answer;
+        answer.tool = labels.at(i);
+        for (int row = 0; row < panel->count(); ++row) answer.edits.append(panel->editAt(row));
+        answers.append(answer);
+        panels.append(panel);
+    }
+    if (answers.size() >= 2) {
+        const QList<QList<AiCompare::Verdict>> verdicts = AiCompare::compare(answers);
+        for (int i = 0; i < panels.size(); ++i) panels.at(i)->setComparison(answers.at(i).tool, verdicts.at(i));
+    }
+    m_aiCompareAction->setEnabled(m_lastAiAnswers.size() >= 2);
     if (first) {
         m_aiWorkspace->selectPane(first);
         showAiHistory();
@@ -2811,6 +2963,53 @@ void MainWindow::showAiResults()
         QMessageBox::warning(this, tr("AI request failed"),
                              first ? tr("Some tools gave no answer:\n\n%1").arg(failures.join(QStringLiteral("\n\n")))
                                    : failures.join(QStringLiteral("\n\n")));
+}
+
+void MainWindow::compareAiAnswers()
+{
+    // The answers as whole texts (22.7): one is the base, the others are shown against it word by word.
+    if (m_lastAiAnswers.size() < 2) {
+        QMessageBox::information(this, tr("Compare the answers"), tr("The last request has fewer than two answers: ask several tools at once."));
+        return;
+    }
+    QDialog dialog(this);
+    dialog.setObjectName(QStringLiteral("aiCompareAnswersDialog"));
+    dialog.setWindowTitle(tr("The answers of the last request"));
+    dialog.resize(820, 620);
+    auto *layout = new QVBoxLayout(&dialog);
+    auto *row = new QHBoxLayout;
+    row->addWidget(new QLabel(tr("Base answer:"), &dialog));
+    auto *base = new QComboBox(&dialog);
+    base->setObjectName(QStringLiteral("aiCompareBase"));
+    for (const auto &answer : m_lastAiAnswers) base->addItem(answer.first);
+    row->addWidget(base);
+    row->addStretch();
+    layout->addLayout(row);
+    auto *view = new QTextBrowser(&dialog);
+    view->setObjectName(QStringLiteral("aiCompareAnswersView"));
+    layout->addWidget(view, 1);
+    auto fill = [this, base, view] {
+        const int index = base->currentIndex();
+        QString html = QStringLiteral("<h4>%1</h4><pre style=\"white-space:pre-wrap\">%2</pre>")
+                           .arg(tr("%1 (base)").arg(m_lastAiAnswers.at(index).first).toHtmlEscaped(),
+                                m_lastAiAnswers.at(index).second.toHtmlEscaped());
+        for (int i = 0; i < m_lastAiAnswers.size(); ++i) {
+            if (i == index) continue;
+            const bool same = AiCompare::normalize(m_lastAiAnswers.at(i).second) == AiCompare::normalize(m_lastAiAnswers.at(index).second);
+            html += QStringLiteral("<h4>%1</h4><pre style=\"white-space:pre-wrap\">%2</pre>")
+                        .arg(same ? tr("%1: the same text").arg(m_lastAiAnswers.at(i).first).toHtmlEscaped()
+                                  : tr("%1: against the base (removed words are red, added are green)").arg(m_lastAiAnswers.at(i).first).toHtmlEscaped(),
+                             same ? m_lastAiAnswers.at(i).second.toHtmlEscaped()
+                                  : AiCompare::diffHtml(m_lastAiAnswers.at(index).second, m_lastAiAnswers.at(i).second));
+        }
+        view->setHtml(html);
+    };
+    connect(base, &QComboBox::currentIndexChanged, &dialog, fill);
+    fill();
+    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, &dialog);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttons);
+    dialog.exec();
 }
 
 // ----------------------------------------------------------------------
@@ -3476,6 +3675,7 @@ void MainWindow::showFilesMenu(const QString &path, const QPoint &position)
     create->addAction(tr("Styles module…"), this, [this, directory] { newFile(QStringLiteral("styles"), directory); });
     create->addSeparator();
     create->addAction(tr("Folder…"), this, [this, directory] { newFolderDialog(directory); });
+    create->addAction(tr("Import a document…"), this, [this, directory] { importDocument(QString(), directory); });
     menu.addSeparator();
     if (!isRoot) {
         if (info.isFile()) {
@@ -3488,6 +3688,8 @@ void MainWindow::showFilesMenu(const QString &path, const QPoint &position)
             }
             if (type != nullptr && type->open != QStringLiteral("editor") && !isBinaryFile(path))
                 menu.addAction(tr("Open as text in the editor"), this, [this, path] { openFileAsText(path); });
+            if (ImportDialog::sourceSuffixes().contains(info.suffix().toLower()) && info.suffix().toLower() != QStringLiteral("txt"))
+                menu.addAction(tr("Import into Primula…"), this, [this, path, directory] { importDocument(path, directory); });
             if (primulaKind(path) == QStringLiteral("document"))
                 fillExportMenu(menu.addMenu(tr("Export")), path);
             if (!primulaKind(path).isEmpty())

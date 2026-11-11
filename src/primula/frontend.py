@@ -106,6 +106,38 @@ def _write_own_registry(project: Any, path: Path, manager: SourceManager, struct
                            make_registry(name, source, structure, source_files(manager, project.root)))
 
 
+def _evaluate_document(loader: Loader, sink: DiagnosticSink, options: EvalOptions, loaded: LoadedFile,
+                       header: Header, flat: Document) -> EvaluationResult:
+    """Evaluate the document; twice when it calls ``collected()`` (decision 143).
+
+    The first pass collects (``collect(name, value)``) and its messages are dropped; the second pass
+    sees the finished collections.  The collections of the second pass must be the same as the
+    first one's: a document whose collection depends on its own result gets P2640.
+    """
+    errors_before = sink.error_count
+    state = sink.snapshot()
+    evaluator = DocumentEvaluator(loader, sink, options)
+    evaluation = evaluator.evaluate(loaded)
+    if not evaluator.collected_used:
+        return evaluation
+    seed = evaluator.collections
+    # The second pass starts from the loaded root alone and a fresh tree (the first pass
+    # may annotate nodes); the modules and fragments are loaded again and report their syntax again.
+    sink.restore(state)
+    loader._files.clear()
+    loader._links.clear()
+    fresh = parse(header, DiagnosticSink(error_limit=0), organize=False)
+    again = LoadedFile(loaded.path, loaded.source, header, fresh)
+    loader._files[again.path] = again
+    second = DocumentEvaluator(loader, sink, replace(options, collected=seed))
+    evaluation = second.evaluate(again)
+    if sink.error_count == errors_before:
+        for name in sorted(set(seed) | set(second.collections)):
+            if seed.get(name, []) != second.collections.get(name, []):
+                sink.emit(error("P2640", None, name=name))
+    return evaluation
+
+
 def analyze(path: Path, sink: DiagnosticSink, manager: SourceManager,
             name: str | None = None, *, build_date: datetime.date | None = None,
             review: bool = False, styles: list[Path] | None = None,
@@ -192,7 +224,7 @@ def analyze(path: Path, sink: DiagnosticSink, manager: SourceManager,
     # The memory limit of 12.8 covers the evaluation only.
     limit_memory()
     try:
-        result.evaluation = DocumentEvaluator(loader, sink, options).evaluate(loaded)
+        result.evaluation = _evaluate_document(loader, sink, options, loaded, result.header, flat)
     finally:
         restore_memory_limit()
     state = FAILED if sink.error_count > errors_before else DONE

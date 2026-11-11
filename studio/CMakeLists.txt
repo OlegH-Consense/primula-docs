@@ -40,12 +40,22 @@ set(STUDIO_SOURCES
     src/AiRecipes.h
     src/AiAgents.cpp
     src/AiAgents.h
+    src/ImportDialog.cpp
+    src/ImportDialog.h
+    src/AiChangeDialog.cpp
+    src/AiChangeDialog.h
+    src/AiCompare.cpp
+    src/AiCompare.h
     src/AiEdits.cpp
     src/AiEdits.h
     src/AiEditsPanel.cpp
     src/AiEditsPanel.h
     src/AiController.cpp
     src/AiController.h
+    src/AiProject.cpp
+    src/AiProject.h
+    src/AiProjectDialog.cpp
+    src/AiProjectDialog.h
     src/AiHistory.cpp
     src/AiHistory.h
     src/AiHistoryPane.cpp

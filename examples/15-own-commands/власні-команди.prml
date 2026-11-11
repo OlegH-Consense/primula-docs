@@ -1,0 +1,21 @@
+---
+doc: {title: "Власні команди документа", language: uk-UA, created: 2026-11-11}
+params:
+  словник_заголовок: "Терміни цього документа"
+---
+|% Example 15: how to write your own command (libraries are not needed: a module lib/терміни.m.prml
+|% lies in the example). The module defines |терміни.термін(…) and |терміни.словник(); the glossary
+|% is collected from the whole document: словник() stands at the end, the terms stand where they
+|% are used (collect/collected, the document is evaluated twice, decision 143). The title of the
+|% glossary comes from the parameter словник_заголовок (param, decision 144). In Studio the
+|% commands are in the Palette (group "Library: терміни") with the description from the |% lines.
+|import("lib/терміни")
+|<(number=False) Власні команди документа
+
+Договір поставки визначає |терміни.термін("постачальника", "сторона, що передає товар покупцеві") і |терміни.термін("покупця", "сторона, що приймає товар і сплачує його вартість"). Мова може мати й інші терміни: |терміни.термін("специфікація", "додаток із переліком товару, кількістю і цінами").
+
+Далі |терміни.термін("покупця", "повторне використання терміна: у словнику він один") працює так само, а порядок у словнику — за алфавітом, а не за появою.
+
+Усього в документі |(str(len(collected("терміни")))) згадок термінів, а в словнику — |(str(len({t["слово"]: 1 for t in collected("терміни")}))).
+
+|терміни.словник()

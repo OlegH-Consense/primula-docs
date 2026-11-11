@@ -80,6 +80,8 @@ AiAgent AiAgents::fromJson(const QJsonObject &object, QString *error)
     bool valid = true;
     agent.arguments = stringList(object.value(QStringLiteral("arguments")), &valid);
     if (!valid) return fail(QStringLiteral("arguments must be a list of strings"));
+    agent.writeArguments = stringList(object.value(QStringLiteral("writeArguments")), &valid);
+    if (!valid && object.contains(QStringLiteral("writeArguments"))) return fail(QStringLiteral("writeArguments must be a list of strings"));
     agent.skillArguments = stringList(object.value(QStringLiteral("skillArguments")), &valid);
     if (!valid && object.contains(QStringLiteral("skillArguments"))) return fail(QStringLiteral("skillArguments must be a list of strings"));
     valid = true;
@@ -178,9 +180,9 @@ QString AiAgents::program(const AiAgent &agent)
     return chosen.isEmpty() ? agent.program : chosen;
 }
 
-QStringList AiAgents::commandArguments(const AiAgent &agent, const QString &prompt, bool skill)
+QStringList AiAgents::commandArguments(const AiAgent &agent, const QString &prompt, bool skill, bool write)
 {
-    QStringList result = agent.arguments;
+    QStringList result = write && !agent.writeArguments.isEmpty() ? agent.writeArguments : agent.arguments;
     // A flag of the skill arguments replaces the value of the same flag, else it is added with its value.
     for (int i = 0; skill && i < agent.skillArguments.size(); ++i) {
         const QString flag = agent.skillArguments.at(i);

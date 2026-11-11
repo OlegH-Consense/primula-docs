@@ -47,6 +47,8 @@ say so and still follow the rules below, but state that the document is unchecke
   memory): `primula commands --format json --lang en` — `commands`, `short_forms`,
   `closings`, `functions` (signature, arguments, example), `header_keys`. Text forms:
   `primula commands`, `primula commands --functions`, `primula commands --header`.
+  Commands that the document's libraries define with `|def` (`|box.note(…)`): `primula commands --document FILE`
+  (JSON key `library_commands`) or `primula describe MODULE` (the macros of a module).
 - **Specification** (Russian, normative): `primula-spec-v1.1-draft.ru.md`,
   `primula-stdlib-v1.1-draft.ru.md` in the source tree; sections are cited in the reference
   as `[§ 8.2]`.
@@ -163,3 +165,28 @@ editing, run the check: it must give no new diagnostics.
 passed to `|img(value)` / `|figure(value):`. The SVG string must have a root `<svg>` with
 a size, no DOCTYPE/ENTITY, and only `#…` or `data:` references (P6110–P6112). Use it for
 charts, QR codes and bars produced by a module function.
+
+## 9. A document that already exists in another format
+
+When the user has the document in Word, ODT, Markdown or HTML, **do not retype it: import it**, then finish the
+draft.
+
+```sh
+primula import contract.docx                   # contract.prml and assets/ next to it; the result is checked
+primula import contract.docx --list-styles     # the Word styles of the source and what they become
+primula import contract.docx --write-styles import-styles.yaml   # a skeleton of the style map
+primula import notes.md -o doc/notes.prml --language uk-UA --force
+```
+
+- Needs pandoc (an old `.doc` also LibreOffice). Without it, say so: do not retype long documents by hand.
+- The import recognizes typed clause numbers ("2.1." → `|>`, "2.1.1." → `|>>`, short lines → `|<`), the numbered-list
+  headings of Word, bold lines, a typed table of contents (→ `|toc()`) and keeps the levels without skips; the summary
+  names what was left out (page layout, direct formatting, fields, formulas, tracked changes). `--no-structure` and
+  `--keep-numbers` change that.
+- Word styles are mapped by `import-styles.yaml` (`paragraphs:` / `characters:` with `{heading: N}`, `{clause: N}`,
+  `{style: Name}`, `plain`, `ignore`), next to the result or above it, or `--styles FILE`.
+- **After the import**: run `primula check` and fix the rest; replace references typed as text ("п. 2.1") by
+  `|@("id")` with an `id=` on the target clause; move parties, dates and amounts to `params:`; use the styles of the kit
+  instead of `|.Body:`; read the result against the source — the import is a draft and does not guess meaning
+  (requisites against conditions) or layout. Do not "fix" the structure that the import recognized without looking at
+  the source.

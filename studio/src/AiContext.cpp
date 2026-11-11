@@ -36,7 +36,8 @@ QString AiContext::reference(const CommandCatalog &catalog)
         QStringList lines;
         for (const CommandCatalog::Entry &entry : catalog.entries())
             if (!entry.function && entry.category == category.id)
-                lines << QStringLiteral("- `%1` — %2%3").arg(entry.label, entry.summary, sectionMark(entry.section));
+                lines << QStringLiteral("- `%1` — %2%3").arg(entry.library ? entry.signature : entry.label, entry.summary,
+                                                              sectionMark(entry.section));
         if (!lines.isEmpty())
             text += QStringLiteral("\n#### ") + category.title + QLatin1Char('\n') + lines.join(QLatin1Char('\n')) + QLatin1Char('\n');
     }
