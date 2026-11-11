@@ -49,6 +49,12 @@ KNOWN_VIEWERS = ("okular", "evince", "atril", "xreader", "zathura", "mupdf", "qp
 STALE_SECONDS = 24 * 3600
 
 
+def _user_id() -> str:
+    """The numeric user id (POSIX) or the login name (Windows has no ``getuid``)."""
+    getuid = getattr(os, "getuid", None)
+    return str(getuid()) if getuid else os.environ.get("USERNAME", "user")
+
+
 def work_root() -> Path:
     """The directory of temporary views, created: ``$XDG_RUNTIME_DIR/primula-view`` (tmpfs, wiped at logout),
     else a private directory in the system temporary directory."""
@@ -56,7 +62,7 @@ def work_root() -> Path:
     runtime = os.environ.get("XDG_RUNTIME_DIR")
     if runtime:
         candidates.append(Path(runtime) / "primula-view")
-    candidates.append(Path(tempfile.gettempdir()) / f"primula-view-{os.getuid()}")
+    candidates.append(Path(tempfile.gettempdir()) / f"primula-view-{_user_id()}")
     for path in candidates:
         try:
             path.mkdir(parents=True, exist_ok=True, mode=0o700)
@@ -80,7 +86,8 @@ def purge_stale(root: Path, now: float | None = None) -> None:
 
 def profile_dir() -> Path:
     """The LibreOffice profile kept between views."""
-    base = os.environ.get("XDG_CACHE_HOME") or str(Path.home() / ".cache")
+    base = os.environ.get("XDG_CACHE_HOME") or (os.environ.get("LOCALAPPDATA") if sys.platform == "win32" else None) \
+        or str(Path.home() / ".cache")
     return Path(base) / "primula" / "libreoffice-profile"
 
 
@@ -113,6 +120,8 @@ def choose_viewer(explicit: str | None) -> tuple[list[str], bool]:
     known = desktop_viewer()
     if known:
         return [known], True
+    if sys.platform == "win32":    # the program associated with .pdf; does not wait
+        return ["cmd", "/c", "start", ""], False
     return ["xdg-open"], False
 
 

@@ -145,7 +145,8 @@ bool EditorPane::save(QString *errorMessage)
         return false;
     }
     QSaveFile file(m_filePath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    // Binary mode: a text-mode write would turn "\n" into "\r\n" on Windows (documents are LF).
+    if (!file.open(QIODevice::WriteOnly)) {
         if (errorMessage)
             *errorMessage = tr("Cannot save %1: %2").arg(m_filePath, file.errorString());
         return false;

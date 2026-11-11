@@ -13,11 +13,35 @@
 #include <QTextCharFormat>
 #include <QTextDocument>
 #include <QJsonObject>
+#include <QKeyEvent>
 #include <QSignalBlocker>
 #include <QWheelEvent>
 
 // Ctrl+wheel changes presentation through the workspace, never document text.
 // Accumulate high-resolution wheel deltas so touchpads do not jump every event.
+bool CodeEditor::isBarShortcut(const QKeyEvent *event)
+{
+    const Qt::KeyboardModifiers modifiers = event->modifiers() & (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier | Qt::MetaModifier);
+    if (modifiers != Qt::ControlModifier && modifiers != Qt::AltModifier) return false;
+    if (event->key() == Qt::Key_Backslash) return true;
+    // The backslash key of a PC keyboard: scan code 43 on Windows, 51 (evdev 43 + 8) with X11/Wayland.
+#ifdef Q_OS_WIN
+    return event->nativeScanCode() == 43;
+#else
+    return event->nativeScanCode() == 51;
+#endif
+}
+
+void CodeEditor::keyPressEvent(QKeyEvent *event)
+{
+    if (!isReadOnly() && isBarShortcut(event)) {
+        insertPlainText(QStringLiteral("|"));
+        event->accept();
+        return;
+    }
+    QPlainTextEdit::keyPressEvent(event);
+}
+
 void CodeEditor::wheelEvent(QWheelEvent *event)
 {
     if (!(event->modifiers() & Qt::ControlModifier)) {

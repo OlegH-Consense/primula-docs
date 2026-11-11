@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Primula Studio toolbar icon: «insert the command bar |» — a rounded key with a vertical bar. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <rect x="3.5" y="3.5" width="17" height="17" rx="3" fill="#3b4655"/>
+  <path d="M12 6.5 V17.5" stroke="#dfe6ee" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+</svg>

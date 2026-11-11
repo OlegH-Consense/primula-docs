@@ -115,6 +115,7 @@ private:
     QPlainTextEdit *m_output = nullptr;
     QTreeWidget *m_diagnostics = nullptr;
     QDockWidget *m_outputDock = nullptr;
+    QAction *m_insertBarAction = nullptr;
     QAction *m_consoleAction = nullptr;   ///< View → Console (the console window)
     class ConsolePanel *m_console = nullptr;
     QWidget *m_externalBanner = nullptr;
@@ -200,6 +201,7 @@ private:
     void saveSession();
     void restoreSession();
     void addRecentProject(const QString &path);
+    void seedExamples();
     void rebuildRecentMenu();
     void openProjectDialog();
     void openFileDialog();

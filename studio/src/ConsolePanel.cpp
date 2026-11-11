@@ -456,7 +456,14 @@ bool ConsolePanel::submit(const QString &text)
 void ConsolePanel::interrupt()
 {
     // SIGINT stops the running input in the translator (P0006); the session goes on.
-    if (isRunning() && m_busy && m_ready) ::kill(pid_t(m_process->processId()), SIGINT);
+    if (!(isRunning() && m_busy && m_ready)) return;
+#ifdef Q_OS_WIN
+    // Windows has no SIGINT for a child with pipes: the only way to stop the input is to
+    // end the translator process; the session is restarted by the panel as after an exit.
+    m_process->kill();
+#else
+    ::kill(pid_t(m_process->processId()), SIGINT);
+#endif
 }
 
 void ConsolePanel::readOutput()

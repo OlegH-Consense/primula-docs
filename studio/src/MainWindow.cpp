@@ -49,7 +49,9 @@
 #include <QHeaderView>
 #include <QIcon>
 #include <QInputDialog>
+#include <QJsonArray>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QTableWidget>
 #include <QTemporaryDir>
 #include <QTextCursor>
@@ -253,6 +255,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     const QString layout = QSettings().value(QStringLiteral("ui/layout"), QStringLiteral("split")).toString();
     setLayoutMode(layout == QStringLiteral("tabs") ? LayoutMode::Tabbed : LayoutMode::Split, false);
+    seedExamples();
     rebuildRecentMenu();
     updateUiState();
     updateWindowTitle();
@@ -617,6 +620,10 @@ void MainWindow::createActions()
     searchAction(tr("&Replace…"), QKeySequence(Qt::CTRL | Qt::Key_H),
                  [this] { if (auto *pane = currentEditor()) pane->showSearch(true); })->setObjectName(QStringLiteral("replaceAction"));
 
+    // «|» in any keyboard layout: the same as Ctrl+\ / Alt+\ in the editor (CodeEditor::keyPressEvent).
+    m_insertBarAction = editMenu->addAction(tr("Insert command bar |") + QStringLiteral("\tCtrl+\\"), this, [this] { insertText(QStringLiteral("|")); });
+    m_insertBarAction->setObjectName(QStringLiteral("insertBarAction"));
+
     // Insert: the constructs of the language from `primula commands` (stage 14.8).
     m_insertMenu = menuBar()->addMenu(tr("&Insert"));
     m_insertMenu->setObjectName(QStringLiteral("insertMenu"));
@@ -816,6 +823,10 @@ void MainWindow::createActions()
     toolbar->addAction(m_backupsAction);
     toolbar->addSeparator();
     toolbar->addAction(m_consoleAction);
+    toolbar->addSeparator();
+    m_insertBarAction->setIcon(QIcon(QStringLiteral(":/icons/bar.svg")));
+    m_insertBarAction->setToolTip(tr("Insert the command bar | at the cursor in any layout (Ctrl+\\ or Alt+\\)"));
+    toolbar->addAction(m_insertBarAction);
     toolbar->addSeparator();
     toolbar->addWidget(new QLabel(tr("Editor font:"), toolbar));
     m_fontCombo = new QFontComboBox(toolbar);
@@ -1056,6 +1067,31 @@ void MainWindow::addRecentProject(const QString &path)
     settings.setValue(QStringLiteral("projects/recent"), recent);
     settings.setValue(QStringLiteral("projects/last"), path);
     rebuildRecentMenu();
+}
+
+void MainWindow::seedExamples()
+{
+#ifdef Q_OS_WIN
+    // The Windows package is unpacked or installed by a plain copy (no install script like the
+    // Linux one, which writes the settings): at the first start the examples beside the program
+    // (examples/examples.json) become the list of recent projects, once.
+    QSettings settings;
+    if (settings.value(QStringLiteral("examples/seeded")).toBool())
+        return;
+    settings.setValue(QStringLiteral("examples/seeded"), true);
+    const QDir root(QCoreApplication::applicationDirPath() + QStringLiteral("/examples"));
+    QFile listing(root.filePath(QStringLiteral("examples.json")));
+    if (!listing.open(QIODevice::ReadOnly))
+        return;
+    const QJsonArray entries = QJsonDocument::fromJson(listing.readAll()).object().value(QStringLiteral("entries")).toArray();
+    QStringList recent = settings.value(QStringLiteral("projects/recent")).toStringList();
+    for (const QJsonValue &entry : entries) {
+        const QString path = QDir::cleanPath(root.filePath(entry.toString()));
+        if (QFileInfo(path).isFile() && !recent.contains(path))
+            recent << path;
+    }
+    settings.setValue(QStringLiteral("projects/recent"), recent);
+#endif
 }
 
 void MainWindow::rebuildRecentMenu()
@@ -3302,7 +3338,8 @@ QString MainWindow::authorGuidePath(const QString &language, QStringList *tried)
     const QString application = QCoreApplication::applicationDirPath();
     for (const QString &directory : {binary, application}) {
         if (directory.isEmpty()) continue;
-        bases << QDir(directory).filePath(QStringLiteral("../guide"))
+        bases << QDir(directory).filePath(QStringLiteral("guide"))   // the Windows package: beside the program
+              << QDir(directory).filePath(QStringLiteral("../guide"))
               << QDir(directory).filePath(QStringLiteral("../../docs/author"));
     }
     for (const QString &candidate : {language, QStringLiteral("en")}) {
@@ -3819,11 +3856,16 @@ bool MainWindow::removePath(const QString &path, bool toTrash, QString *errorMes
     }
     const QFileInfo info(path);
     bool removed = false;
+    // Windows cannot delete a directory that the file watcher holds open.
+    m_fileMonitor->setFiles({});
     if (toTrash)
         removed = QFile::moveToTrash(path);
     else
         removed = info.isDir() ? QDir(path).removeRecursively() : QFile::remove(path);
     if (!removed) {
+        QStringList still;
+        for (EditorPane *editor : editors()) still.append(editor->filePath());
+        m_fileMonitor->setFiles(still);
         if (errorMessage)
             *errorMessage = toTrash ? tr("Cannot move %1 to the trash.").arg(path) : tr("Cannot delete %1.").arg(path);
         return false;

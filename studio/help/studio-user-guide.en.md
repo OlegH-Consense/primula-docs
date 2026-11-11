@@ -39,6 +39,7 @@ The context menu of the Files panel: **New in this folder** (document, fragment,
 - Tabs close with their button, `Ctrl+W` or the tab context menu («Close other tabs», «Copy path»). Closing a modified file asks whether to save, discard or cancel.
 - A tab shows the short file name (without `.prml` and the sub-extension `.f`, `.m`, `.s`, `.p`, without the common beginning of the names); the full path is in the tooltip. `*` marks unsaved changes.
 - `Ctrl+E` lists all open files.
+- `Ctrl+\` or `Alt+\` (the backslash key) inserts the command bar `|` at the cursor in any keyboard layout, with no switch to Latin; the same is the bar button on the toolbar and **Edit → Insert command bar |**.
 - When a file changes outside Studio, a bar appears at the top: **Reload selected** or **Keep editor** (then the next save overwrites the file on disk).
 
 ## Structure and styles

@@ -186,7 +186,7 @@ def assemble(source, build, output):
     # Exact build platform: a record of where it was built, not a portability claim.
     metadata = {'format': 2, 'version': version, 'studio_version': info['studio_version'],
                 'architecture': platform.machine(), 'os_id': osinfo.get('ID', 'linux'),
-                'os_version': osinfo.get('VERSION_ID', ''), 'os_name': osinfo.get('PRETTY_NAME', ''),
+                'os_like': osinfo.get('ID_LIKE', ''), 'os_version': osinfo.get('VERSION_ID', ''), 'os_name': osinfo.get('PRETTY_NAME', ''),
                 'qt_build': info['qt_build'], 'libc': list(platform.libc_ver()),
                 'system_libraries_bundled': False, 'python_minimum': '3.11'}
     (output/'distribution.json').write_text(json.dumps(metadata, indent=2, ensure_ascii=False)+'\n')

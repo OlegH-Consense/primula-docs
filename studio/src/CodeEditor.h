@@ -6,6 +6,7 @@
 #include <QHash>
 #include <QSet>
 
+class QKeyEvent;
 class QPaintEvent;
 class QResizeEvent;
 class QSyntaxHighlighter;
@@ -30,6 +31,9 @@ public:
     void clearContextMark();
     /// The marked range (an empty cursor when there is no mark).
     QTextCursor contextMark() const { return m_contextMark; }
+    /// True for Ctrl+\ or Alt+\ (no other modifiers) pressed on the physical key of the backslash: the key code of
+    /// the layout (a Latin layout) or the scan code (a layout where this key types another letter, e.g. Ukrainian «ґ»).
+    static bool isBarShortcut(const QKeyEvent *event);
     int lineNumberAreaWidth() const;
     void lineNumberAreaPaintEvent(QPaintEvent *event);
 
@@ -39,6 +43,8 @@ signals:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
+    /// Ctrl+\ and Alt+\ insert the command bar «|» at the cursor in any keyboard layout.
+    void keyPressEvent(QKeyEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
 
 private:

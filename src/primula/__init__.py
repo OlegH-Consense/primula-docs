@@ -28,10 +28,10 @@ This package is the prototype of stage 13 of the project plan
 #: grows with every version that is committed, published or not.  A release is a
 #: git tag and an entry of the CHANGELOG, so numbers may be skipped.  The stage
 #: is recorded in the build report.
-__version__ = "0.4.8"
+__version__ = "0.4.16"
 
 #: Prototype stage of the project plan implemented by this version.
-PROTOTYPE_STAGE = "22.6"
+PROTOTYPE_STAGE = "23.6"
 
 #: Version of the Primula language implemented by the translator
 #: (specification section 0.1).

@@ -122,6 +122,13 @@ target_link_libraries(primula-studio-core PUBLIC
 
 add_executable(primula-studio src/main.cpp)
 target_link_libraries(primula-studio PRIVATE primula-studio-core)
+if(WIN32)
+    # The icon of primula-studio.exe (windres, MinGW cross-build: studio/windows/build-win.sh).
+    enable_language(RC)
+    set_target_properties(primula-studio PROPERTIES WIN32_EXECUTABLE ON)   # no console window
+    target_sources(primula-studio PRIVATE windows/primula-studio.rc)
+    target_include_directories(primula-studio PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/windows")
+endif()
 
 # Templates of «File → New» (stage 14.9): every file of templates/ as a resource
 # under :/templates/<id>/...; the glob is re-evaluated when templates change.

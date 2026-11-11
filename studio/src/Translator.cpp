@@ -15,6 +15,12 @@ QString program()
     const QString configured = QSettings().value(QStringLiteral("tools/primula")).toString().trimmed();
     if (!configured.isEmpty())
         return configured;
+#ifdef Q_OS_WIN
+    // The Windows package carries the translator next to the program (primula.exe + python/).
+    const QString bundled = QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("primula.exe"));
+    if (QFileInfo::exists(bundled))
+        return bundled;
+#endif
     const QString found = QStandardPaths::findExecutable(QStringLiteral("primula"));
     if (!found.isEmpty())
         return found;

@@ -1637,6 +1637,14 @@ Looked in:
         <translation>Транслятор: не найден</translation>
     </message>
     <message>
+        <source>Insert command bar |</source>
+        <translation>Вставить управляющий символ |</translation>
+    </message>
+    <message>
+        <source>Insert the command bar | at the cursor in any layout (Ctrl+\ or Alt+\)</source>
+        <translation>Вставить управляющий символ | в позицию курсора в любой раскладке (Ctrl+\ или Alt+\)</translation>
+    </message>
+    <message>
         <location filename="../src/MainWindow.cpp" line="807"/>
         <source>Switch layout</source>
         <translation>Переключить раскладку</translation>

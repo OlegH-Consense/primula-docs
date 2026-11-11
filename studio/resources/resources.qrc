@@ -5,6 +5,7 @@
     <file alias="backup-create.svg">icons/backup-create.svg</file>
     <file alias="backup-history.svg">icons/backup-history.svg</file>
     <file alias="console.svg">icons/console.svg</file>
+    <file alias="bar.svg">icons/bar.svg</file>
   </qresource>
   <qresource prefix="/config">
     <file alias="file-types.json">file-types.json</file>

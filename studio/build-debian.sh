@@ -42,8 +42,11 @@ done
 python3 -c 'import sys, yaml; sys.exit(sys.version_info < (3, 11))' || {
   echo 'The translator needs Python 3.11+ with PyYAML (python3-yaml).' >&2; exit 2;
 }
+source "$studio_dir/build-host.sh"
+check_build_host "$build_dir"
 cmake -S "$studio_dir" -B "$build_dir" -G Ninja \
   -DCMAKE_BUILD_TYPE="${PRIMULA_STUDIO_BUILD_TYPE:-Release}" -DPRIMULA_STUDIO_MIN_QT_VERSION=6.4
+mark_build_host "$build_dir"
 cmake --build "$build_dir" --parallel "${PRIMULA_STUDIO_BUILD_JOBS:-2}"
 "$source_dir/primula" --version
 echo "Built: $build_dir/primula-studio"

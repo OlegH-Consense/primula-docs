@@ -1,0 +1,5 @@
+/* Resources of the Windows executables: the icon shown by the Explorer, shortcuts and the task bar.
+ * primula-studio.ico is made from resources/primula-studio.svg (16-256 px).  The icon of the window
+ * itself is set by Qt from the SVG resource (main.cpp).  Compiled by windres (CMake language RC
+ * for primula-studio.exe, build-win.sh for the primula.exe launcher). */
+1 ICON "primula-studio.ico"

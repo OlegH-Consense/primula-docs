@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QProcess>
 #include <QSaveFile>
+#include <QStandardPaths>
 #include <QTemporaryDir>
 
 namespace {
@@ -31,6 +32,7 @@ QString storedName(const QString &root, const QString &path)
         return relative;
     QString flat = absolute;
     while (flat.startsWith(QLatin1Char('/'))) flat.remove(0, 1);
+    flat.remove(QLatin1Char(':'));    // "C:/dir" of Windows: a colon is not allowed in a file name
     return QStringLiteral("_external/") + flat;
 }
 
@@ -201,9 +203,89 @@ QStringList Backups::sourceFiles(const QString &projectRoot)
     return files;
 }
 
+namespace {
+
+/// A unified diff (3 lines of context) made in-process, for systems without `diff` (Windows).
+/// Common head and tail are cut first; the middle is matched by the longest common
+/// subsequence, and a middle too large for the table is shown as one replaced block.
+QString builtInDiff(const QByteArray &before, const QByteArray &after, const QString &beforeLabel,
+                    const QString &afterLabel)
+{
+    auto lines = [](const QByteArray &data) {
+        QStringList list = QString::fromUtf8(data).split(QLatin1Char('\n'));
+        if (!list.isEmpty() && list.last().isEmpty()) list.removeLast();    // the end of the last line
+        return list;
+    };
+    const QStringList a = lines(before);
+    const QStringList b = lines(after);
+    const int na = a.size(), nb = b.size();
+    int head = 0;
+    while (head < na && head < nb && a[head] == b[head]) ++head;
+    int tail = 0;
+    while (tail < na - head && tail < nb - head && a[na - 1 - tail] == b[nb - 1 - tail]) ++tail;
+    if (head == na && head == nb) return {};
+    const int ma = na - head - tail, mb = nb - head - tail;
+    // Operations of the middle: ' ' equal, '-' removed, '+' added; with the text of the line.
+    QList<QPair<QChar, QString>> middle;
+    if (qint64(ma) * mb <= 4000000) {
+        QList<int> table((ma + 1) * (mb + 1), 0);
+        auto at = [&](int i, int j) -> int & { return table[i * (mb + 1) + j]; };
+        for (int i = ma - 1; i >= 0; --i)
+            for (int j = mb - 1; j >= 0; --j)
+                at(i, j) = a[head + i] == b[head + j] ? at(i + 1, j + 1) + 1 : qMax(at(i + 1, j), at(i, j + 1));
+        int i = 0, j = 0;
+        while (i < ma || j < mb) {
+            if (i < ma && j < mb && a[head + i] == b[head + j]) { middle.append({QLatin1Char(' '), a[head + i]}); ++i; ++j; }
+            else if (j < mb && (i == ma || at(i, j + 1) > at(i + 1, j))) { middle.append({QLatin1Char('+'), b[head + j]}); ++j; }
+            else { middle.append({QLatin1Char('-'), a[head + i]}); ++i; }
+        }
+    } else {
+        for (int i = 0; i < ma; ++i) middle.append({QLatin1Char('-'), a[head + i]});
+        for (int j = 0; j < mb; ++j) middle.append({QLatin1Char('+'), b[head + j]});
+    }
+    // The whole file as operations, then hunks around the changes.
+    QList<QPair<QChar, QString>> all;
+    for (int i = 0; i < head; ++i) all.append({QLatin1Char(' '), a[i]});
+    all += middle;
+    for (int i = na - tail; i < na; ++i) all.append({QLatin1Char(' '), a[i]});
+    constexpr int Context = 3;
+    QString out = QStringLiteral("--- %1\n+++ %2\n").arg(beforeLabel, afterLabel);
+    int index = 0;
+    const int total = all.size();
+    while (index < total) {
+        while (index < total && all[index].first == QLatin1Char(' ')) ++index;
+        if (index >= total) break;
+        const int start = qMax(0, index - Context);
+        int end = index, lastChange = index;
+        while (end < total && end - lastChange <= 2 * Context) {
+            if (all[end].first != QLatin1Char(' ')) lastChange = end;
+            ++end;
+        }
+        end = qMin(total, lastChange + Context + 1);
+        int fromA = 1, fromB = 1, countA = 0, countB = 0;
+        for (int k = 0; k < start; ++k) {
+            if (all[k].first != QLatin1Char('+')) ++fromA;
+            if (all[k].first != QLatin1Char('-')) ++fromB;
+        }
+        QString body;
+        for (int k = start; k < end; ++k) {
+            body += all[k].first + all[k].second + QLatin1Char('\n');
+            if (all[k].first != QLatin1Char('+')) ++countA;
+            if (all[k].first != QLatin1Char('-')) ++countB;
+        }
+        out += QStringLiteral("@@ -%1,%2 +%3,%4 @@\n").arg(fromA).arg(countA).arg(fromB).arg(countB) + body;
+        index = end;
+    }
+    return out;
+}
+
+} // namespace
+
 QString Backups::unifiedDiff(const QByteArray &before, const QByteArray &after, const QString &beforeLabel,
                              const QString &afterLabel, QString *error)
 {
+    if (QStandardPaths::findExecutable(QStringLiteral("diff")).isEmpty())
+        return builtInDiff(before, after, beforeLabel, afterLabel);    // Windows has no diff
     QTemporaryDir directory;
     if (!directory.isValid()) {
         if (error) *error = QStringLiteral("no temporary directory");

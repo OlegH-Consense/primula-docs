@@ -16,6 +16,11 @@
 #include <QJsonObject>
 #include <QTextStream>
 
+#ifdef Q_OS_WIN
+#include <windows.h>
+#include <cstdio>
+#endif
+
 namespace {
 
 QString translationDirectory()
@@ -39,6 +44,15 @@ QString translationDirectory()
 
 int main(int argc, char *argv[])
 {
+#ifdef Q_OS_WIN
+    // A GUI-subsystem program has no console of its own (no black window behind Studio); when it
+    // is started from a terminal, --version and error messages go to that terminal.  Redirected
+    // standard handles (a pipe, a file) are left alone.
+    if (!GetStdHandle(STD_OUTPUT_HANDLE) && AttachConsole(ATTACH_PARENT_PROCESS)) {
+        std::freopen("CONOUT$", "w", stdout);
+        std::freopen("CONOUT$", "w", stderr);
+    }
+#endif
     const QString option = argc > 1 ? QString::fromLocal8Bit(argv[1]) : QString();
     if (option == QStringLiteral("--version")) {
         QTextStream(stdout) << "Primula Studio " << studioVersion() << '\n';

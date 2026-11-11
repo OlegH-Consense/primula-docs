@@ -74,10 +74,27 @@ def profile_for(work: Path):
             lock.close()    # releases the lock
 
 
+def find_soffice() -> str | None:
+    """The LibreOffice executable: ``soffice``/``libreoffice`` in PATH, on Windows also the usual
+    installation directories (the installer does not add ``program`` to PATH)."""
+    found = shutil.which("soffice") or shutil.which("libreoffice")
+    if found or sys.platform != "win32":
+        return found
+    for variable in ("ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"):
+        base = os.environ.get(variable)
+        if base:
+            for candidate in sorted(Path(base).glob("LibreOffice*/program/soffice.exe"), reverse=True):
+                return str(candidate)
+    return None
+
+
 @functools.cache
 def uno_python() -> str | None:
     """A Python interpreter with the LibreOffice ``uno`` module, or ``None``."""
     candidates = [sys.executable, shutil.which("python3"), "/usr/bin/python3"]
+    office = find_soffice() if sys.platform == "win32" else None
+    if office:    # LibreOffice for Windows ships its own Python with the uno module
+        candidates.append(str(Path(office).with_name("python.exe")))
     for python in dict.fromkeys(c for c in candidates if c):
         try:
             run = subprocess.run([python, "-I", "-c", "import uno"], capture_output=True, timeout=30, check=False)
@@ -104,7 +121,7 @@ def export_pdf(odt: Path, target: Path, timeout: int = 180, *, update: bool = Fa
     Raises:
         PdfError: ``soffice``/``libreoffice`` not found, or conversion failed.
     """
-    executable = shutil.which("soffice") or shutil.which("libreoffice")
+    executable = find_soffice()
     if executable is None:
         raise PdfError("missing")
     reason: str | None = None

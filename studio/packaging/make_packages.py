@@ -40,7 +40,7 @@ import time
 
 NAME = 'primula-docs'
 HOMEPAGE = 'https://github.com/OlegH-Consense/primula-docs'
-SUMMARY = 'Primula Documenting System: translator of Primula markup to ODT/PDF and Primula Studio'
+SUMMARY = 'Primula document translator (ODT/PDF) and Primula Studio editor'
 DESCRIPTION = ('Primula is a plain-text markup language for business and technical documents (contracts, acts, '
                'invoices, letters, manuals).\nThe translator builds an editable ODT for LibreOffice Writer, and a PDF '
                'through LibreOffice.\nPrimula Studio is a desktop workplace for writing, checking and building the '
@@ -52,11 +52,18 @@ DEB_ARCHITECTURE = {'x86_64': 'amd64', 'aarch64': 'arm64', 'armv7l': 'armhf', 'i
 #: Dependencies by family of systems: the generic names of the Qt 6 libraries and of Python.
 DEB_DEPENDS = ['python3 (>= 3.11)', 'python3-yaml', 'libqt6widgets6 (>= 6.4)', 'libqt6pdf6 (>= 6.4)',
                'libqt6pdfwidgets6 (>= 6.4)', 'libqt6svg6 (>= 6.4)']
-DEB_RECOMMENDS = ['libreoffice-writer', 'python3-uno', 'python3-fonttools', 'fonts-liberation', 'qt6-qpa-plugins',
-                  'qt6-wayland']
-DEB_SUGGESTS = ['pandoc']
+#: Recommends are installed by apt by default, so only what a document build needs. python3-fonttools is left
+#: out: its own Recommends pull python3-scipy, python3-sympy and pythran (the widths of `auto` columns fall back
+#: to an estimate without it, P5112); qt6-wayland is in the Plasma/GNOME desktops that run Wayland already.
+DEB_RECOMMENDS = ['libreoffice-writer', 'python3-uno', 'fonts-liberation', 'qt6-qpa-plugins']
+DEB_SUGGESTS = ['pandoc', 'python3-fonttools', 'qt6-wayland']
+#: ID / ID_LIKE of /etc/os-release of the systems that use each package format.
+DEB_FAMILY = {'debian', 'ubuntu', 'raspbian', 'devuan'}
+RPM_FAMILY = {'opensuse', 'suse', 'sles', 'fedora', 'rhel', 'centos'}
 RPM_REQUIRES = ['python3 >= 3.11', 'python3dist(pyyaml)']
-RPM_RECOMMENDS = ['libreoffice-writer', 'libreoffice-pyuno', 'python3dist(fonttools)', 'liberation-fonts']
+#: libQt6Svg6 (openSUSE) / qt6-qtsvg (Fedora): the SVG icon engine of the toolbar is a Qt plugin that rpm does not see as a
+#: library dependency (the .deb names libqt6svg6 in Depends); a name unknown to a system is skipped in Recommends.
+RPM_RECOMMENDS = ['libreoffice-writer', 'libreoffice-pyuno', 'python3dist(fonttools)', 'liberation-fonts', 'libQt6Svg6', 'qt6-qtsvg']
 RPM_SUGGESTS = ['pandoc']
 
 
@@ -83,6 +90,23 @@ def minimal_glibc(binary: Path, fallback: str) -> str:
     return '.'.join(map(str, max(versions))) if versions else fallback
 
 
+def strip_binary(entry: 'Entry') -> None:
+    """Clean the Studio binary: ``strip --strip-unneeded`` (smaller package) and ``patchelf --remove-rpath`` when installed.
+
+    The Qt CMake targets give the link a RUNPATH of 25 empty entries («::::»); an empty entry is the current directory
+    (rpmlint E: binary-or-shlib-defines-rpath), and the libraries are those of the system.
+    """
+    with tempfile.TemporaryDirectory(prefix='primula-strip-') as work:
+        source = Path(work) / 'binary'
+        source.write_bytes(entry.data)
+        changed = False
+        for tool, options in (('strip', ['--strip-unneeded']), ('patchelf', ['--remove-rpath'])):
+            if shutil.which(tool):
+                changed |= subprocess.run([tool, *options, str(source)], capture_output=True, timeout=120).returncode == 0
+        if changed:
+            entry.data = source.read_bytes()
+
+
 def collect(package: Path, licence: Path | None) -> list[Entry]:
     """The files of the packages, from the runtime package directory (directories first, sorted)."""
     files: dict[str, Entry] = {}
@@ -101,6 +125,10 @@ def collect(package: Path, licence: Path | None) -> list[Entry]:
             add_file(f'usr/share/{NAME}/{relative.as_posix()}', source)
     for name in ('primula', 'primula-view', 'primula-studio'):
         add_file(f'usr/bin/{name}', package / 'bin' / name, 0o755)
+        # The interpreter by a fixed path: rpmlint/lintian reject `/usr/bin/env` in an installed script.
+        entry = files[f'usr/bin/{name}']
+        entry.data = entry.data.replace(b'#!/usr/bin/env bash\n', b'#!/bin/bash\n', 1).replace(b'#!/usr/bin/env python3\n', b'#!/usr/bin/python3\n', 1)
+    strip_binary(files[f'usr/share/{NAME}/libexec/primula-studio']) if f'usr/share/{NAME}/libexec/primula-studio' in files else None
     files['usr/libexec/primula-studio'] = Entry('usr/libexec/primula-studio', 'link', 0o777,
                                                 link=f'../share/{NAME}/libexec/primula-studio')
     add_file('usr/share/applications/org.primula_docs.Studio.desktop',
@@ -197,6 +225,32 @@ def rpm_spec(info: dict, entries: list[Entry], revision: str, packager: str) -> 
     return '\n'.join(lines) + '\n'
 
 
+def sign_rpm(rpm: Path, key: str, gpg_home: str | None) -> None:
+    """Sign ``rpm`` in place with the GnuPG key ``key`` (id, fingerprint or user id) by ``rpmsign --addsign``.
+
+    The key stays in the keyring of the user (``gpg_home`` or the default ``~/.gnupg``); the passphrase, if there is
+    one, is asked by gpg-agent (pinentry) - nothing secret passes through this script.  The public key is written
+    next to the package by main() so that a user can ``rpm --import`` it.
+    """
+    if not shutil.which('rpmsign'):
+        raise RuntimeError('rpmsign is not installed (package rpm-sign on openSUSE/Fedora): the .rpm is not signed')
+    command = ['rpmsign', '--addsign', '--define', f'_gpg_name {key}']
+    if gpg_home:
+        command += ['--define', f'_gpg_path {gpg_home}']
+    result = subprocess.run(command + [str(rpm)], capture_output=True, text=True, timeout=300)
+    if result.returncode != 0:
+        raise RuntimeError('rpmsign failed:\n' + (result.stdout + result.stderr)[-2000:])
+
+
+def export_public_key(key: str, gpg_home: str | None, target: Path) -> None:
+    """Write the public key (ASCII armor) of ``key`` to ``target``."""
+    command = ['gpg'] + (['--homedir', gpg_home] if gpg_home else []) + ['--armor', '--export', key]
+    result = subprocess.run(command, capture_output=True, timeout=60)
+    if result.returncode != 0 or not result.stdout:
+        raise RuntimeError('gpg could not export the public key ' + key)
+    target.write_bytes(result.stdout)
+
+
 def make_rpm(info: dict, entries: list[Entry], output: Path, revision: str, packager: str) -> Path:
     """Run rpmbuild on a staged tree. Raises RuntimeError when it is not installed or fails."""
     if not shutil.which('rpmbuild'):
@@ -233,6 +287,21 @@ def make_rpm(info: dict, entries: list[Entry], output: Path, revision: str, pack
         return target
 
 
+def family_warning(info: dict, fmt: str) -> str:
+    """A line for the user when the package format does not belong to the system that built Studio.
+
+    The Studio binary is linked to the Qt 6, libstdc++ and glibc of the build system, so a package built
+    on openSUSE (Qt 6.12, GCC 15) cannot run on Debian 12/13 whatever its Depends say.
+    """
+    ids = {str(info.get('os_id', '')).lower(), *str(info.get('os_like', '')).lower().split()}
+    own = DEB_FAMILY if fmt == 'deb' else RPM_FAMILY
+    if ids & own:
+        return ''
+    return (f'warning: the .{fmt} is made on {info.get("os_name") or info.get("os_id", "?")}: Studio inside is linked to the '
+            f'libraries of this system and will not run on the systems of the .{fmt} family. '
+            f'Make the .{fmt} on Debian 12 (it runs on Debian 12 and 13) or on openSUSE for the .rpm.')
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description='Make .deb and .rpm packages from the runtime package of Primula Docs.')
     parser.add_argument('--package', type=Path, required=True, help='the directory made by make-distribution.sh')
@@ -242,6 +311,9 @@ def main() -> int:
     parser.add_argument('--revision', default='1', help='the revision of the package (default 1)')
     parser.add_argument('--maintainer', default=os.environ.get('PRIMULA_PACKAGER', 'Primula Docs <noreply@users.noreply.github.com>'),
                         help='Maintainer of the .deb and the name in the .rpm changelog (default: $PRIMULA_PACKAGER)')
+    parser.add_argument('--sign', metavar='KEY', help='sign the .rpm with this GnuPG key (id, fingerprint or user id) from your keyring; '
+                        'the public key is written next to the package as RPM-GPG-KEY-primula-docs.asc')
+    parser.add_argument('--gpg-home', help='GnuPG home directory with the key (default ~/.gnupg)')
     args = parser.parse_args()
 
     package = args.package.resolve()
@@ -252,11 +324,20 @@ def main() -> int:
     glibc = minimal_glibc(package / 'libexec/primula-studio', str(info.get('libc', ['glibc', '2.34'])[1]))
     args.output.mkdir(parents=True, exist_ok=True)
     status = 0
-    if args.format in ('deb', 'all'):
+    # `all` makes the formats of the family of this system; a format of another family is named explicitly.
+    wanted = [fmt for fmt in ('deb', 'rpm') if args.format == fmt or args.format == 'all' and not family_warning(info, fmt)]
+    for fmt in ('deb', 'rpm'):
+        if args.format in (fmt, 'all') and family_warning(info, fmt):
+            print(family_warning(info, fmt) + (' Skipped.' if fmt not in wanted else ''), file=sys.stderr)
+    if 'deb' in wanted:
         print('deb:', make_deb(info, entries, args.output, glibc, args.maintainer, args.revision))
-    if args.format in ('rpm', 'all'):
+    if 'rpm' in wanted:
         try:
-            print('rpm:', make_rpm(info, entries, args.output, args.revision, args.maintainer))
+            rpm = make_rpm(info, entries, args.output, args.revision, args.maintainer)
+            if args.sign:
+                sign_rpm(rpm, args.sign, args.gpg_home)
+                export_public_key(args.sign, args.gpg_home, args.output / 'RPM-GPG-KEY-primula-docs.asc')
+            print('rpm:', rpm, '(signed with ' + args.sign + ')' if args.sign else '')
         except RuntimeError as exc:
             print(f'rpm: {exc}', file=sys.stderr)
             status = 1 if args.format == 'rpm' else 0
